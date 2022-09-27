@@ -1207,12 +1207,12 @@ MessageItem
     border: none;
 }
 
-MessageEdit
+MessageBrowser
 {
     border: none;
 }
 
-MessageEdit::focus
+MessageBrowser::focus
 {
     border: none;
 }
@@ -1222,7 +1222,7 @@ MessageItem::focus
     border: none;
 }
 
-MessageEdit:hover
+MessageBrowser:hover
 {
     border: none;
 }
@@ -1243,7 +1243,7 @@ QPushButton:hover
     background-color: #1E90FF;
 }
 
-MessageEdit 
+MessageBrowser
 {
     background-color: transparent;
 }
@@ -1253,7 +1253,7 @@ MessageEdit
     background-color: #1E90FF;
 }
 
-#friends_list:item:selected
+#friendsListWidget:item:selected
 {
     background-color: #333333;
 }
@@ -1277,7 +1277,7 @@ QListWidget > QLabel
     color: #A9A9A9;
 }
 
-#contact_name
+#searchLineEdit
 {
     padding-left: 22px;
 }
@@ -1322,3 +1322,14 @@ ClickableLabel:hover
 {
     background-color: #4A4949;
 }
+
+#warningLabel
+{
+    color: #BC1C1C;
+}
+
+#groupInvitesPushButton
+{
+    background-color: #009c00;
+}
+
