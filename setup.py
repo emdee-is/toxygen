@@ -2,15 +2,17 @@ from setuptools import setup
 from setuptools.command.install import install
 from platform import system
 from subprocess import call
-from toxygen.util import program_version
+import main
 import sys
+import os
+from utils.util import curr_directory, join_path
 
 
-version = program_version + '.0'
+version = main.__version__ + '.0'
 
 
 if system() == 'Windows':
-    MODULES = ['PyQt5', 'PyAudio', 'numpy', 'opencv-python']
+    MODULES = ['PyQt5', 'PyAudio', 'numpy', 'opencv-python', 'pydenticon']
 else:
     MODULES = []
     try:
@@ -29,6 +31,19 @@ else:
         import cv2
     except ImportError:
         MODULES.append('opencv-python')
+    try:
+        import pydenticon
+    except ImportError:
+        MODULES.append('pydenticon')
+
+
+def get_packages():
+    directory = join_path(curr_directory(__file__), 'toxygen')
+    for root, dirs, files in os.walk(directory):
+        packages = map(lambda d: 'toxygen.' + d, dirs)
+        packages = ['toxygen'] + list(packages)
+
+        return packages
 
 
 class InstallScript(install):
@@ -62,7 +77,7 @@ setup(name='Toxygen',
       author='Ingvar',
       maintainer='Ingvar',
       license='GPL3',
-      packages=['toxygen', 'toxygen.plugins', 'toxygen.styles'],
+      packages=get_packages(),
       install_requires=MODULES,
       include_package_data=True,
       classifiers=[
@@ -71,8 +86,8 @@ setup(name='Toxygen',
           'Programming Language :: Python :: 3.6',
       ],
       entry_points={
-          'console_scripts': ['toxygen=toxygen.main:main'],
+          'console_scripts': ['toxygen=toxygen.main:main']
       },
       cmdclass={
-          'install': InstallScript,
+          'install': InstallScript
       })
