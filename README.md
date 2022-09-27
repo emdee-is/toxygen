@@ -2,7 +2,7 @@
 
 Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pure Python3.
 
-### [Install](/docs/install.md) - [Contribute](/docs/contributing.md) - [Plugins](/docs/plugins.md) - [Compile](/docs/compile.md) - [Contact](/docs/contact.md) - [Updater](https://github.com/toxygen-project/toxygen_updater)
+### [Install](/docs/install.md) - [Contribute](/docs/contributing.md) - [Plugins](/docs/plugins.md) - [Compile](/docs/compile.md) - [Contact](/docs/contact.md)
 
 ### Supported OS: Linux and Windows
 
@@ -37,6 +37,7 @@ Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pu
 - Changing nospam
 - File resuming
 - Read receipts
+- NGC groups
 
 ### Screenshots
 *Toxygen on Ubuntu and Windows*
@@ -47,3 +48,5 @@ Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pu
 
 This hard-forked from https://github.com/toxygen-project/toxygen
 ```next_gen``` branch.
+
+Work on this project is suspended until the MultiDevice problem is solved.
