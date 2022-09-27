@@ -1,6 +1,6 @@
 # Plugins API
 
-In Toxygen plugin is single python (supported Python 3.4 - 3.6) module (.py file) and directory with data associated with it. 
+In Toxygen plugin is single python module (.py file) and directory with data associated with it. 
 Every module must contain one class derived from PluginSuperClass defined in [plugin_super_class.py](/src/plugins/plugin_super_class.py). Instance of this class will be created by PluginLoader class (defined in [plugin_support.py](/src/plugin_support.py) ). This class can enable/disable plugins and send data to it. 
 
 Every plugin has its own full name and unique short name (1-5 symbols). Main app can get it using special methods. 
