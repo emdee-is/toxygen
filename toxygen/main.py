@@ -29,7 +29,6 @@ from user_data.settings import *
 from user_data.settings import Settings
 from user_data import settings
 import utils.util as util
-from tests import omain
 with ts.ignoreStderr():
     import pyaudio
 
@@ -95,7 +94,7 @@ def setup_audio(oArgs):
     global oPYA
     audio = setup_default_audio()
     for k,v in audio['input_devices'].items():
-        if v == 'default' and 'input' not in audio :
+        if v == 'default' and 'input' not in audio:
             audio['input'] = k
         if v == getattr(oArgs, 'audio_input'):
             audio['input'] = k
@@ -272,7 +271,7 @@ def main_parser():
     parser.add_argument('--download_nodes_url', type=str,
                         default='https://nodes.tox.chat/json')
     parser.add_argument('--network', type=str,
-                        choices=['main', 'new', 'local', 'newlocal'],
+                        choices=['old', 'new', 'local', 'newlocal'],
                         default='new')
     parser.add_argument('--video_input', type=str,
                         default=-1,
@@ -303,43 +302,34 @@ def main_parser():
 
 # clean out the unchanged settings so these can override the profile
 lKEEP_SETTINGS = ['uri',
-	'profile',
-	'loglevel',
-	'logfile',
-	'mode',
-	'audio',
-        'video',
-        'ipv6_enabled',
-	'udp_enabled',
-	'local_discovery_enabled',
-        'theme',
-	'network',
-	'message_font_size',
-	'font',
-        'save_history',
-	'language',
-	'update',
-        'proxy_host',
-	'proxy_type',
-        'proxy_port',
-        'core_logging',
-        'audio',
-        'video'
-        ] # , 'nodes_json'
-lBOOLEANS = [
-        'local_discovery_enabled',
-        'udp_enabled',
-        'ipv6_enabled',
-        'compact_mode',
-        'allow_inline',
-        'notifications',
-        'sound_notifications',
-        'hole_punching_enabled',
-        'dht_announcements_enabled',
-        'save_history',
-        'download_nodes_list'
-        'core_logging',
-        ]
+                  'profile',
+                  'loglevel',
+                  'logfile',
+                  'mode',
+                  
+                  # dunno
+                  'audio_input',
+                  'audio_output',
+                  'audio',
+                  'video',
+                  
+                  'ipv6_enabled',
+                  'udp_enabled',
+                  'local_discovery_enabled',
+                  'theme',
+                  'network',
+                  'message_font_size',
+                  'font',
+                  'save_history',
+                  'language',
+                  'update',
+                  'proxy_host',
+                  'proxy_type',
+                  'proxy_port',
+                  'core_logging',
+                  'audio',
+                  'video'
+                  ] # , 'nodes_json'
 
 class A(): pass
 
@@ -373,7 +363,7 @@ def main(lArgs):
         if getattr(default_ns, key) == getattr(oArgs, key):
             delattr(oArgs, key)
 
-    for key in lBOOLEANS:
+    for key in ts.lBOOLEANS:
         if not hasattr(oArgs, key): continue
         val = getattr(oArgs, key)
         if type(val) == bool: continue
@@ -385,15 +375,15 @@ def main(lArgs):
     aArgs = A()
     for key in oArgs.__dict__.keys():
         setattr(aArgs, key, getattr(oArgs, key))
-    setattr(aArgs, 'video', setup_video(oArgs))
+    #setattr(aArgs, 'video', setup_video(oArgs))
     aArgs.video = setup_video(oArgs)
     assert 'video' in aArgs.__dict__
-    
-    setattr(aArgs, 'audio', setup_audio(oArgs))
+   
+    #setattr(aArgs, 'audio', setup_audio(oArgs))
     aArgs.audio = setup_audio(oArgs)
     assert 'audio' in aArgs.__dict__
-    
     oArgs = aArgs
+    
     toxygen = app.App(__version__, oArgs)
     global oAPP
     oAPP = toxygen

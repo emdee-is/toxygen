@@ -21,6 +21,7 @@ LOG = logging.getLogger('app.'+__name__)
 
 TIMER_TIMEOUT = 30.0
 bSTREAM_CALLBACK = False
+iFPS = 25
 
 class AV(common.tox_save.ToxAvSave):
 
@@ -56,7 +57,7 @@ class AV(common.tox_save.ToxAvSave):
 
         self._video = None
         self._video_thread = None
-        self._video_running = False
+        self._video_running = None
 
         self._video_width = 320
         self._video_height = 240
@@ -278,12 +279,7 @@ class AV(common.tox_save.ToxAvSave):
         self._video_width = s['video']['width']
         self._video_height = s['video']['height']
 
-        LOG.info("start_video_thread " \
-                     +f" device: {s['video']['device']}" \
-                     +f" supported: {s['video']['width']} {s['video']['height']}")
-
-        s['video']['device'] = -1
-        if s['video']['device'] == -1:
+        if True or s['video']['device'] == -1:
             self._video = screen_sharing.DesktopGrabber(s['video']['x'],
                                                         s['video']['y'],
                                                         s['video']['width'],
@@ -291,11 +287,24 @@ class AV(common.tox_save.ToxAvSave):
         else:
             with ts.ignoreStdout():
                 import cv2
+            if s['video']['device'] == 0:
+                # webcam
+                self._video = cv2.VideoCapture(s['video']['device'], cv2.DSHOW)
+            else:
                 self._video = cv2.VideoCapture(s['video']['device'])
-                self._video.set(cv2.CAP_PROP_FPS, 25)
-                self._video.set(cv2.CAP_PROP_FRAME_WIDTH, self._video_width)
-                self._video.set(cv2.CAP_PROP_FRAME_HEIGHT, self._video_height)
-
+            self._video.set(cv2.CAP_PROP_FPS, iFPS)
+            self._video.set(cv2.CAP_PROP_FRAME_WIDTH, self._video_width)
+            self._video.set(cv2.CAP_PROP_FRAME_HEIGHT, self._video_height)
+#            self._video.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+        if self._video is None:
+            LOG.error("start_video_thread " \
+                     +f" device: {s['video']['device']}" \
+                     +f" supported: {s['video']['width']} {s['video']['height']}")
+            return
+        LOG.info("start_video_thread " \
+                 +f" device: {s['video']['device']}" \
+                 +f" supported: {s['video']['width']} {s['video']['height']}")
+            
         self._video_running = True
         self._video_thread = BaseThread(target=self.send_video,
                                         name='_video_thread')
@@ -345,15 +354,15 @@ class AV(common.tox_save.ToxAvSave):
                                                  output_device_index=iOutput,
                                                  output=True)
             except Exception as e:
-               LOG.error(f"Error playing audio_chunk creating self._out_stream   {e}")
-               LOG.debug(f"audio_chunk output_device_index={self._settings._args.audio['input']} rate={rate} channels={channels_count}")
-               invoke_in_main_thread(util_ui.message_box,
+                LOG.error(f"Error playing audio_chunk creating self._out_stream   {e}")
+                invoke_in_main_thread(util_ui.message_box,
                                     str(e),
                                     util_ui.tr("Error Chunking audio"))
-               # dunno
-               self.stop()
-               return
+                # dunno
+                self.stop()
+                return
 
+        LOG.debug(f"audio_chunk output_device_index={self._settings._args.audio['input']} rate={rate} channels={channels_count}")
         self._out_stream.write(samples)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -410,29 +419,42 @@ class AV(common.tox_save.ToxAvSave):
         """
         This method sends video to friends
         """
-        LOG.debug(f"send_video thread={threading.current_thread()}"
+        LOG.debug(f"send_video thread={threading.current_thread().name}"
                   +f" self._video_running={self._video_running}"
                   +f" device: {self._settings['video']['device']}" )
         while self._video_running:
             try:
                 result, frame = self._video.read()
-                if result:
-                    LOG.warn(f"send_video video_send_frame _video.read")
+                if not result:
+                    LOG.warn(f"send_video video_send_frame _video.read result={result}")
+                    break
+                if frame is None:
+                    LOG.warn(f"send_video video_send_frame _video.read result={result} frame={frame}")
+                    continue
                 else:
+                    LOG.debug(f"send_video video_send_frame _video.read result={result}")
                     height, width, channels = frame.shape
+                    friends = []
                     for friend_num in self._calls:
                         if self._calls[friend_num].out_video:
-                            try:
-                                y, u, v = self.convert_bgr_to_yuv(frame)
-                                self._toxav.video_send_frame(friend_num, width, height, y, u, v)
-                            except Exception as e:
-                                LOG.debug(f"send_video video_send_frame ERROR {e}")
-                                pass
+                            friends.append(friend_num)
+                    if len(friends) == 0:
+                        LOG.warn(f"send_video video_send_frame no friends")
+                    else:
+                        LOG.debug(f"send_video video_send_frame {friends}")
+                        friend_num = friends[0]
+                        try:
+                            y, u, v = self.convert_bgr_to_yuv(frame)
+                            self._toxav.video_send_frame(friend_num, width, height, y, u, v)
+                        except Exception as e:
+                            LOG.debug(f"send_video video_send_frame ERROR {e}")
+                            pass
 
-            except:
+            except Exception as e:
+                LOG.error(f"send_video video_send_frame {e}")
                 pass
 
-            sleep(0.1)
+            sleep( 1.0/iFPS)
 
     def convert_bgr_to_yuv(self, frame):
         """

@@ -9,8 +9,9 @@ import os
 global LOG
 import logging
 LOG = logging.getLogger('app.'+'tox_factory')
-def LOG_DEBUG(l): print('DEBUGf: '+l)
-def LOG_LOG(l): print('TRACf: '+l)
+def LOG_INFO(l): print('DBUG> '+l)
+def LOG_DEBUG(l): print('DBUG> '+l)
+def LOG_LOG(l): print('TRAC> '+l)
 
 from ctypes import *
 from utils import util
@@ -32,8 +33,7 @@ def tox_log_cb(iTox, level, file, line, func, message, *args):
     # root WARNING 3network.c#944:b'send_packet'attempted to send message with network family 10 (probably IPv6) on IPv4 socket
     if file == 'network.c' and line == 944: return
     message = f"{file}#{line}:{func} {message}"
-    LOG_LOG(# 'TRAC: ' +
-            message)
+    LOG_LOG(message)
 
 def tox_factory(data=None, settings=None, args=None, app=None):
     """

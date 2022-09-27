@@ -1,4 +1,7 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+
+import traceback
+
 from contacts.friend import Friend
 from contacts.group_chat import GroupChat
 from messenger.messages import *
@@ -11,6 +14,8 @@ import logging
 LOG = logging.getLogger('app.'+__name__)
 log = lambda x: LOG.info(x)
 
+UINT32_MAX = 2 ** 32 -1
+
 class ContactsManager(ToxSave):
     """
     Represents contacts list.
@@ -21,6 +26,7 @@ class ContactsManager(ToxSave):
         super().__init__(tox)
         self._settings = settings
         self._screen = screen
+        self._ms = screen
         self._profile_manager = profile_manager
         self._contact_provider = contact_provider
         self._tox_dns = tox_dns
@@ -33,6 +39,8 @@ class ContactsManager(ToxSave):
         screen.contacts_filter.setCurrentIndex(int(self._sorting))
         self._history = history
         self._load_contacts()
+
+    def _log(self, s): self._ms(s)
 
     def get_contact(self, num):
         if num < 0 or num >= len(self._contacts):
@@ -106,6 +114,7 @@ class ContactsManager(ToxSave):
                     current_contact.curr_text = self._screen.messageEdit.toPlainText()
                 except:
                     pass
+            # IndexError: list index out of range
             contact = self._contacts[value]
             self._subscribe_to_events(contact)
             contact.remove_invalid_unsent_files()
@@ -137,7 +146,7 @@ class ContactsManager(ToxSave):
         except Exception as ex:  # no friend found. ignore
             LOG.warn(f"no friend found. Friend value:  {value!s}")
             LOG.error('in set active: ' + str(ex))
-            raise
+            # gulp raise
 
     active_contact = property(get_active, set_active)
 
@@ -322,7 +331,7 @@ class ContactsManager(ToxSave):
         Block user with specified tox id (or public key) - delete from friends list and ignore friend requests
         """
         tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
-        if tox_id == self._tox.self_get_address[:TOX_PUBLIC_KEY_SIZE * 2]:
+        if tox_id == self._tox.self_get_address()[:TOX_PUBLIC_KEY_SIZE * 2]:
             return
         if tox_id not in self._settings['blocked']:
             self._settings['blocked'].append(tox_id)
@@ -424,26 +433,36 @@ class ContactsManager(ToxSave):
         """
         try:
             message = message or 'Hello! Add me to your contact list please'
-            if '@' in tox_id:  # value like groupbot@toxme.io
-                tox_id = self._tox_dns.lookup(tox_id)
-                if tox_id is None:
-                    raise Exception('TOX DNS lookup failed')
             if len(tox_id) == TOX_PUBLIC_KEY_SIZE * 2:  # public key
                 self.add_friend(tox_id)
-                title = util_ui.tr('Friend added')
-                text = util_ui.tr('Friend added without sending friend request')
-                util_ui.message_box(text, title)
+                title = 'Friend added'
+                text = 'Friend added without sending friend request'
             else:
-                self._tox.friend_add(tox_id, message.encode('utf-8'))
-                tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
-                self._add_friend(tox_id)
-                self.update_filtration()
-            self.save_profile()
-            return True
+                num = self._tox.friend_add(tox_id, message.encode('utf-8'))
+                if num < UINT32_MAX:
+                    tox_pk = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
+                    self._add_friend(tox_pk)
+                    self.update_filtration()
+                    title = 'Friend added'
+                    text = 'Friend added by sending friend request'
+                    self.save_profile()
+                    retval = True
+                else:
+                    title = 'Friend failed'
+                    text = 'Friend failed sending friend request'
+                    retval = text
+                    
         except Exception as ex:  # wrong data
-            LOG.error('Friend request failed with ' + str(ex))
-            return str(ex)
-
+            title = 'Friend add exception'
+            text = 'Friend request exception with ' + str(ex)
+            self._log(text)
+            LOG.error(traceback.format_exc())
+            retval = str(ex)
+        title = util_ui.tr(title)
+        text = util_ui.tr(text)
+        util_ui.message_box(text, title)
+        return retval
+    
     def process_friend_request(self, tox_id, message):
         """
         Accept or ignore friend request

@@ -12,7 +12,7 @@ from user_data.settings import Settings
 
 iMAX = 70
 global LOG
-LOG = logging.getLogger('app.'+__name__)
+LOG = logging.getLogger('app.'+'mains')
 
 class QTextEditLogger(logging.Handler):
     def __init__(self, parent, app):
@@ -190,7 +190,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuSettings.addAction(self.actionNetwork)
         self.menuSettings.addAction(self.audioSettings)
         self.menuSettings.addAction(self.videoSettings)
-        self.menuSettings.addAction(self.updateSettings)
+##        self.menuSettings.addAction(self.updateSettings)
         self.menuPlugins.addAction(self.pluginData)
         self.menuPlugins.addAction(self.importPlugin)
         self.menuPlugins.addAction(self.reloadPlugins)
@@ -221,7 +221,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionNotifications.triggered.connect(self.notification_settings)
         self.audioSettings.triggered.connect(self.audio_settings)
         self.videoSettings.triggered.connect(self.video_settings)
-        self.updateSettings.triggered.connect(self.update_settings)
+##        self.updateSettings.triggered.connect(self.update_settings)
         self.pluginData.triggered.connect(self.plugins_menu)
         self.lockApp.triggered.connect(self.lock_app)
         self.importPlugin.triggered.connect(self.import_plugin)
@@ -514,7 +514,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.peers_list.setGeometry(width * 3 // 4, 0, width - width * 3 // 4, self.height() - 155)
 
         invites_button_visible = self.groupInvitesPushButton.isVisible()
-        LOG.debug(f"invites_button_visible={invites_button_visible}")
+#        LOG.debug(f"invites_button_visible={invites_button_visible}")
         self.friends_list.setGeometry(0, 125 if invites_button_visible else 100,
                                       270, self.height() - 150 if invites_button_visible else self.height() - 125)
 

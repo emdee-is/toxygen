@@ -30,10 +30,10 @@ import logging
 LOG = logging.getLogger('app.'+'threads')
 # log = lambda x: LOG.info(x)
 
-def LOG_ERROR(l): print('ERRORt: '+l)
-def LOG_WARN(l): print('WARNt: '+l)
-def LOG_INFO(l): print('INFOt: '+l)
-def LOG_DEBUG(l): print('DEBUGt: '+l)
+def LOG_ERROR(l): print('EROR+ '+l)
+def LOG_WARN(l):  print('WARN+ '+l)
+def LOG_INFO(l):  print('INFO+ '+l)
+def LOG_DEBUG(l): print('DBUG+ '+l)
 def LOG_TRACE(l): pass # print('TRACE+ '+l)
 
 # -----------------------------------------------------------------------------------------------------------------
@@ -148,8 +148,9 @@ class ToxIterateThread(BaseQThread):
                 self._tox.iterate()
             except Exception as e:
                 # Fatal Python error: Segmentation fault
-                LOG_ERROR('ToxIterateThread run: {e}')               
-            sleep(iMsec / 1000)
+                LOG_ERROR(f"ToxIterateThread run: {e}")
+            else:
+                sleep(iMsec / 1000)
 
 
 class ToxAVIterateThread(BaseQThread):

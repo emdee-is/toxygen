@@ -400,6 +400,9 @@ class Settings(dict):
             if key not in aArgs.__dict__: continue
             val = aArgs.__dict__[key]
             if val in ['0.0.0.0']: continue
+            if key in aArgs.__dict__ and key not in info:
+                # dunno = network
+                continue
             if key in aArgs.__dict__ and info[key] != val:
                 aRet[key] = val
         return aRet
