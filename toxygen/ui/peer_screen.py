@@ -40,7 +40,7 @@ class PeerScreen(CenteredWidget):
         self.rolesComboBox.setVisible(can_change_role_or_ban)
         self.roleNameLabel.setVisible(not can_change_role_or_ban)
         self.banGroupBox.setEnabled(can_change_role_or_ban)
-        self.banPushButton.clicked.connect(self._ban_peer)
+#        self.banPushButton.clicked.connect(self._ban_peer)
         self.kickPushButton.clicked.connect(self._kick_peer)
 
         self._retranslate_ui()
@@ -53,7 +53,7 @@ class PeerScreen(CenteredWidget):
         self.roleLabel.setText(util_ui.tr('Role:'))
         self.copyPublicKeyPushButton.setText(util_ui.tr('Copy public key'))
         self.sendPrivateMessagePushButton.setText(util_ui.tr('Send private message'))
-        self.banPushButton.setText(util_ui.tr('Ban peer'))
+#        self.banPushButton.setText(util_ui.tr('Ban peer'))
         self.kickPushButton.setText(util_ui.tr('Kick peer'))
         self.banGroupBox.setTitle(util_ui.tr('Ban peer'))
         self.ipBanRadioButton.setText(util_ui.tr('IP'))

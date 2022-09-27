@@ -1,10 +1,40 @@
-from bootstrap.bootstrap import *
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+import sys
 import threading
 import queue
-from utils import util
-import time
 from PyQt5 import QtCore
 
+from bootstrap.bootstrap import *
+from bootstrap.bootstrap import download_nodes_list
+import tests.support_testing as ts
+from utils import util
+
+if 'QtCore' in sys.modules:
+    def qt_sleep(fSec):
+        if fSec > .001:
+            QtCore.QThread.msleep(int(fSec*1000.0))
+        QtCore.QCoreApplication.processEvents()
+    sleep = qt_sleep
+elif 'gevent' in sys.modules:
+    import gevent
+    sleep = gevent.sleep
+else:
+    import time
+    sleep = time.sleep
+import time
+sleep = time.sleep
+
+# LOG=util.log
+global LOG
+import logging
+LOG = logging.getLogger('app.'+'threads')
+# log = lambda x: LOG.info(x)
+
+def LOG_ERROR(l): print('ERRORt: '+l)
+def LOG_WARN(l): print('WARNt: '+l)
+def LOG_INFO(l): print('INFOt: '+l)
+def LOG_DEBUG(l): print('DEBUGt: '+l)
+def LOG_TRACE(l): pass # print('TRACE+ '+l)
 
 # -----------------------------------------------------------------------------------------------------------------
 # Base threads
@@ -12,25 +42,45 @@ from PyQt5 import QtCore
 
 class BaseThread(threading.Thread):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name=None, target=None):
         self._stop_thread = False
+        if name:
+            super().__init__(name=name, target=target)
+        else:
+            super().__init__(target=target)
 
-    def stop_thread(self):
+    def stop_thread(self, timeout=-1):
         self._stop_thread = True
-        self.join()
-
+        if timeout < 0:
+            timeout = ts.iTHREAD_TIMEOUT
+        i = 0
+        while i < ts.iTHREAD_JOINS:
+            self.join(timeout)
+            if not self.is_alive(): break
+            i = i + 1
+        else:
+            LOG_WARN(f"BaseThread {self.name} BLOCKED")
 
 class BaseQThread(QtCore.QThread):
 
-    def __init__(self):
+    def __init__(self, name=None):
+        # NO name=name
         super().__init__()
         self._stop_thread = False
+        self.name = str(id(self))
 
-    def stop_thread(self):
+    def stop_thread(self, timeout=-1):
         self._stop_thread = True
-        self.wait()
-
+        if timeout < 0:
+            timeout = ts.iTHREAD_TIMEOUT
+        i = 0
+        while i < ts.iTHREAD_JOINS:
+            self.wait(timeout)
+            if not self.isRunning(): break
+            i = i + 1
+            sleep(ts.iTHREAD_TIMEOUT)
+        else:
+            LOG_WARN(f"BaseQThread {self.name} BLOCKED")
 
 # -----------------------------------------------------------------------------------------------------------------
 # Toxcore threads
@@ -38,45 +88,51 @@ class BaseQThread(QtCore.QThread):
 
 class InitThread(BaseThread):
 
-    def __init__(self, tox, plugin_loader, settings, is_first_start):
-        super().__init__()
-        self._tox, self._plugin_loader, self._settings = tox, plugin_loader, settings
+    def __init__(self, tox, plugin_loader, settings, app, is_first_start):
+        super().__init__(name='InitThread')
+        self._tox = tox
+        self._plugin_loader = plugin_loader
+        self._settings = settings
+        self._app = app
         self._is_first_start = is_first_start
 
     def run(self):
-        if self._is_first_start:
-            # download list of nodes if needed
-            download_nodes_list(self._settings)
-            # start plugins
-            self._plugin_loader.load()
-
-        # bootstrap
+        LOG_DEBUG('InitThread run: ')
         try:
-            for data in generate_nodes():
-                if self._stop_thread:
-                    return
-                self._tox.bootstrap(*data)
-                self._tox.add_tcp_relay(*data)
-        except:
-            pass
+            if self._is_first_start:
+                if self._settings['download_nodes_list']:
+                    LOG_INFO('downloading list of nodes')
+                    download_nodes_list(self._settings, oArgs=self._app._args)
 
-        for _ in range(10):
-            if self._stop_thread:
-                return
-            time.sleep(1)
-
-        while not self._tox.self_get_connection_status():
-            try:
-                for data in generate_nodes(None):
+            if False:
+                lNodes = ts.generate_nodes()
+                LOG_INFO(f"bootstrapping {len(lNodes)!s} nodes")
+                for data in lNodes:
                     if self._stop_thread:
                         return
                     self._tox.bootstrap(*data)
                     self._tox.add_tcp_relay(*data)
-            except:
-                pass
-            finally:
-                time.sleep(5)
+            else:
+                LOG_INFO(f"calling test_net nodes")
+                threading.Timer(1.0,
+                                self._app.test_net,
+                                args=list(),
+                                kwargs=dict(lElts=None, oThread=self, iMax=2)
+                                ).start()
+                
+            if self._is_first_start:
+                LOG_INFO('starting plugins')
+                self._plugin_loader.load()
+                
+        except Exception as e:
+            LOG_DEBUG(f"InitThread run: ERROR {e}")
+            pass
 
+        for _ in range(ts.iTHREAD_JOINS):
+            if self._stop_thread:
+                return
+            sleep(ts.iTHREAD_SLEEP)
+        return
 
 class ToxIterateThread(BaseQThread):
 
@@ -85,21 +141,27 @@ class ToxIterateThread(BaseQThread):
         self._tox = tox
 
     def run(self):
+        LOG_DEBUG('ToxIterateThread run: ')
         while not self._stop_thread:
-            self._tox.iterate()
-            time.sleep(self._tox.iteration_interval() / 1000)
+            try:
+                iMsec = self._tox.iteration_interval()
+                self._tox.iterate()
+            except Exception as e:
+                # Fatal Python error: Segmentation fault
+                LOG_ERROR('ToxIterateThread run: {e}')               
+            sleep(iMsec / 1000)
 
 
 class ToxAVIterateThread(BaseQThread):
-
     def __init__(self, toxav):
         super().__init__()
         self._toxav = toxav
-
+        
     def run(self):
+        LOG_DEBUG('ToxAVIterateThread run: ')
         while not self._stop_thread:
             self._toxav.iterate()
-            time.sleep(self._toxav.iteration_interval() / 1000)
+            sleep(self._toxav.iteration_interval() / 1000)
 
 
 # -----------------------------------------------------------------------------------------------------------------
@@ -109,7 +171,7 @@ class ToxAVIterateThread(BaseQThread):
 class FileTransfersThread(BaseQThread):
 
     def __init__(self):
-        super().__init__()
+        super().__init__('FileTransfers')
         self._queue = queue.Queue()
         self._timeout = 0.01
 
@@ -124,14 +186,12 @@ class FileTransfersThread(BaseQThread):
             except queue.Empty:
                 pass
             except queue.Full:
-                util.log('Queue is full in _thread')
+                LOG_WARN('Queue is full in _thread')
             except Exception as ex:
-                util.log('Exception in _thread: ' + str(ex))
+                LOG_ERROR('in _thread: ' + str(ex))
 
 
 _thread = FileTransfersThread()
-
-
 def start_file_transfer_thread():
     _thread.start()
 

@@ -1,3 +1,4 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 from ui.main_screen_widgets import *
 from ui.menu import *
 from ui.groups_widgets import *
@@ -7,7 +8,6 @@ from ui.group_invites_widgets import *
 from ui.group_settings_widgets import *
 from ui.group_bans_widgets import *
 from ui.profile_settings_screen import ProfileSettings
-
 
 class WidgetsFactory:
 
@@ -42,6 +42,11 @@ class WidgetsFactory:
         return AudioSettings(self._settings)
 
     def create_video_settings_window(self):
+        try:
+            import cv2
+        except ImportError:
+            cv2 = None
+        if cv2 is None: return None
         return VideoSettings(self._settings)
 
     def create_update_settings_window(self):

@@ -38,8 +38,8 @@ class Message:
 
     MESSAGE_ID = 0
 
-    def __init__(self, message_type, author, time):
-        self._time = time
+    def __init__(self, message_type, author, iTime):
+        self._time = iTime
         self._type = message_type
         self._author = author
         self._widget = None
@@ -66,6 +66,7 @@ class Message:
     message_id = property(get_message_id)
 
     def get_widget(self, *args):
+        # FixMe
         self._widget = self._create_widget(*args)
 
         return self._widget
@@ -81,6 +82,7 @@ class Message:
             self._widget.mark_as_sent()
 
     def _create_widget(self, *args):
+        # overridden
         pass
 
     @staticmethod
@@ -95,8 +97,8 @@ class TextMessage(Message):
     Plain text or action message
     """
 
-    def __init__(self, message, owner, time, message_type, message_id=0):
-        super().__init__(message_type, owner, time)
+    def __init__(self, message, owner, iTime, message_type, message_id=0):
+        super().__init__(message_type, owner, iTime)
         self._message = message
         self._id = message_id
 
@@ -119,8 +121,8 @@ class TextMessage(Message):
 
 class OutgoingTextMessage(TextMessage):
 
-    def __init__(self, message, owner, time, message_type, tox_message_id=0):
-        super().__init__(message, owner, time, message_type)
+    def __init__(self, message, owner, iTime, message_type, tox_message_id=0):
+        super().__init__(message, owner, iTime, message_type)
         self._tox_message_id = tox_message_id
 
     def get_tox_message_id(self):
@@ -134,8 +136,8 @@ class OutgoingTextMessage(TextMessage):
 
 class GroupChatMessage(TextMessage):
 
-    def __init__(self, id, message, owner, time, message_type, name):
-        super().__init__(id, message, owner, time, message_type)
+    def __init__(self, id, message, owner, iTime, message_type, name):
+        super().__init__(id, message, owner, iTime, message_type)
         self._user_name = name
 
 
@@ -144,8 +146,8 @@ class TransferMessage(Message):
     Message with info about file transfer
     """
 
-    def __init__(self, author, time, state, size, file_name, friend_number, file_number):
-        super().__init__(MESSAGE_TYPE['FILE_TRANSFER'], author, time)
+    def __init__(self, author, iTime, state, size, file_name, friend_number, file_number):
+        super().__init__(MESSAGE_TYPE['FILE_TRANSFER'], author, iTime)
         self._state = state
         self._size = size
         self._file_name = file_name
@@ -185,10 +187,10 @@ class TransferMessage(Message):
 
     file_name = property(get_file_name)
 
-    def transfer_updated(self, state, percentage, time):
+    def transfer_updated(self, state, percentage, iTime):
         self._state = state
         if self._widget is not None:
-            self._widget.update_transfer_state(state, percentage, time)
+            self._widget.update_transfer_state(state, percentage, iTime)
 
     def _create_widget(self, *args):
         return FileTransferItem(self, *args)
@@ -196,9 +198,9 @@ class TransferMessage(Message):
 
 class UnsentFileMessage(TransferMessage):
 
-    def __init__(self, path, data, time, author, size, friend_number):
+    def __init__(self, path, data, iTime, author, size, friend_number):
         file_name = os.path.basename(path)
-        super().__init__(author, time, FILE_TRANSFER_STATE['UNSENT'], size, file_name, friend_number, -1)
+        super().__init__(author, iTime, FILE_TRANSFER_STATE['UNSENT'], size, file_name, friend_number, -1)
         self._data, self._path = data, path
 
     def get_data(self):
@@ -235,5 +237,5 @@ class InlineImageMessage(Message):
 
 class InfoMessage(TextMessage):
 
-    def __init__(self, message, time):
-        super().__init__(message, None, time, MESSAGE_TYPE['INFO_MESSAGE'])
+    def __init__(self, message, iTime):
+        super().__init__(message, None, iTime, MESSAGE_TYPE['INFO_MESSAGE'])

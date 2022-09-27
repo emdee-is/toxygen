@@ -1,15 +1,40 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+import os
+import threading
 from PyQt5 import QtGui
 from wrapper.toxcore_enums_and_consts import *
 from wrapper.toxav_enums import *
 from wrapper.tox import bin_to_string
 import utils.ui as util_ui
 import utils.util as util
-import cv2
-import numpy as np
 from middleware.threads import invoke_in_main_thread, execute
 from notifications.tray import tray_notification
 from notifications.sound import *
-import threading
+from datetime import datetime
+
+iMAX_INT32 = 4294967295
+def LOG_ERROR(l): print('ERRORc: '+l)
+def LOG_WARN(l): print('WARNc: '+l)
+def LOG_INFO(l): print('INFOc: '+l)
+def LOG_DEBUG(l): print('DEBUGc: '+l)
+def LOG_TRACE(l): pass # print('TRACE+ '+l)
+
+global aTIMES
+aTIMES=dict()
+def bTooSoon(key, sSlot, fSec=10.0):
+    # rate limiting
+    global aTIMES
+    if sSlot not in aTIMES:
+        aTIMES[sSlot] = dict()
+    OTIME = aTIMES[sSlot]
+    now = datetime.now()
+    if key not in OTIME:
+        OTIME[key] = now
+        return False
+    delta = now - OTIME[key]
+    OTIME[key] = now
+    if delta.total_seconds() < fSec: return True
+    return False
 
 # TODO: refactoring. Use contact provider instead of manager
 
@@ -17,15 +42,48 @@ import threading
 # Callbacks - current user
 # -----------------------------------------------------------------------------------------------------------------
 
+global iBYTES
+iBYTES=0
+def sProcBytes(sFile=None):
+    global iBYTES
+    if sFile is None:
+        pid = os.getpid()
+        sFile = f"/proc/{pid}/net/softnet_stat"
+    if os.path.exists(sFile):
+        total = 0
+        with open(sFile, 'r') as iFd:
+            for elt in iFd.readlines():
+                i = elt.find(' ')
+                p = int(elt[:i], 16)
+                total = total + p
+        if iBYTES == 0:
+            iBYTES = total
+            return ''
+        diff = total - iBYTES
+        s = f' {diff // 1024} Kbytes'
+    else:
+        s = ''
+    return s
 
 def self_connection_status(tox, profile):
     """
     Current user changed connection status (offline, TCP, UDP)
     """
+    pid = os.getpid()
+    sFile = '/proc/'+str(pid) +'/net/softnet_stat'
+    sSlot = 'self connection status'
     def wrapped(tox_link, connection, user_data):
-        print('Connection status: ', str(connection))
-        status = tox.self_get_status() if connection != TOX_CONNECTION['NONE'] else None
-        invoke_in_main_thread(profile.set_status, status)
+        key = f"connection {connection}"
+        if bTooSoon(key, sSlot, 10): return
+        s = sProcBytes(sFile)
+        try:
+            status = tox.self_get_status() if connection != TOX_CONNECTION['NONE'] else None
+            if status:
+                LOG_DEBUG(f"self_connection_status: connection={connection} status={status}" +' '+s)
+            invoke_in_main_thread(profile.set_status, status)
+        except Exception as e:
+            LOG_ERROR(f"self_connection_status: {e}")
+            pass
 
     return wrapped
 
@@ -36,13 +94,17 @@ def self_connection_status(tox, profile):
 
 
 def friend_status(contacts_manager, file_transfer_handler, profile, settings):
+    sSlot = 'friend status'
     def wrapped(tox, friend_number, new_status, user_data):
         """
         Check friend's status (none, busy, away)
         """
-        print("Friend's #{} status changed!".format(friend_number))
+        LOG_DEBUG(f"Friend's #{friend_number} status changed")
+        key = f"friend_number {friend_number}"
+        if bTooSoon(key, sSlot, 10): return
         friend = contacts_manager.get_friend_by_number(friend_number)
-        if friend.status is None and settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
+        if friend.status is None and settings['sound_notifications'] and \
+          profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
         invoke_in_main_thread(friend.set_status, new_status)
 
@@ -61,7 +123,7 @@ def friend_connection_status(contacts_manager, profile, settings, plugin_loader,
         """
         Check friend's connection status (offline, udp, tcp)
         """
-        print("Friend #{} connection status: {}".format(friend_number, new_status))
+        LOG_DEBUG(f"Friend #{friend_number} connection status: {new_status}")
         friend = contacts_manager.get_friend_by_number(friend_number)
         if new_status == TOX_CONNECTION['NONE']:
             invoke_in_main_thread(friend.set_status, None)
@@ -79,11 +141,14 @@ def friend_connection_status(contacts_manager, profile, settings, plugin_loader,
 
 
 def friend_name(contacts_provider, messenger):
+    sSlot = 'friend_name'
     def wrapped(tox, friend_number, name, size, user_data):
         """
         Friend changed his name
         """
-        print('New name friend #' + str(friend_number))
+        key = f"friend_number={friend_number}"
+        if bTooSoon(key, sSlot, 60): return
+        LOG_DEBUG(f'New name friend #' + str(friend_number))
         friend = contacts_provider.get_friend_by_number(friend_number)
         old_name = friend.name
         new_name = str(name, 'utf-8')
@@ -92,16 +157,19 @@ def friend_name(contacts_provider, messenger):
 
     return wrapped
 
-
 def friend_status_message(contacts_manager, messenger):
+    sSlot = 'status_message'
     def wrapped(tox, friend_number, status_message, size, user_data):
         """
         :return: function for callback friend_status_message. It updates friend's status message
         and calls window repaint
         """
         friend = contacts_manager.get_friend_by_number(friend_number)
+        key = f"friend_number={friend_number}"
+        if bTooSoon(key, sSlot, 10): return
+                
         invoke_in_main_thread(friend.set_status_message, str(status_message, 'utf-8'))
-        print('User #{} has new status message'.format(friend_number))
+        LOG_DEBUG(f'User #{friend_number} has new status message')
         invoke_in_main_thread(messenger.send_messages, friend_number)
 
     return wrapped
@@ -112,6 +180,7 @@ def friend_message(messenger, contacts_manager, profile, settings, window, tray)
         """
         New message from friend
         """
+        LOG_DEBUG(f"friend_message #{friend_number}")
         message = str(message, 'utf-8')
         invoke_in_main_thread(messenger.new_message, friend_number, message_type, message)
         if not window.isActiveWindow():
@@ -121,7 +190,8 @@ def friend_message(messenger, contacts_manager, profile, settings, window, tray)
             if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
             icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
-            invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
+            if tray:
+                invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
 
     return wrapped
 
@@ -131,7 +201,7 @@ def friend_request(contacts_manager):
         """
         Called when user get new friend request
         """
-        print('Friend request')
+        LOG_DEBUG(f'Friend request')
         key = ''.join(chr(x) for x in public_key[:TOX_PUBLIC_KEY_SIZE])
         tox_id = bin_to_string(key, TOX_PUBLIC_KEY_SIZE)
         invoke_in_main_thread(contacts_manager.process_friend_request, tox_id, str(message, 'utf-8'))
@@ -140,9 +210,12 @@ def friend_request(contacts_manager):
 
 
 def friend_typing(messenger):
+    sSlot = "friend_typing"
     def wrapped(tox, friend_number, typing, user_data):
+        key = f"friend_number={friend_number}"
+        if bTooSoon(key, sSlot, 10): return
+        LOG_DEBUG(f"friend_typing #{friend_number}")
         invoke_in_main_thread(messenger.friend_typing, friend_number, typing)
-
     return wrapped
 
 
@@ -164,7 +237,7 @@ def tox_file_recv(window, tray, profile, file_transfer_handler, contacts_manager
     """
     def wrapped(tox, friend_number, file_number, file_type, size, file_name, file_name_size, user_data):
         if file_type == TOX_FILE_KIND['DATA']:
-            print('File')
+            LOG_DEBUG(f'file_transfer_handler File')
             try:
                 file_name = str(file_name[:file_name_size], 'utf-8')
             except:
@@ -184,7 +257,7 @@ def tox_file_recv(window, tray, profile, file_transfer_handler, contacts_manager
                 icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
                 invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
         else:  # avatar
-            print('Avatar')
+            LOG_DEBUG(f'file_transfer_handler Avatar')
             invoke_in_main_thread(file_transfer_handler.incoming_avatar,
                                   friend_number,
                                   file_number,
@@ -259,15 +332,17 @@ def lossy_packet(plugin_loader):
 # -----------------------------------------------------------------------------------------------------------------
 
 def call_state(calls_manager):
-    def wrapped(toxav, friend_number, mask, user_data):
+    def wrapped(iToxav, friend_number, mask, user_data):
         """
         New call state
         """
-        print(friend_number, mask)
+        LOG_DEBUG(f"call_state #{friend_number}")
         if mask == TOXAV_FRIEND_CALL_STATE['FINISHED'] or mask == TOXAV_FRIEND_CALL_STATE['ERROR']:
             invoke_in_main_thread(calls_manager.stop_call, friend_number, True)
         else:
-            calls_manager.toxav_call_state_cb(friend_number, mask)
+            # guessing was calls_manager.
+            #? incoming_call
+            calls_manager._call.toxav_call_state_cb(friend_number, mask)
 
     return wrapped
 
@@ -277,7 +352,7 @@ def call(calls_manager):
         """
         Incoming call from friend
         """
-        print(friend_number, audio, video)
+        LOG_DEBUG(f"Incoming call from {friend_number} {audio} {video}")
         invoke_in_main_thread(calls_manager.incoming_call, audio, video, friend_number)
 
     return wrapped
@@ -288,7 +363,9 @@ def callback_audio(calls_manager):
         """
         New audio chunk
         """
-        calls_manager.call.audio_chunk(
+        LOG_DEBUG(f"callback_audio #{friend_number}")
+        # guessing was .call
+        calls_manager._call.audio_chunk(
             bytes(samples[:audio_samples_per_channel * 2 * audio_channels_count]),
             audio_channels_count,
             rate)
@@ -324,6 +401,9 @@ def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, u
 
     It can be created from initial y, u, v using slices
     """
+    LOG_DEBUG(f"video_receive_frame from {friend_number}")
+    import cv2
+    import numpy as np
     try:
         y_size = abs(max(width, abs(ystride)))
         u_size = abs(max(width // 2, abs(ustride)))
@@ -349,7 +429,8 @@ def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, u
 
         invoke_in_main_thread(cv2.imshow, str(friend_number), frame)
     except Exception as ex:
-        print(ex)
+        LOG_ERROR(f"video_receive_frame  {ex} #{friend_number}")
+        pass
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - groups
@@ -361,18 +442,23 @@ def group_message(window, tray, tox, messenger, settings, profile):
     New message in group chat
     """
     def wrapped(tox_link, group_number, peer_id, message_type, message, length, user_data):
+        LOG_DEBUG(f"group_message #{group_number}")
         message = str(message[:length], 'utf-8')
         invoke_in_main_thread(messenger.new_group_message, group_number, message_type, message, peer_id)
         if window.isActiveWindow():
             return
         bl = settings['notify_all_gc'] or profile.name in message
         name = tox.group_peer_get_name(group_number, peer_id)
-        if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and (not settings.locked) and bl:
-            invoke_in_main_thread(tray_notification, name, message, tray, window)
-        if settings['sound_notifications'] and bl and profile.status != TOX_USER_STATUS['BUSY']:
+        if settings['sound_notifications'] and bl and \
+           profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['MESSAGE'])
-        icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
-        invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
+        if False and settings['tray_icon']:
+            if settings['notifications'] and \
+               profile.status != TOX_USER_STATUS['BUSY'] and \
+                   (not settings.locked) and bl:
+                invoke_in_main_thread(tray_notification, name, message, tray, window)
+            icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
+            invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
 
     return wrapped
 
@@ -382,6 +468,7 @@ def group_private_message(window, tray, tox, messenger, settings, profile):
     New private message in group chat
     """
     def wrapped(tox_link, group_number, peer_id, message_type, message, length, user_data):
+        LOG_DEBUG(f"group_private_message #{group_number}")
         message = str(message[:length], 'utf-8')
         invoke_in_main_thread(messenger.new_group_private_message, group_number, message_type, message, peer_id)
         if window.isActiveWindow():
@@ -400,13 +487,15 @@ def group_private_message(window, tray, tox, messenger, settings, profile):
 
 def group_invite(window, settings, tray, profile, groups_service, contacts_provider):
     def wrapped(tox, friend_number, invite_data, length, group_name, group_name_length, user_data):
+        LOG_DEBUG(f"group_invite friend_number={friend_number}")
         group_name = str(bytes(group_name[:group_name_length]), 'utf-8')
         invoke_in_main_thread(groups_service.process_group_invite,
                               friend_number, group_name,
                               bytes(invite_data[:length]))
         if window.isActiveWindow():
             return
-        if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
+        if settings['notifications'] and \
+           profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
             friend = contacts_provider.get_friend_by_number(friend_number)
             title = util_ui.tr('New invite to group chat')
             text = util_ui.tr('{} invites you to group "{}"').format(friend.name, group_name)
@@ -419,6 +508,7 @@ def group_invite(window, settings, tray, profile, groups_service, contacts_provi
 
 def group_self_join(contacts_provider, contacts_manager, groups_service):
     def wrapped(tox, group_number, user_data):
+        LOG_DEBUG(f"group_self_join #{group_number}")
         group = contacts_provider.get_group_by_number(group_number)
         invoke_in_main_thread(group.set_status, TOX_USER_STATUS['NONE'])
         invoke_in_main_thread(groups_service.update_group_info, group)
@@ -428,8 +518,15 @@ def group_self_join(contacts_provider, contacts_manager, groups_service):
 
 
 def group_peer_join(contacts_provider, groups_service):
+    sSlot = "group_peer_join"
     def wrapped(tox, group_number, peer_id, user_data):
+        key = f"group_peer_join #{group_number} peer_id={peer_id}"
+        if bTooSoon(key, sSlot, 20): return
         group = contacts_provider.get_group_by_number(group_number)
+        if peer_id > group._peers_limit:
+            LOG_ERROR(key +f" {peer_id} > {group._peers_limit}")
+            return
+        LOG_DEBUG(key)
         group.add_peer(peer_id)
         invoke_in_main_thread(groups_service.generate_peers_list)
         invoke_in_main_thread(groups_service.update_group_info, group)
@@ -439,28 +536,41 @@ def group_peer_join(contacts_provider, groups_service):
 
 def group_peer_exit(contacts_provider, groups_service, contacts_manager):
     def wrapped(tox, group_number, peer_id, message, length, user_data):
+        LOG_DEBUG(f"group_peer_exit #{group_number} peer_id={peer_id}")
         group = contacts_provider.get_group_by_number(group_number)
         group.remove_peer(peer_id)
         invoke_in_main_thread(groups_service.generate_peers_list)
 
     return wrapped
 
-
 def group_peer_name(contacts_provider, groups_service):
     def wrapped(tox, group_number, peer_id, name, length, user_data):
+        LOG_DEBUG(f"group_peer_name #{group_number} peer_id={peer_id}")
         group = contacts_provider.get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
-        peer.name = str(name[:length], 'utf-8')
-        invoke_in_main_thread(groups_service.generate_peers_list)
+        if peer:
+            peer.name = str(name[:length], 'utf-8')
+            invoke_in_main_thread(groups_service.generate_peers_list)
+        else:
+            # FixMe: known signal to revalidate roles...
+            #_peers = [(p._name, p._peer_id) for p in group.get_peers()]
+            LOG_TRACE(f"remove_peer group {group!r} has no peer_id={peer_id} in _peers!r")
+            return
 
     return wrapped
 
 
 def group_peer_status(contacts_provider, groups_service):
     def wrapped(tox, group_number, peer_id, peer_status, user_data):
+        LOG_DEBUG(f"group_peer_status #{group_number} peer_id={peer_id}")
         group = contacts_provider.get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
-        peer.status = peer_status
+        if peer:
+            peer.status = peer_status
+        else:
+            # _peers = [(p._name, p._peer_id) for p in group.get_peers()]
+            LOG_TRACE(f"remove_peer group {group!r} has no peer_id={peer_id} in _peers!r")
+        # TODO: add info message
         invoke_in_main_thread(groups_service.generate_peers_list)
 
     return wrapped
@@ -468,32 +578,62 @@ def group_peer_status(contacts_provider, groups_service):
 
 def group_topic(contacts_provider):
     def wrapped(tox, group_number, peer_id, topic, length, user_data):
+        LOG_DEBUG(f"group_topic #{group_number} peer_id={peer_id}")
         group = contacts_provider.get_group_by_number(group_number)
-        topic = str(topic[:length], 'utf-8')
-        invoke_in_main_thread(group.set_status_message, topic)
+        if group:
+            topic = str(topic[:length], 'utf-8')
+            invoke_in_main_thread(group.set_status_message, topic)
+        else:
+            _peers = [(p._name, p._peer_id) for p in group.get_peers()]
+            LOG_WARN(f"group_topic {group!r} has no peer_id={peer_id} in {_peers!r}")
+        # TODO: add info message
 
     return wrapped
 
-
 def group_moderation(groups_service, contacts_provider, contacts_manager, messenger):
-
     def update_peer_role(group, mod_peer_id, peer_id, new_role):
         peer = group.get_peer_by_id(peer_id)
-        peer.role = new_role
+        if peer:
+            peer.role = new_role
+            # TODO: add info message
+        else:
+            # FixMe: known signal to revalidate roles...
+            # _peers = [(p._name, p._peer_id) for p in group.get_peers()]
+            LOG_TRACE(f"update_peer_role group {group!r} has no peer_id={peer_id} in _peers!r")
         # TODO: add info message
 
     def remove_peer(group, mod_peer_id, peer_id, is_ban):
-        contacts_manager.remove_group_peer_by_id(group, peer_id)
-        group.remove_peer(peer_id)
+        peer = group.get_peer_by_id(peer_id)
+        if peer:
+            contacts_manager.remove_group_peer_by_id(group, peer_id)
+            group.remove_peer(peer_id)
+        else:
+            # FixMe: known signal to revalidate roles...
+            #_peers = [(p._name, p._peer_id) for p in group.get_peers()]
+            LOG_TRACE(f"remove_peer group {group!r} has no peer_id={peer_id} in _peers!r")
         # TODO: add info message
 
+    # source_peer_number, target_peer_number,
     def wrapped(tox, group_number, mod_peer_id, peer_id, event_type, user_data):
+        if mod_peer_id == iMAX_INT32 or peer_id == iMAX_INT32:
+            # FixMe: known signal to revalidate roles...
+            return
+        LOG_DEBUG(f"group_moderation #{group_number} mod_id={mod_peer_id} peer_id={peer_id} event_type={event_type}")
         group = contacts_provider.get_group_by_number(group_number)
+        mod_peer = group.get_peer_by_id(mod_peer_id)
+        if not mod_peer:
+            #_peers = [(p._name, p._peer_id) for p in group.get_peers()]
+            LOG_TRACE(f"remove_peer group {group!r} has no mod_peer_id={mod_peer_id} in _peers!r")
+            return
+        peer = group.get_peer_by_id(peer_id)
+        if not peer:
+            # FixMe: known signal to revalidate roles...
+            #_peers = [(p._name, p._peer_id) for p in group.get_peers()]
+            LOG_TRACE(f"remove_peer group {group!r} has no peer_id={peer_id} in _peers!r")
+            return
 
         if event_type == TOX_GROUP_MOD_EVENT['KICK']:
             remove_peer(group, mod_peer_id, peer_id, False)
-        elif event_type == TOX_GROUP_MOD_EVENT['BAN']:
-            remove_peer(group, mod_peer_id, peer_id, True)
         elif event_type == TOX_GROUP_MOD_EVENT['OBSERVER']:
             update_peer_role(group, mod_peer_id, peer_id, TOX_GROUP_ROLE['OBSERVER'])
         elif event_type == TOX_GROUP_MOD_EVENT['USER']:
@@ -509,6 +649,7 @@ def group_moderation(groups_service, contacts_provider, contacts_manager, messen
 def group_password(contacts_provider):
 
     def wrapped(tox_link, group_number, password, length, user_data):
+        LOG_DEBUG(f"group_password #{group_number}")
         password = str(password[:length], 'utf-8')
         group = contacts_provider.get_group_by_number(group_number)
         group.password = password
@@ -519,6 +660,7 @@ def group_password(contacts_provider):
 def group_peer_limit(contacts_provider):
 
     def wrapped(tox_link, group_number, peer_limit, user_data):
+        LOG_DEBUG(f"group_peer_limit #{group_number}")
         group = contacts_provider.get_group_by_number(group_number)
         group.peer_limit = peer_limit
 
@@ -528,6 +670,7 @@ def group_peer_limit(contacts_provider):
 def group_privacy_state(contacts_provider):
 
     def wrapped(tox_link, group_number, privacy_state, user_data):
+        LOG_DEBUG(f"group_privacy_state #{group_number}")
         group = contacts_provider.get_group_by_number(group_number)
         group.is_private = privacy_state == TOX_GROUP_PRIVACY_STATE['PRIVATE']
 
@@ -540,7 +683,7 @@ def group_privacy_state(contacts_provider):
 
 def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
                    calls_manager, file_transfer_handler, main_window, tray, messenger, groups_service,
-                   contacts_provider):
+                   contacts_provider, ms=None):
     """
     Initialization of all callbacks.
     :param tox: Tox instance
@@ -557,6 +700,10 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     :param groups_service: GroupsService instance
     :param contacts_provider: ContactsProvider instance
     """
+    global LOG
+    import logging
+    LOG = logging.getLogger('app.'+__name__)
+
     # self callbacks
     tox.callback_self_connection_status(self_connection_status(tox, profile))
 

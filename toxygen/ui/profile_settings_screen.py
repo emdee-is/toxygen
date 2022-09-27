@@ -29,7 +29,7 @@ class ProfileSettings(CenteredWidget):
         self._auto = Settings.get_auto_profile() == self._profile_manager.get_path()
         self.toxIdLabel.setText(self._profile.tox_id)
         self.nameLineEdit.setText(self._profile.name)
-        self.statusMessageLineEdit.setText(self._profile.status_message)
+        self.statusMessageLineEdit.setText(str(self._profile.status_message))
         self.defaultProfilePushButton.clicked.connect(self._toggle_auto_profile)
         self.copyToxIdPushButton.clicked.connect(self._copy_tox_id)
         self.copyPublicKeyPushButton.clicked.connect(self._copy_public_key)
@@ -69,7 +69,7 @@ class ProfileSettings(CenteredWidget):
         self.statusComboBox.addItem(util_ui.tr("Online"))
         self.statusComboBox.addItem(util_ui.tr("Away"))
         self.statusComboBox.addItem(util_ui.tr("Busy"))
-        self.copyPublicKeyPushButton.setText(util_ui.tr("Copy public key"))
+        self.copyPublicKeyPushButton.setText(util_ui.tr("Copy public key" +' (64)'))
 
         self._set_default_profile_button_text()
 
@@ -144,7 +144,7 @@ class ProfileSettings(CenteredWidget):
 
         reply = util_ui.question(util_ui.tr('Do you want to move your profile to this location?'),
                                  util_ui.tr('Use new path'))
-        
+
         self._settings.export(directory)
         self._profile.export_db(directory)
         self._profile_manager.export_profile(self._settings, directory, reply)

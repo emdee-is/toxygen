@@ -1,4 +1,3 @@
-import numpy as np
 from PyQt5 import QtWidgets
 
 
@@ -17,6 +16,7 @@ class DesktopGrabber:
         pixmap = self._screen.grabWindow(0, self._x, self._y, self._width, self._height)
         image = pixmap.toImage()
         s = image.bits().asstring(self._width * self._height * 4)
+        import numpy as np
         arr = np.fromstring(s, dtype=np.uint8).reshape((self._height, self._width, 4))
 
         return True, arr

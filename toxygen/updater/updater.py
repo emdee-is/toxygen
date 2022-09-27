@@ -1,3 +1,4 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import utils.util as util
 import utils.ui as util_ui
 import os
@@ -6,14 +7,19 @@ import urllib
 from PyQt5 import QtNetwork, QtCore
 import subprocess
 
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
+log = lambda x: LOG.info(x)
+
+TIMEOUT=10
 
 def connection_available():
     try:
-        urllib.request.urlopen('http://216.58.192.142', timeout=1)  # google.com
+        urllib.request.urlopen('http://216.58.192.142', timeout=TIMEOUT)  # google.com
         return True
     except:
         return False
-
 
 def updater_available():
     if is_from_sources():
@@ -70,12 +76,11 @@ def download(version):
     os.chdir(util.curr_directory())
     url = get_url(version)
     params = get_params(url, version)
-    print('Updating Toxygen')
-    util.log('Updating Toxygen')
+    LOG.info('Updating Toxygen')
     try:
         subprocess.Popen(params)
     except Exception as ex:
-        util.log('Exception: running updater failed with ' + str(ex))
+        LOG.error('running updater failed with ' + str(ex))
 
 
 def send_request(version, settings):
@@ -97,7 +102,7 @@ def send_request(version, settings):
         attr = reply.attribute(QtNetwork.QNetworkRequest.HttpStatusCodeAttribute)
         return attr is not None and 200 <= attr < 300
     except Exception as ex:
-        util.log('TOXYGEN UPDATER ERROR: ' + str(ex))
+        LOG.error('TOXYGEN UPDATER ' + str(ex))
         return False
 
 

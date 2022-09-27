@@ -11,12 +11,15 @@ class PeerItem(QtWidgets.QWidget):
         self.nameLabel.setGeometry(5, 0, width - 5, 34)
         name = peer.name
         if peer.is_current_user:
-            name += util_ui.tr(' (You)')
+            name += util_ui.tr(' *')
         self.nameLabel.setText(name)
         if peer.status == TOX_USER_STATUS['NONE']:
-            style = 'QLabel {color: green}'
+            if peer.is_current_user:
+                style = 'QLabel {color: green;}'
+            else:
+                style = 'QLabel {color: green}'
         elif peer.status == TOX_USER_STATUS['AWAY']:
-            style = 'QLabel {color: yellow}'
+            style = 'QLabel {color: blue}'
         else:
             style = 'QLabel {color: red}'
         self.nameLabel.setStyleSheet(style)

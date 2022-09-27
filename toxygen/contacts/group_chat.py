@@ -1,3 +1,5 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+
 from contacts import contact
 from contacts.contact_menu import GroupMenuGenerator
 import utils.util as util
@@ -6,6 +8,14 @@ from wrapper import toxcore_enums_and_consts as constants
 from common.tox_save import ToxSave
 from groups.group_ban import GroupBan
 
+global LOG
+import logging
+LOG = logging.getLogger(__name__)
+def LOG_ERROR(l): print('ERROR_: '+l)
+def LOG_WARN(l): print('WARN_: '+l)
+def LOG_INFO(l): print('INFO_: '+l)
+def LOG_DEBUG(l): print('DEBUG_: '+l)
+def LOG_TRACE(l): pass # print('TRACE+ '+l)
 
 class GroupChat(contact.Contact, ToxSave):
 
@@ -73,6 +83,10 @@ class GroupChat(contact.Contact, ToxSave):
         return self.get_self_role() == constants.TOX_GROUP_ROLE['FOUNDER']
 
     def add_peer(self, peer_id, is_current_user=False):
+        if peer_id >  self._peers_limit:
+            LOG_WARN(f"add_peer id={peer_id} > {self._peers_limit}")
+            return
+        
         peer = GroupChatPeer(peer_id,
                              self._tox.group_peer_get_name(self._number, peer_id),
                              self._tox.group_peer_get_status(self._number, peer_id),
@@ -86,25 +100,41 @@ class GroupChat(contact.Contact, ToxSave):
             self.remove_all_peers_except_self()
         else:
             peer = self.get_peer_by_id(peer_id)
-            self._peers.remove(peer)
+            if peer: # broken
+                self._peers.remove(peer)
+            else:
+                LOG_WARN(f"remove_peer empty peers for {peer_id}")
 
     def get_peer_by_id(self, peer_id):
         peers = list(filter(lambda p: p.id == peer_id, self._peers))
-
-        return peers[0]
+        if peers:
+            #? broken
+            return peers[0]
+        else:
+            LOG_WARN(f"get_peer_by_id empty peers for {peer_id}")
+            return []
 
     def get_peer_by_public_key(self, public_key):
         peers = list(filter(lambda p: p.public_key == public_key, self._peers))
-
-        return peers[0]
+        # DEBUGc: group_moderation #0 mod_id=4294967295 event_type=3
+        # WARN_: get_peer_by_id empty peers for 4294967295
+        if peers:
+            return peers[0]
+        else:
+            LOG_WARN(f"get_peer_by_public_key empty peers for {public_key}")
+            return []
 
     def remove_all_peers_except_self(self):
         self._peers = self._peers[:1]
 
     def get_peers_names(self):
         peers_names = map(lambda p: p.name, self._peers)
-
-        return list(peers_names)
+        if peers_names: # broken
+            return list(peers_names)
+        else:
+            LOG_WARN(f"get_peers_names empty peers")
+            #? broken
+            return []
 
     def get_peers(self):
         return self._peers[:]
@@ -112,16 +142,17 @@ class GroupChat(contact.Contact, ToxSave):
     peers = property(get_peers)
 
     def get_bans(self):
-        ban_ids = self._tox.group_ban_get_list(self._number)
-        bans = []
-        for ban_id in ban_ids:
-            ban = GroupBan(ban_id,
-                           self._tox.group_ban_get_target(self._number, ban_id),
-                           self._tox.group_ban_get_time_set(self._number, ban_id))
-            bans.append(ban)
-
-        return bans
-
+        return []
+#        ban_ids = self._tox.group_ban_get_list(self._number)
+#        bans = []
+#        for ban_id in ban_ids:
+#            ban = GroupBan(ban_id,
+#                           self._tox.group_ban_get_target(self._number, ban_id),
+#                           self._tox.group_ban_get_time_set(self._number, ban_id))
+#            bans.append(ban)
+#
+#        return bans
+#
     bans = property(get_bans)
 
     # -----------------------------------------------------------------------------------------------------------------

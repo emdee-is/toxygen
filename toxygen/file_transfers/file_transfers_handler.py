@@ -1,11 +1,19 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 from messenger.messages import *
 from ui.contact_items import *
 import utils.util as util
 from common.tox_save import ToxSave
+from tests.support_testing import assert_main_thread
+from copy import deepcopy
 
+# LOG=util.log
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
+log = lambda x: LOG.info(x)
 
 class FileTransfersHandler(ToxSave):
-
+    lBlockAvatars = []
     def __init__(self, tox, settings, contact_provider, file_transfers_message_service, profile):
         super().__init__(tox)
         self._settings = settings
@@ -19,7 +27,8 @@ class FileTransfersHandler(ToxSave):
         # key = (friend number, file number), value - message id
 
         profile.avatar_changed_event.add_callback(self._send_avatar_to_contacts)
-        
+        self. lBlockAvatars = []
+
     def stop(self):
         self._settings['paused_file_transfers'] = self._paused_file_transfers if self._settings['resend_files'] else {}
         self._settings.save()
@@ -37,6 +46,7 @@ class FileTransfersHandler(ToxSave):
         :param file_name: file name without path
         """
         friend = self._get_friend_by_number(friend_number)
+        if friend is None: return None
         auto = self._settings['allow_auto_accept'] and friend.tox_id in self._settings['auto_accept_from_friends']
         inline = is_inline(file_name) and self._settings['allow_inline']
         file_id = self._tox.file_get_file_id(friend_number, file_number)
@@ -85,7 +95,9 @@ class FileTransfersHandler(ToxSave):
             self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
 
     def cancel_not_started_transfer(self, friend_number, message_id):
-        self._get_friend_by_number(friend_number).delete_one_unsent_file(message_id)
+        friend = self._get_friend_by_number(friend_number)
+        if friend is None: return None
+        friend.delete_one_unsent_file(message_id)
 
     def pause_transfer(self, friend_number, file_number, by_friend=False):
         """
@@ -115,6 +127,7 @@ class FileTransfersHandler(ToxSave):
         """
         path = self._generate_valid_path(path, from_position)
         friend = self._get_friend_by_number(friend_number)
+        if friend is None: return None
         if not inline:
             rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number, from_position)
         else:
@@ -145,6 +158,7 @@ class FileTransfersHandler(ToxSave):
 
     def send_inline(self, data, file_name, friend_number, is_resend=False):
         friend = self._get_friend_by_number(friend_number)
+        if friend is None: return None
         if friend.status is None and not is_resend:
             self._file_transfers_message_service.add_unsent_file_message(friend, file_name, data)
             return
@@ -162,11 +176,12 @@ class FileTransfersHandler(ToxSave):
         :param file_id: file id of transfer
         """
         friend = self._get_friend_by_number(friend_number)
+        if friend is None: return None
         if friend.status is None and not is_resend:
             self._file_transfers_message_service.add_unsent_file_message(friend, path, None)
             return
         elif friend.status is None and is_resend:
-            print('Error in sending')
+            LOG.error('Error in sending')
             return
         st = SendTransfer(path, self._tox, friend_number, TOX_FILE_KIND['DATA'], file_id)
         file_name = os.path.basename(path)
@@ -186,23 +201,27 @@ class FileTransfersHandler(ToxSave):
 
     def transfer_finished(self, friend_number, file_number):
         transfer = self._file_transfers[(friend_number, file_number)]
+        friend = self._get_friend_by_number(friend_number)
+        if friend is None: return None
         t = type(transfer)
         if t is ReceiveAvatar:
-            self._get_friend_by_number(friend_number).load_avatar()
+            friend.load_avatar()
         elif t is ReceiveToBuffer or (t is SendFromBuffer and self._settings['allow_inline']):  # inline image
-            print('inline')
+            LOG.debug('inline')
             inline = InlineImageMessage(transfer.data)
             message_id = self._insert_inline_before[(friend_number, file_number)]
             del self._insert_inline_before[(friend_number, file_number)]
-            index = self._get_friend_by_number(friend_number).insert_inline(message_id, inline)
+            if friend is None: return None
+            index = friend.insert_inline(message_id, inline)
             self._file_transfers_message_service.add_inline_message(transfer, index)
         del self._file_transfers[(friend_number, file_number)]
 
     def send_files(self, friend_number):
-        friend = self._get_friend_by_number(friend_number)
-        friend.remove_invalid_unsent_files()
-        files = friend.get_unsent_files()
         try:
+            friend = self._get_friend_by_number(friend_number)
+            if friend is None: return None
+            friend.remove_invalid_unsent_files()
+            files = friend.get_unsent_files()
             for fl in files:
                 data, path = fl.data, fl.path
                 if data is not None:
@@ -211,6 +230,7 @@ class FileTransfersHandler(ToxSave):
                     self.send_file(path, friend_number, True)
             friend.clear_unsent_files()
             for key in self._paused_file_transfers.keys():
+                # RuntimeError: dictionary changed size during iteration
                 (path, ft_friend_number, is_incoming, start_position) = self._paused_file_transfers[key]
                 if not os.path.exists(path):
                     del self._paused_file_transfers[key]
@@ -218,11 +238,15 @@ class FileTransfersHandler(ToxSave):
                     self.send_file(path, friend_number, True, key)
                     del self._paused_file_transfers[key]
         except Exception as ex:
-            print('Exception in file sending: ' + str(ex))
+            LOG.error('Exception in file sending: ' + str(ex))
 
     def friend_exit(self, friend_number):
-        for friend_num, file_num in self._file_transfers.keys():
+        # RuntimeError: dictionary changed size during iteration
+        lMayChangeDynamically = self._file_transfers.copy()
+        for friend_num, file_num in lMayChangeDynamically:
             if friend_num != friend_number:
+                continue
+            if (friend_num, file_num) not in self._file_transfers:
                 continue
             ft = self._file_transfers[(friend_num, file_num)]
             if type(ft) is SendTransfer:
@@ -240,8 +264,16 @@ class FileTransfersHandler(ToxSave):
         :param friend_number: number of friend who should get new avatar
         :param avatar_path: path to avatar or None if reset
         """
-        sa = SendAvatar(avatar_path, self._tox, friend_number)
-        self._file_transfers[(friend_number, sa.file_number)] = sa
+        if (avatar_path, friend_number,) in self.lBlockAvatars:
+            return
+
+        try:
+            sa = SendAvatar(avatar_path, self._tox, friend_number)
+            self._file_transfers[(friend_number, sa.file_number)] = sa
+        except Exception as e:
+            # ArgumentError('This client is currently not connected to the friend.')
+            LOG.error(f"send_avatar {e}")
+            self.lBlockAvatars.append( (avatar_path, friend_number,) )
 
     def incoming_avatar(self, friend_number, file_number, size):
         """
@@ -251,6 +283,7 @@ class FileTransfersHandler(ToxSave):
         :param size: size of avatar or 0 (default avatar)
         """
         friend = self._get_friend_by_number(friend_number)
+        if friend is None: return None
         ra = ReceiveAvatar(friend.get_contact_avatar_path(), self._tox, friend_number, size, file_number)
         if ra.state != FILE_TRANSFER_STATE['CANCELLED']:
             self._file_transfers[(friend_number, file_number)] = ra
@@ -259,6 +292,7 @@ class FileTransfersHandler(ToxSave):
             friend.reset_avatar(self._settings['identicons'])
 
     def _send_avatar_to_contacts(self, _):
+        # from a callback
         friends = self._get_all_friends()
         for friend in filter(self._is_friend_online, friends):
             self.send_avatar(friend.number)
@@ -269,6 +303,7 @@ class FileTransfersHandler(ToxSave):
 
     def _is_friend_online(self, friend_number):
         friend = self._get_friend_by_number(friend_number)
+        if friend is None: return None
 
         return friend.status is not None
 

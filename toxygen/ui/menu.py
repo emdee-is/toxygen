@@ -1,18 +1,27 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
+import pyaudio
+
 from user_data.settings import *
 from utils.util import *
 from ui.widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
-import pyaudio
 import updater.updater as updater
 import utils.ui as util_ui
-import cv2
+import tests.support_testing as ts
+from user_data import settings
 
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
 
+global oPYA
+oPYA = pyaudio.PyAudio()
 class AddContact(CenteredWidget):
     """Add contact form"""
 
     def __init__(self, settings, contacts_manager, tox_id=''):
         super().__init__()
+        self._app = QtWidgets.QApplication.instance()
         self._settings = settings
         self._contacts_manager = contacts_manager
         uic.loadUi(get_views_path('add_contact_screen'), self)
@@ -56,6 +65,7 @@ class NetworkSettings(CenteredWidget):
     """Network settings form: UDP, Ipv6 and proxy"""
     def __init__(self, settings, reset):
         super().__init__()
+        self._app = QtWidgets.QApplication.instance()
         self._settings = settings
         self._reset = reset
         uic.loadUi(get_views_path('network_settings_screen'), self)
@@ -68,16 +78,20 @@ class NetworkSettings(CenteredWidget):
         self.portLineEdit = LineEdit(self)
         self.portLineEdit.setGeometry(100, 325, 270, 30)
 
+        self.urlLineEdit = LineEdit(self)
+        self.urlLineEdit.setGeometry(100, 370, 270, 30)
+
         self.restartCorePushButton.clicked.connect(self._restart_core)
         self.ipv6CheckBox.setChecked(self._settings['ipv6_enabled'])
         self.udpCheckBox.setChecked(self._settings['udp_enabled'])
         self.proxyCheckBox.setChecked(self._settings['proxy_type'])
         self.ipLineEdit.setText(self._settings['proxy_host'])
         self.portLineEdit.setText(str(self._settings['proxy_port']))
+        self.urlLineEdit.setText(str(self._settings['download_nodes_url']))
         self.httpProxyRadioButton.setChecked(self._settings['proxy_type'] == 1)
         self.socksProxyRadioButton.setChecked(self._settings['proxy_type'] != 1)
         self.downloadNodesCheckBox.setChecked(self._settings['download_nodes_list'])
-        self.lanCheckBox.setChecked(self._settings['lan_discovery'])
+        self.lanCheckBox.setChecked(self._settings['local_discovery_enabled'])
         self._retranslate_ui()
         self.proxyCheckBox.stateChanged.connect(lambda x: self._activate_proxy())
         self._activate_proxy()
@@ -90,11 +104,13 @@ class NetworkSettings(CenteredWidget):
         self.proxyCheckBox.setText(util_ui.tr("Proxy"))
         self.ipLabel.setText(util_ui.tr("IP:"))
         self.portLabel.setText(util_ui.tr("Port:"))
+        self.urlLabel.setText(util_ui.tr("ChatUrl:"))
         self.restartCorePushButton.setText(util_ui.tr("Restart TOX core"))
         self.httpProxyRadioButton.setText(util_ui.tr("HTTP"))
         self.socksProxyRadioButton.setText(util_ui.tr("Socks 5"))
         self.downloadNodesCheckBox.setText(util_ui.tr("Download nodes list from tox.chat"))
-        self.warningLabel.setText(util_ui.tr("WARNING:\nusing proxy with enabled UDP\ncan produce IP leak"))
+#        self.warningLabel.setText(util_ui.tr("WARNING:\nusing proxy with enabled UDP\ncan produce IP leak"))
+        self.warningLabel.setText(util_ui.tr("Changing settings require 'Restart TOX core'"))
 
     def _activate_proxy(self):
         bl = self.proxyCheckBox.isChecked()
@@ -113,14 +129,15 @@ class NetworkSettings(CenteredWidget):
             self._settings['proxy_type'] = 2 - int(self.httpProxyRadioButton.isChecked()) if proxy_enabled else 0
             self._settings['proxy_host'] = str(self.ipLineEdit.text())
             self._settings['proxy_port'] = int(self.portLineEdit.text())
+            self._settings['download_nodes_url'] = str(self.urlLineEdit.text())
             self._settings['download_nodes_list'] = self.downloadNodesCheckBox.isChecked()
-            self._settings['lan_discovery'] = self.lanCheckBox.isChecked()
+            self._settings['local_discovery_enabled'] = self.lanCheckBox.isChecked()
             self._settings.save()
             # recreate tox instance
             self._reset()
             self.close()
         except Exception as ex:
-            log('Exception in restart: ' + str(ex))
+            LOG.error('ERROR: Exception in restart: ' + str(ex))
 
 
 class PrivacySettings(CenteredWidget):
@@ -131,6 +148,7 @@ class PrivacySettings(CenteredWidget):
         :type contacts_manager: ContactsManager
         """
         super().__init__()
+        self._app = QtWidgets.QApplication.instance()
         self._contacts_manager = contacts_manager
         self._settings = settings
         self.initUI()
@@ -249,6 +267,7 @@ class NotificationsSettings(CenteredWidget):
 
     def __init__(self, setttings):
         super().__init__()
+        self._app = QtWidgets.QApplication.instance()
         self._settings = setttings
         uic.loadUi(get_views_path('notifications_settings_screen'), self)
         self._update_ui()
@@ -281,6 +300,7 @@ class InterfaceSettings(CenteredWidget):
 
     def __init__(self, settings, smiley_loader):
         super().__init__()
+        self._app = QtWidgets.QApplication.instance()
         self._settings = settings
         self._smiley_loader = smiley_loader
 
@@ -289,10 +309,10 @@ class InterfaceSettings(CenteredWidget):
         self.center()
 
     def _update_ui(self):
-        themes = list(self._settings.built_in_themes().keys())
+        themes = list(settings.built_in_themes().keys())
         self.themeComboBox.addItems(themes)
         theme = self._settings['theme']
-        if theme in self._settings.built_in_themes().keys():
+        if theme in settings.built_in_themes().keys():
             index = themes.index(theme)
         else:
             index = 0
@@ -312,10 +332,10 @@ class InterfaceSettings(CenteredWidget):
             index = smiley_packs.index('default')
         self.smileysPackComboBox.setCurrentIndex(index)
 
-        app_closing_setting = self._settings['close_app']
-        self.closeRadioButton.setChecked(app_closing_setting == 0)
-        self.hideRadioButton.setChecked(app_closing_setting == 1)
-        self.closeToTrayRadioButton.setChecked(app_closing_setting == 2)
+        self._app_closing_setting = self._settings['close_app']
+        self.closeRadioButton.setChecked(self._app_closing_setting == 0)
+        self.hideRadioButton.setChecked(self._app_closing_setting == 1)
+        self.closeToTrayRadioButton.setChecked(self._app_closing_setting == 2)
 
         self.compactModeCheckBox.setChecked(self._settings['compact_mode'])
         self.showAvatarsCheckBox.setChecked(self._settings['show_avatars'])
@@ -337,7 +357,7 @@ class InterfaceSettings(CenteredWidget):
         self.closeRadioButton.setText(util_ui.tr("Close app"))
         self.hideRadioButton.setText(util_ui.tr("Hide app"))
         self.closeToTrayRadioButton.setText(util_ui.tr("Close to tray"))
-        self.mirrorModeCheckBox.setText(util_ui.tr("Mirror mode"))
+#        self.mirrorModeCheckBox.setText(util_ui.tr("Mirror mode"))
         self.compactModeCheckBox.setText(util_ui.tr("Compact contact list"))
         self.importSmileysPushButton.setText(util_ui.tr("Import smiley pack"))
         self.importStickersPushButton.setText(util_ui.tr("Import sticker pack"))
@@ -360,24 +380,23 @@ class InterfaceSettings(CenteredWidget):
         copy(src, dest)
 
     def closeEvent(self, event):
-        app = QtWidgets.QApplication.instance()
 
         self._settings['theme'] = str(self.themeComboBox.currentText())
         try:
             theme = self._settings['theme']
-            styles_path = join_path(get_styles_directory(), self._settings.built_in_themes()[theme])
+            styles_path = join_path(get_styles_directory(), settings.built_in_themes()[theme])
             with open(styles_path) as fl:
                 style = fl.read()
-            app.setStyleSheet(style)
+            self._app.setStyleSheet(style)
         except IsADirectoryError:
             pass
 
         self._settings['smileys'] = self.smileysCheckBox.isChecked()
 
         restart = False
-        if self._settings['mirror_mode'] != self.mirrorModeCheckBox.isChecked():
-            self._settings['mirror_mode'] = self.mirrorModeCheckBox.isChecked()
-            restart = True
+#        if self._settings['mirror_mode'] != self.mirrorModeCheckBox.isChecked():
+#            self._settings['mirror_mode'] = self.mirrorModeCheckBox.isChecked()
+#            restart = True
 
         if self._settings['compact_mode'] != self.compactModeCheckBox.isChecked():
             self._settings['compact_mode'] = self.compactModeCheckBox.isChecked()
@@ -394,9 +413,9 @@ class InterfaceSettings(CenteredWidget):
         if self._settings['language'] != language:
             self._settings['language'] = language
             path = Settings.supported_languages()[language]
-            app.removeTranslator(app.translator)
-            app.translator.load(join_path(get_translations_directory(), path))
-            app.installTranslator(app.translator)
+            self._app.removeTranslator(self._app.translator)
+            self._app.translator.load(join_path(get_translations_directory(), path))
+            self._app.installTranslator(self._app.translator)
 
         app_closing_setting = 0
         if self.hideRadioButton.isChecked():
@@ -417,19 +436,26 @@ class AudioSettings(CenteredWidget):
 
     def __init__(self, settings):
         super().__init__()
+        self._app = QtWidgets.QApplication.instance()
         self._settings = settings
         self._in_indexes = self._out_indexes = None
         uic.loadUi(get_views_path('audio_settings_screen'), self)
         self._update_ui()
         self.center()
-
+        
     def closeEvent(self, event):
-        self._settings.audio['input'] = self._in_indexes[self.inputDeviceComboBox.currentIndex()]
-        self._settings.audio['output'] = self._out_indexes[self.outputDeviceComboBox.currentIndex()]
-        self._settings.save()
+        if 'audio' not in self._settings:
+            ex = f"self._settings=id(self._settings) {self._settings!r}"
+            LOG.warn('AudioSettings.closeEvent settings error: ' + str(ex))
+        else:
+            self._settings['audio']['input'] = \
+                self._in_indexes[self.inputDeviceComboBox.currentIndex()]
+            self._settings['audio']['output'] = \
+                self._out_indexes[self.outputDeviceComboBox.currentIndex()]
+            self._settings.save()
 
     def _update_ui(self):
-        p = pyaudio.PyAudio()
+        p = oPYA
         self._in_indexes, self._out_indexes = [], []
         for i in range(p.get_device_count()):
             device = p.get_device_info_by_index(i)
@@ -439,8 +465,11 @@ class AudioSettings(CenteredWidget):
             if device["maxOutputChannels"]:
                 self.outputDeviceComboBox.addItem(str(device["name"]))
                 self._out_indexes.append(i)
-        self.inputDeviceComboBox.setCurrentIndex(self._in_indexes.index(self._settings.audio['input']))
-        self.outputDeviceComboBox.setCurrentIndex(self._out_indexes.index(self._settings.audio['output']))
+        try:
+            self.inputDeviceComboBox.setCurrentIndex(self._in_indexes.index(self._settings['audio']['input']))
+            self.outputDeviceComboBox.setCurrentIndex(self._out_indexes.index(self._settings['audio']['output']))
+        except: pass
+
         self._retranslate_ui()
 
     def _retranslate_ui(self):
@@ -463,11 +492,12 @@ class DesktopAreaSelectionWindow(RubberBandWindow):
 
 class VideoSettings(CenteredWidget):
     """
-    Audio calls settings form
+    Video calls settings form
     """
 
     def __init__(self, settings):
         super().__init__()
+        self._app = QtWidgets.QApplication.instance()
         self._settings = settings
         uic.loadUi(get_views_path('video_settings_screen'), self)
         self._devices = self._frame_max_sizes = None
@@ -479,24 +509,35 @@ class VideoSettings(CenteredWidget):
         if self.deviceComboBox.currentIndex() == 0:
             return
         try:
-            self._settings.video['device'] = self.devices[self.input.currentIndex()]
+            # AttributeError: 'VideoSettings' object has no attribute 'devices'
+            # ERROR: Saving video  settings error: 'VideoSettings' object has no attribute 'input'
+            index = self.deviceComboBox.currentIndex()
+            if index in self._devices:
+                self._settings['video']['device'] = self._devices[index]
+            else:
+                LOG.warn(f"{index} not in deviceComboBox self._devices {self._devices!r}")
             text = self.resolutionComboBox.currentText()
-            self._settings.video['width'] = int(text.split(' ')[0])
-            self._settings.video['height'] = int(text.split(' ')[-1])
+            if len(text.split(' ')[0]) > 1:
+                self._settings['video']['width'] = int(text.split(' ')[0])
+                self._settings['video']['height'] = int(text.split(' ')[-1])
             self._settings.save()
         except Exception as ex:
-            print('Saving video  settings error: ' + str(ex))
+            LOG.error('ERROR: Saving video  settings error: ' + str(ex))
 
     def save(self, x, y, width, height):
         self.desktopAreaSelection = None
-        self._settings.video['device'] = -1
-        self._settings.video['width'] = width
-        self._settings.video['height'] = height
-        self._settings.video['x'] = x
-        self._settings.video['y'] = y
+        self._settings['video']['device'] = -1
+        self._settings['video']['width'] = width
+        self._settings['video']['height'] = height
+        self._settings['video']['x'] = x
+        self._settings['video']['y'] = y
         self._settings.save()
 
     def _update_ui(self):
+        try:
+            import cv2
+        except ImportError:
+            cv2 = None
         self.deviceComboBox.currentIndexChanged.connect(self._device_changed)
         self.selectRegionPushButton.clicked.connect(self._button_clicked)
         self._devices = [-1]
@@ -505,23 +546,34 @@ class VideoSettings(CenteredWidget):
         self._frame_max_sizes = [(size.width(), size.height())]
         desktop = util_ui.tr("Desktop")
         self.deviceComboBox.addItem(desktop)
-        for i in range(10):
-            v = cv2.VideoCapture(i)
-            if v.isOpened():
-                v.set(cv2.CAP_PROP_FRAME_WIDTH, 10000)
-                v.set(cv2.CAP_PROP_FRAME_HEIGHT, 10000)
+        with ts.ignoreStdout():
+            # was range(10)
+            for i in map(int, ts.get_video_indexes()):
+                v = cv2.VideoCapture(i)
+                if v.isOpened():
+                    v.set(cv2.CAP_PROP_FRAME_WIDTH, 10000)
+                    v.set(cv2.CAP_PROP_FRAME_HEIGHT, 10000)
 
-                width = int(v.get(cv2.CAP_PROP_FRAME_WIDTH))
-                height = int(v.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                del v
-                self._devices.append(i)
-                self._frame_max_sizes.append((width, height))
-                self.deviceComboBox.addItem(util_ui.tr('Device #') + str(i))
+                    width = int(v.get(cv2.CAP_PROP_FRAME_WIDTH))
+                    height = int(v.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                    del v
+                    self._devices.append(i)
+                    self._frame_max_sizes.append((width, height))
+                    self.deviceComboBox.addItem(util_ui.tr('Device #') + str(i))
+
+        if 'device' not in self._settings['video']:
+            LOG.warn("'device' not in self._settings['video']: {self._settings!r}")
+            self._settings['video']['device'] = self._devices[-1]    
+        iIndex = self._settings['video']['device']
         try:
-            index = self._devices.index(self._settings.video['device'])
+            index = self._devices.index(iIndex)
             self.deviceComboBox.setCurrentIndex(index)
-        except:
-            print('Video devices error!')
+        except Exception as e:
+            # off by one - what's Desktop?
+            se = f"ERROR: Video devices index error: index={iIndex} {e}"
+            LOG.warn(se)
+            # util_ui.message_box(se, util_ui.tr(f"ERROR: Video devices error"))
+
         self._retranslate_ui()
 
     def _retranslate_ui(self):
@@ -535,7 +587,7 @@ class VideoSettings(CenteredWidget):
     def _device_changed(self):
         index = self.deviceComboBox.currentIndex()
         self.selectRegionPushButton.setVisible(index == 0)
-        self.resolutionComboBox.setVisible(index != 0)
+        self.resolutionComboBox.setVisible(True) # index != 0
         width, height = self._frame_max_sizes[index]
         self.resolutionComboBox.clear()
         dims = [
@@ -559,6 +611,7 @@ class PluginsSettings(CenteredWidget):
 
     def __init__(self, plugin_loader):
         super().__init__()
+        self._app = QtWidgets.QApplication.instance()
         self._plugin_loader = plugin_loader
         self._window = None
         self.initUI()
@@ -589,14 +642,24 @@ class PluginsSettings(CenteredWidget):
         self.open.setText(util_ui.tr("Open selected plugin"))
 
     def open_plugin(self):
+
         ind = self.comboBox.currentIndex()
-        plugin = self.data[ind]
-        window = self.pl_loader.plugin_window(plugin[-1])
-        if window is not None:
-            self._window = window
-            self._window.show()
-        else:
-            util_ui.message_box(util_ui.tr('No GUI found for this plugin'), util_ui.tr('Error'))
+        plugin = self.data[ind] # ['SearchPlugin', True, 'Description', 'srch']
+        # key in self._plugins and hasattr(self._plugins[key], 'instance'):
+        window = self._plugin_loader.plugin_window(plugin[-1])
+        if window is not None and not hasattr(window, 'show'):
+            LOG.error(util_ui.tr('ERROR: No show for the plugin: ' +repr(window) +' ' +repr(window)))
+            util_ui.message_box(util_ui.tr('ERROR: No show for the plugin ' +repr(window)), util_ui.tr('Error'))
+        elif window is not None:
+            try:
+                self._window = window
+                self._window.show()
+            except Exception as e:
+                LOG.error(util_ui.tr('ERROR: Error for the plugin: ' +repr(window) +' ' +str(e)))
+                util_ui.message_box(util_ui.tr('ERROR: Error for the plugin: ' +repr(window)), util_ui.tr('Error'))
+        elif window is None:
+            LOG.warn(util_ui.tr('WARN: No GUI found for the plugin: by plugin_loader.plugin_window'))
+            util_ui.message_box(util_ui.tr('WARN: No GUI found for the plugin: by plugin_loader.plugin_window'), util_ui.tr('Error'))
 
     def update_list(self):
         self.comboBox.clear()
@@ -637,6 +700,7 @@ class UpdateSettings(CenteredWidget):
 
     def __init__(self, settings, version):
         super().__init__()
+        self._app = QtWidgets.QApplication.instance()
         self._settings = settings
         self._version = version
         uic.loadUi(get_views_path('update_settings_screen'), self)

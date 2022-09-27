@@ -1,15 +1,21 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 from PyQt5 import QtCore, QtGui, QtWidgets
 import utils.ui as util_ui
-
+import logging
 
 class DataLabel(QtWidgets.QLabel):
     """
     Label with elided text
     """
     def setText(self, text):
-        text = ''.join('\u25AF' if len(bytes(c, 'utf-8')) >= 4 else c for c in text)
+        try:
+            text = ''.join('\u25AF' if len(bytes(str(c), 'utf-8')) >= 4 else c for c in str(text))
+        except Exception as e:
+            logging.error(f"DataLabel::setText:  {e}")
+            return
+
         metrics = QtGui.QFontMetrics(self.font())
-        text = metrics.elidedText(text, QtCore.Qt.ElideRight, self.width())
+        text = metrics.elidedText(str(text), QtCore.Qt.ElideRight, self.width())
         super().setText(text)
 
 

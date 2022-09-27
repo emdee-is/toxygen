@@ -2,6 +2,9 @@ from ui.widgets import CenteredWidget, LineEdit, DialogWithResult
 from PyQt5 import QtCore, QtWidgets
 import utils.ui as util_ui
 
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
 
 class PasswordArea(LineEdit):
 
@@ -78,6 +81,7 @@ class PasswordScreen(PasswordScreenBase):
                 new_data = self._encrypt.pass_decrypt(self._data)
             except Exception as ex:
                 self.warning.setVisible(True)
+                LOG.error(f"Decryption error:  {ex}")
                 print('Decryption error:', ex)
             else:
                 self.close_with_result(new_data)

@@ -1,18 +1,81 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+import os
+import logging
 from ui.contact_items import *
 from ui.widgets import MultilineEdit
 from ui.main_screen_widgets import *
 import utils.util as util
 import utils.ui as util_ui
 from PyQt5 import uic
+from PyQt5 import QtWidgets, QtGui
+from user_data.settings import Settings
 
+iMAX = 70
+global LOG
+LOG = logging.getLogger('app.'+__name__)
+
+class QTextEditLogger(logging.Handler):
+    def __init__(self, parent, app):
+        super().__init__()
+        self.widget = QtWidgets.QPlainTextEdit(parent)
+        self.widget.setReadOnly(True)
+
+        if app and app._settings:
+            size = app._settings['message_font_size']
+            font_name = app._settings['font']
+        else:
+            size = 12
+            font_name = "Courier New"
+        font = QtGui.QFont(font_name, size, QtGui.QFont.Bold)
+        self.widget.setFont(font)
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.widget.appendPlainText(msg)
+
+
+class LogDialog(QtWidgets.QDialog, QtWidgets.QPlainTextEdit):
+
+    def __init__(self, parent=None, app=None):
+        global iMAX
+        super().__init__(parent)
+
+        logTextBox = QTextEditLogger(self, app)
+        # You can format what is printed to text box - %(levelname)s
+        logTextBox.setFormatter(logging.Formatter('%(name)s %(asctime)-4s - %(message)s'))
+        logTextBox.setLevel(app._args.loglevel)
+        logging.getLogger().addHandler(logTextBox)
+
+        self._button = QtWidgets.QPushButton(self)
+        self._button.setText('Copy All')
+        self._logTextBox = logTextBox
+
+        layout = QtWidgets.QVBoxLayout()
+        # Add the new logging box widget to the layout
+        layout.addWidget(logTextBox.widget)
+        layout.addWidget(self._button)
+        self.setLayout(layout)
+        settings = Settings.get_default_settings(app._args)
+        #self.setBaseSize(
+        self.resize(min(iMAX * settings['message_font_size'], parent.width()), 350)
+
+        # Connect signal to slot
+        self._button.clicked.connect(self.test)
+
+    def test(self):
+        # FixMe: 65:8: E1101: Instance of 'QTextEditLogger' has no 'selectAll' member (no-member)
+        # :66:8: E1101: Instance of 'QTextEditLogger' has no 'copy' member (no-member)
+        self._logTextBox.selectAll()
+        self._logTextBox.copy()
 
 class MainWindow(QtWidgets.QMainWindow):
 
-    def __init__(self, settings, tray):
+    def __init__(self, settings, tray, app):
         super().__init__()
         self._settings = settings
         self._contacts_manager = None
         self._tray = tray
+        self._app = app
         self._widget_factory = None
         self._modal_window = None
         self._plugins_loader = None
@@ -23,9 +86,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self._file_transfer_handler = self._history_loader = self._groups_service = self._calls_manager = None
         self._should_show_group_peers_list = False
         self.initUI()
+        global iMAX
+        if iMAX == 100:
+            # take a rough guess of 2/3 the default width at the default font
+            iMAX = settings['width'] * 2/3 / settings['message_font_size']
+        self._me = LogDialog(self, app)
 
     def set_dependencies(self, widget_factory, tray, contacts_manager, messenger, profile, plugins_loader,
-                         file_transfer_handler, history_loader, calls_manager, groups_service, toxes):
+                         file_transfer_handler, history_loader, calls_manager, groups_service, toxes, app):
         self._widget_factory = widget_factory
         self._tray = tray
         self._contacts_manager = contacts_manager
@@ -36,6 +104,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._calls_manager = calls_manager
         self._groups_service = groups_service
         self._toxes = toxes
+        self._app = app
         self._messenger = messenger
         self._contacts_manager.active_contact_changed.add_callback(self._new_contact_selected)
         self.messageEdit.set_dependencies(messenger, contacts_manager, file_transfer_handler)
@@ -51,11 +120,17 @@ class MainWindow(QtWidgets.QMainWindow):
     def setup_menu(self, window):
         self.menubar = QtWidgets.QMenuBar(window)
         self.menubar.setObjectName("menubar")
-        self.menubar.setNativeMenuBar(False)
-        self.menubar.setMinimumSize(self.width(), 25)
-        self.menubar.setMaximumSize(self.width(), 25)
-        self.menubar.setBaseSize(self.width(), 25)
-        self.menuProfile = QtWidgets.QMenu(self.menubar)
+        self.menubar.setNativeMenuBar(True) # was False
+        self.menubar.setMinimumSize(self.width(), 250)
+        self.menubar.setMaximumSize(self.width(), 32)
+        self.menubar.setBaseSize(self.width(), 250)
+
+        self.actionTest_tox = QtWidgets.QAction(window)
+        self.actionTest_tox.setObjectName("actionTest_tox")
+        self.actionTest_socks = QtWidgets.QAction(window)
+        self.actionTest_socks.setObjectName("actionTest_socks")
+        self.actionQuit_program = QtWidgets.QAction(window)
+        self.actionQuit_program.setObjectName("actionQuit_program")
 
         self.menuProfile = QtWidgets.QMenu(self.menubar)
         self.menuProfile.setObjectName("menuProfile")
@@ -64,7 +139,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuSettings.setObjectName("menuSettings")
         self.menuPlugins = QtWidgets.QMenu(self.menubar)
         self.menuPlugins.setObjectName("menuPlugins")
-        self.menuAbout = QtWidgets.QMenu(self.menubar)
+        self.menuAbout = QtWidgets.QMenu(self.menubar) # alignment=QtCore.Qt.AlignRight
         self.menuAbout.setObjectName("menuAbout")
 
         self.actionAdd_friend = QtWidgets.QAction(window)
@@ -81,6 +156,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionNetwork.setObjectName("actionNetwork")
         self.actionAbout_program = QtWidgets.QAction(window)
         self.actionAbout_program.setObjectName("actionAbout_program")
+
+        self.actionLog_console = QtWidgets.QAction(window)
+        self.actionLog_console.setObjectName("actionLog_console")
         self.updateSettings = QtWidgets.QAction(window)
         self.actionSettings = QtWidgets.QAction(window)
         self.actionSettings.setObjectName("actionSettings")
@@ -89,6 +167,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pluginData = QtWidgets.QAction(window)
         self.importPlugin = QtWidgets.QAction(window)
         self.reloadPlugins = QtWidgets.QAction(window)
+        self.reloadToxchat = QtWidgets.QAction(window)
+
         self.lockApp = QtWidgets.QAction(window)
         self.createGC = QtWidgets.QAction(window)
         self.joinGC = QtWidgets.QAction(window)
@@ -97,6 +177,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuProfile.addAction(self.actionAdd_friend)
         self.menuProfile.addAction(self.actionSettings)
         self.menuProfile.addAction(self.lockApp)
+        self.menuProfile.addAction(self.actionTest_tox)
+        self.menuProfile.addAction(self.actionTest_socks)
+        self.menuProfile.addAction(self.actionQuit_program)
+
         self.menuGC.addAction(self.createGC)
         self.menuGC.addAction(self.joinGC)
         self.menuGC.addAction(self.gc_invites)
@@ -110,6 +194,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuPlugins.addAction(self.pluginData)
         self.menuPlugins.addAction(self.importPlugin)
         self.menuPlugins.addAction(self.reloadPlugins)
+        self.menuPlugins.addAction(self.reloadToxchat)
+        self.menuPlugins.addAction(self.actionLog_console)
+
         self.menuAbout.addAction(self.actionAbout_program)
 
         self.menubar.addAction(self.menuProfile.menuAction())
@@ -118,7 +205,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menubar.addAction(self.menuPlugins.menuAction())
         self.menubar.addAction(self.menuAbout.menuAction())
 
+        self.actionTest_socks.triggered.connect(self.test_socks)
+        self.actionTest_tox.triggered.connect(self.test_tox)
+
+        self.actionQuit_program.triggered.connect(self.quit_program)
         self.actionAbout_program.triggered.connect(self.about_program)
+        self.actionLog_console.triggered.connect(self.log_console)
         self.actionNetwork.triggered.connect(self.network_settings)
         self.actionAdd_friend.triggered.connect(self.add_contact_triggered)
         self.createGC.triggered.connect(self.create_gc)
@@ -134,6 +226,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lockApp.triggered.connect(self.lock_app)
         self.importPlugin.triggered.connect(self.import_plugin)
         self.reloadPlugins.triggered.connect(self.reload_plugins)
+        self.reloadToxchat.triggered.connect(self.reload_toxchat)
         self.gc_invites.triggered.connect(self._open_gc_invites_list)
 
     def languageChange(self, *args, **kwargs):
@@ -141,9 +234,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
-            self._tray.setIcon(QtGui.QIcon(util.join_path(util.get_images_directory(), 'icon.png')))
+            if hasattr(self, '_tray') and self._tray:
+                self._tray.setIcon(QtGui.QIcon(util.join_path(util.get_images_directory(), 'icon.png')))
             self.messages.repaint()
         return super().event(event)
+
+    def status(self, line):
+        """For now, this uses the unused space on the menubar line
+           It could be a status line at the bottom, or a statusline with history."""
+        self.menuAbout.setTitle(line[:iMAX])
+        return line
 
     def retranslateUi(self):
         self.lockApp.setText(util_ui.tr("Lock"))
@@ -163,12 +263,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionNotifications.setText(util_ui.tr("Notifications"))
         self.actionNetwork.setText(util_ui.tr("Network"))
         self.actionAbout_program.setText(util_ui.tr("About program"))
+        self.actionLog_console.setText(util_ui.tr("Console Log"))
+        self.actionTest_tox.setText(util_ui.tr("Bootstrap"))
+        self.actionTest_socks.setText(util_ui.tr("Test program"))
+        self.actionQuit_program.setText(util_ui.tr("Quit program"))
         self.actionSettings.setText(util_ui.tr("Settings"))
         self.audioSettings.setText(util_ui.tr("Audio"))
         self.videoSettings.setText(util_ui.tr("Video"))
         self.updateSettings.setText(util_ui.tr("Updates"))
         self.importPlugin.setText(util_ui.tr("Import plugin"))
         self.reloadPlugins.setText(util_ui.tr("Reload plugins"))
+        self.reloadToxchat.setText(util_ui.tr("Reload tox.chat"))
 
         self.searchLineEdit.setPlaceholderText(util_ui.tr("Search"))
         self.sendMessageButton.setToolTip(util_ui.tr("Send message"))
@@ -409,6 +514,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.peers_list.setGeometry(width * 3 // 4, 0, width - width * 3 // 4, self.height() - 155)
 
         invites_button_visible = self.groupInvitesPushButton.isVisible()
+        LOG.debug(f"invites_button_visible={invites_button_visible}")
         self.friends_list.setGeometry(0, 125 if invites_button_visible else 100,
                                       270, self.height() - 150 if invites_button_visible else self.height() - 125)
 
@@ -445,9 +551,12 @@ class MainWindow(QtWidgets.QMainWindow):
     # Functions which called when user click in menu
     # -----------------------------------------------------------------------------------------------------------------
 
+    def log_console(self):
+        self._me.show()
+
     def about_program(self):
         # TODO: replace with window
-        text = util_ui.tr('Toxygen is Tox client written on Python.\nVersion: ')
+        text = util_ui.tr('Toxygen is Tox client written in Python.\nVersion: ')
         text += '' + '\nGitHub: https://github.com/toxygen-project/toxygen/'
         title = util_ui.tr('About')
         util_ui.message_box(text, title)
@@ -504,13 +613,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self._modal_window.show()
 
     def reload_plugins(self):
-        if self._plugin_loader is not None:
+        if hasattr(self, '_plugin_loader') and self._plugin_loader is not None:
             self._plugin_loader.reload()
+
+    def reload_toxchat(self):
+        pass
 
     @staticmethod
     def import_plugin():
-        directory = util_ui.directory_dialog(util_ui.tr('Choose folder with plugin'))
-        if directory:
+        directory = util_ui.directory_dialog(util_ui.tr('Choose folder with plugins'))
+        if directory and os.path.isdir(directory):
             src = directory + '/'
             dest = util.get_plugins_directory()
             util.copy(src, dest)
@@ -522,6 +634,22 @@ class MainWindow(QtWidgets.QMainWindow):
             self.hide()
         else:
             util_ui.message_box(util_ui.tr('Error. Profile password is not set.'), util_ui.tr("Cannot lock app"))
+
+    def test_tox(self):
+        self._app._test_tox()
+
+    def test_socks(self):
+        self._app._test_socks()
+
+    def quit_program(self):
+        try:
+            self.close_window()
+            self._app._stop_app()
+        except KeyboardInterrupt:
+            pass
+        sys.stderr.write('sys.exit' +'\n')
+        # unreached?
+        sys.exit(0)
 
     def show_menu(self):
         if not hasattr(self, 'menu'):
@@ -712,7 +840,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def update_gc_invites_button_state(self):
         invites_count = self._groups_service.group_invites_count
-        self.groupInvitesPushButton.setVisible(invites_count > 0)
+        LOG.debug(f"invites_count={invites_count}")
+        self.groupInvitesPushButton.setVisible(True) # invites_count > 0
         text = util_ui.tr('{} new invites to group chats').format(invites_count)
         self.groupInvitesPushButton.setText(text)
         self.resizeEvent()

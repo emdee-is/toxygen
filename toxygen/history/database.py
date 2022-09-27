@@ -1,7 +1,13 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 from sqlite3 import connect
 import os.path
 import utils.util as util
 
+# LOG=util.log
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
+log = lambda x: LOG.info(x)
 
 TIMEOUT = 11
 
@@ -24,19 +30,30 @@ CONTACT_TYPE = {
 class Database:
 
     def __init__(self, path, toxes):
-        self._path, self._toxes = path, toxes
+        self._path = path
+        self._toxes = toxes
         self._name = os.path.basename(path)
-        if os.path.exists(path):
-            try:
-                with open(path, 'rb') as fin:
-                    data = fin.read()
-                if toxes.is_data_encrypted(data):
-                    data = toxes.pass_decrypt(data)
-                    with open(path, 'wb') as fout:
-                        fout.write(data)
-            except Exception as ex:
-                util.log('Db reading error: ' + str(ex))
-                os.remove(path)
+
+    def open(self):
+        path = self._path
+        toxes = self._toxes
+        if not os.path.exists(path):
+            LOG.warn('Db not found: ' +path)
+            return
+        try:
+            with open(path, 'rb') as fin:
+                data = fin.read()
+        except Exception as ex:
+            LOG.error('Db reading error: ' +path +' ' +str(ex))
+            raise
+        try:
+            if toxes.is_data_encrypted(data):
+                data = toxes.pass_decrypt(data)
+                with open(path, 'wb') as fout:
+                    fout.write(data)
+        except Exception as ex:
+            LOG.error('Db writing error: ' +path +' ' + str(ex))
+            os.remove(path)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -72,9 +89,11 @@ class Database:
                            '    message_type INTEGER'
                            ')')
             db.commit()
-        except:
-            print('Database is locked!')
+            return True
+        except Exception as e:
+            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
             db.rollback()
+            return False
         finally:
             db.close()
 
@@ -84,9 +103,11 @@ class Database:
             cursor = db.cursor()
             cursor.execute('DROP TABLE id' + tox_id + ';')
             db.commit()
-        except:
-            print('Database is locked!')
+            return True
+        except Exception as e:
+            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
             db.rollback()
+            return False
         finally:
             db.close()
 
@@ -98,9 +119,11 @@ class Database:
                                '(message, author_name, author_type, unix_time, message_type) ' +
                                'VALUES (?, ?, ?, ?, ?, ?);', messages_iter)
             db.commit()
-        except:
-            print('Database is locked!')
+            return True
+        except Exception as e:
+            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
             db.rollback()
+            return False
         finally:
             db.close()
 
@@ -111,9 +134,11 @@ class Database:
             cursor.execute('UPDATE id' + tox_id + ' SET author = 0 '
                            'WHERE id = ' + str(message_id) + ' AND author = 2;')
             db.commit()
-        except:
-            print('Database is locked!')
+            return True
+        except Exception as e:
+            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
             db.rollback()
+            return False
         finally:
             db.close()
 
@@ -123,9 +148,11 @@ class Database:
             cursor = db.cursor()
             cursor.execute('DELETE FROM id' + tox_id + ' WHERE id = ' + str(unique_id) + ';')
             db.commit()
-        except:
-            print('Database is locked!')
+            return True
+        except Exception as e:
+            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
             db.rollback()
+            return False
         finally:
             db.close()
 
@@ -135,9 +162,11 @@ class Database:
             cursor = db.cursor()
             cursor.execute('DELETE FROM id' + tox_id + ';')
             db.commit()
-        except:
-            print('Database is locked!')
+            return True
+        except Exception as e:
+            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
             db.rollback()
+            return False
         finally:
             db.close()
 

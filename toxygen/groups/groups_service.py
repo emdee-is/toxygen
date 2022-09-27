@@ -1,8 +1,11 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+
 import common.tox_save as tox_save
 import utils.ui as util_ui
 from groups.peers_list import PeersListGenerator
 from groups.group_invite import GroupInvite
 import wrapper.toxcore_enums_and_consts as constants
+from wrapper.toxcore_enums_and_consts import *
 
 
 class GroupsService(tox_save.ToxSave):
@@ -65,7 +68,17 @@ class GroupsService(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def invite_friend(self, friend_number, group_number):
-        self._tox.group_invite_friend(group_number, friend_number)
+        if self._tox.friend_get_connection_status(friend_number) == TOX_CONNECTION['NONE']:
+            title = f"Error in group_invite_friend {friend_number}"
+            e = f"Friend not connected friend_number={friend_number}"
+            util_ui.message_box(title +'\n' +str(e), title)
+            return
+        
+        try:
+            self._tox.group_invite_friend(group_number, friend_number)
+        except Exception as e:
+            title = f"Error in group_invite_friend {group_number} {friend_number}"
+            util_ui.message_box(title +'\n' +str(e), title)
 
     def process_group_invite(self, friend_number, group_name, invite_data):
         friend = self._get_friend_by_number(friend_number)
@@ -188,6 +201,7 @@ class GroupsService(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def show_bans_list(self, group):
+        return
         widgets_factory = self._get_widgets_factory()
         self._screen = widgets_factory.create_groups_bans_screen(group)
         self._screen.show()

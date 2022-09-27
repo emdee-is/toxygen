@@ -1,3 +1,4 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import os
 import time
 import shutil
@@ -19,14 +20,26 @@ def cached(func):
 
     return wrapped_func
 
-
-def log(data):
+oFD=None
+def log(data=None):
+    global oFD
+    if not oFD:
+        if 'TMPDIR' in os.environ:
+            logdir = os.environ['TMPDIR']
+        else:
+            logdir = '/tmp'
+        try:
+            oFD = open(join_path(logdir, 'toxygen.log'), 'a')
+        except Exception as ex:
+            oFD = None
+            print(f"ERROR: opening toxygen.log:  {ex}")
+            return
+    if data is None: return oFD
     try:
-        with open(join_path(curr_directory(), 'logs.log'), 'a') as fl:
-            fl.write(str(data) + '\n')
+        oFD.write(str(data) +'\n')
     except Exception as ex:
-        print(ex)
-
+        print(f"ERROR: writing to toxygen.log:  {ex}")
+    return data
 
 def curr_directory(current_file=None):
     return os.path.dirname(os.path.realpath(current_file or __file__))
@@ -144,7 +157,6 @@ def time_offset():
     result = hours * 60 + minutes - h * 60 - m
     return result
 
-
 def unix_time_to_long_str(unix_time):
     date_time = datetime.datetime.utcfromtimestamp(unix_time)
 
@@ -168,3 +180,11 @@ def is_re_valid(regex):
 @cached
 def get_platform():
     return platform.system()
+
+def get_user_config_path():
+    if get_platform() == 'Windows':
+        return os.getenv('APPDATA') + '/Tox/'
+    elif get_platform() == 'Darwin':
+        return os.getenv('HOME') + '/Library/Application Support/Tox/'
+    else:
+        return os.getenv('HOME') + '/.config/tox/'

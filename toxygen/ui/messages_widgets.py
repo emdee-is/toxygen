@@ -81,7 +81,8 @@ class MessageBrowser(QtWidgets.QTextBrowser):
         movie = QtGui.QMovie(self)
         movie.setFileName(file_name)
         self.urls[movie] = url
-        movie.frameChanged[int].connect(lambda x: self.animate(movie))
+        # Value 'movie.frameChanged' is unsubscriptable
+        movie.frameChanged().connect(lambda x: self.animate(movie))
         movie.start()
 
     def animate(self, movie):

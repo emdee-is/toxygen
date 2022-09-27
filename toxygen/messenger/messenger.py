@@ -1,6 +1,12 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import common.tox_save as tox_save
 from messenger.messages import *
+from tests.support_testing import assert_main_thread
 
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
+log = lambda x: LOG.info(x)
 
 class Messenger(tox_save.ToxSave):
 
@@ -76,6 +82,7 @@ class Messenger(tox_save.ToxSave):
 
         if not text or friend_number < 0:
             return
+        assert_main_thread()
 
         friend = self._get_friend_by_number(friend_number)
         messages = self._split_message(text.encode('utf-8'))
@@ -106,7 +113,7 @@ class Messenger(tox_save.ToxSave):
                 message_id = self._tox.friend_send_message(friend_number, message.type, message.text.encode('utf-8'))
                 message.tox_message_id = message_id
         except Exception as ex:
-            util.log('Sending pending messages failed with ' + str(ex))
+            LOG.warn('Sending pending messages failed with ' + str(ex))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Messaging - groups
@@ -142,6 +149,9 @@ class Messenger(tox_save.ToxSave):
         t = util.get_unix_time()
         group = self._get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
+        if not peer:
+            LOG.warn('FixMe new_group_message group.get_peer_by_id ' + str(peer_id))
+            return
         text_message = TextMessage(message, MessageAuthor(peer.name, MESSAGE_AUTHOR['GC_PEER']), t, message_type)
         self._add_message(text_message, group)
 
@@ -158,6 +168,7 @@ class Messenger(tox_save.ToxSave):
 
         if not text or group_number < 0 or peer_id < 0:
             return
+        assert_main_thread()
 
         group_peer_contact = self._contacts_manager.get_or_create_group_peer_contact(group_number, peer_id)
         group = self._get_group_by_number(group_number)
@@ -182,6 +193,9 @@ class Messenger(tox_save.ToxSave):
         t = util.get_unix_time()
         group = self._get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
+        if not peer:
+            LOG.warn('FixMe new_group_private_message group.get_peer_by_id ' + str(peer_id))
+            return
         text_message = TextMessage(message, MessageAuthor(peer.name, MESSAGE_AUTHOR['GC_PEER']),
                                    t, message_type)
         group_peer_contact = self._contacts_manager.get_or_create_group_peer_contact(group_number, peer_id)
@@ -291,10 +305,12 @@ class Messenger(tox_save.ToxSave):
             self._create_info_message_item(message)
 
     def _create_info_message_item(self, message):
+        assert_main_thread()
         self._items_factory.create_message_item(message)
         self._screen.messages.scrollToBottom()
 
     def _add_message(self, text_message, contact):
+        assert_main_thread()
         if self._contacts_manager.is_contact_active(contact):  # add message to list
             self._create_message_item(text_message)
             self._screen.messages.scrollToBottom()

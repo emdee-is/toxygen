@@ -1,3 +1,4 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 from user_data.settings import *
 from PyQt5 import QtCore, QtGui
 from wrapper.toxcore_enums_and_consts import TOX_PUBLIC_KEY_SIZE

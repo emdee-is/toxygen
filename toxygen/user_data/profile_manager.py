@@ -1,16 +1,31 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import utils.util as util
 import os
+
 from user_data.settings import Settings
 from common.event import Event
+from user_data.settings import get_user_config_path
 
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
+
+
+def LOG_ERROR(l): print('ERROR_: '+l)
+def LOG_WARN(l): print('WARN_: '+l)
+def LOG_INFO(l): print('INFO_: '+l)
+def LOG_DEBUG(l): print('DEBUG_: '+l)
+def LOG_TRACE(l): pass # print('TRACE+ '+l)
 
 class ProfileManager:
     """
     Class with methods for search, load and save profiles
     """
     def __init__(self, toxes, path):
+        assert path
         self._toxes = toxes
         self._path = path
+        assert path
         self._directory = os.path.dirname(path)
         self._profile_saved_event = Event()
         # create /avatars if not exists:
@@ -50,20 +65,21 @@ class ProfileManager:
             data = self._toxes.pass_encrypt(data)
         with open(self._path, 'wb') as fl:
             fl.write(data)
-        print('Profile saved successfully')
+        LOG_INFO('Profile saved successfully to' +self._path)
 
         self._profile_saved_event(data)
 
     def export_profile(self, settings, new_path, use_new_path):
-        path = new_path + os.path.basename(self._path)
         with open(self._path, 'rb') as fin:
             data = fin.read()
+        path = new_path + os.path.basename(self._path)
         with open(path, 'wb') as fout:
             fout.write(data)
-        print('Profile exported successfully')
-        util.copy(self._directory + 'avatars', new_path + 'avatars')
+        LOG.info('Profile exported successfully to ' +path)
+        util.copy(os.path.join(self._directory, 'avatars'),
+                  os.path.join(new_path, 'avatars'))
         if use_new_path:
-            self._path = new_path + os.path.basename(self._path)
+            self._path = os.path.join(new_path, os.path.basename(self._path))
             self._directory = new_path
             settings.update_path(new_path)
 
@@ -72,7 +88,7 @@ class ProfileManager:
         """
         Find available tox profiles
         """
-        path = Settings.get_default_path()
+        path = get_user_config_path()
         result = []
         # check default path
         if not os.path.exists(path):

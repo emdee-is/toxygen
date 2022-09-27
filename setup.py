@@ -12,9 +12,9 @@ version = main.__version__ + '.0'
 
 
 if system() == 'Windows':
-    MODULES = ['PyQt5', 'PyAudio', 'numpy', 'opencv-python', 'pydenticon']
+    MODULES = ['PyQt5', 'PyAudio', 'numpy', 'opencv-python', 'pydenticon', 'cv2']
 else:
-    MODULES = []
+    MODULES = ['pydenticon']
     try:
         import pyaudio
     except ImportError:
@@ -32,9 +32,9 @@ else:
     except ImportError:
         MODULES.append('opencv-python')
     try:
-        import pydenticon
+        import coloredlogs
     except ImportError:
-        MODULES.append('pydenticon')
+        MODULES.append('coloredlogs')
 
 
 def get_packages():
@@ -84,6 +84,9 @@ setup(name='Toxygen',
           'Programming Language :: Python :: 3 :: Only',
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9',
       ],
       entry_points={
           'console_scripts': ['toxygen=toxygen.main:main']

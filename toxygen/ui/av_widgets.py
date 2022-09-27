@@ -1,9 +1,16 @@
+import threading
+
 from PyQt5 import QtCore, QtGui, QtWidgets
-from ui import widgets
-import utils.util as util
 import pyaudio
 import wave
 
+from ui import widgets
+import utils.util as util
+import tests.support_testing as ts
+
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
 
 class IncomingCallWidget(widgets.CenteredWidget):
 
@@ -11,7 +18,7 @@ class IncomingCallWidget(widgets.CenteredWidget):
         super().__init__()
         self._settings = settings
         self._calls_manager = calls_manager
-        self.setWindowFlags(QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowTitleHint) #  | QtCore.Qt.WindowStaysOnTopHint
         self.resize(QtCore.QSize(500, 270))
         self.avatar_label = QtWidgets.QLabel(self)
         self.avatar_label.setGeometry(QtCore.QRect(10, 20, 64, 64))
@@ -45,9 +52,9 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.accept_audio.setIconSize(QtCore.QSize(150, 150))
         self.accept_video.setIconSize(QtCore.QSize(140, 140))
         self.decline.setIconSize(QtCore.QSize(140, 140))
-        self.accept_audio.setStyleSheet("QPushButton { border: none }")
-        self.accept_video.setStyleSheet("QPushButton { border: none }")
-        self.decline.setStyleSheet("QPushButton { border: none }")
+        #self.accept_audio.setStyleSheet("QPushButton { border: none }")
+        #self.accept_video.setStyleSheet("QPushButton { border: none }")
+        #self.decline.setStyleSheet("QPushButton { border: none }")
         self.setWindowTitle(text)
         self.name.setText(name)
         self.call_type.setText(text)
@@ -56,75 +63,113 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.accept_video.clicked.connect(self.accept_call_with_video)
         self.decline.clicked.connect(self.decline_call)
 
-        class SoundPlay(QtCore.QThread):
+        output_device_index = self._settings._args.audio['output']
 
-            def __init__(self):
-                QtCore.QThread.__init__(self)
-                self.a = None
+        if False and self._settings['calls_sound']:
+            class SoundPlay(QtCore.QThread):
 
-            def run(self):
-                class AudioFile:
-                    chunk = 1024
+                def __init__(self):
+                    QtCore.QThread.__init__(self)
+                    self.a = None
 
-                    def __init__(self, fl):
-                        self.stop = False
-                        self.fl = fl
-                        self.wf = wave.open(self.fl, 'rb')
-                        self.p = pyaudio.PyAudio()
-                        self.stream = self.p.open(
-                            format=self.p.get_format_from_width(self.wf.getsampwidth()),
-                            channels=self.wf.getnchannels(),
-                            rate=self.wf.getframerate(),
-                            output=True)
+                def run(self):
+                    class AudioFile:
+                        chunk = 1024
 
-                    def play(self):
-                        while not self.stop:
-                            data = self.wf.readframes(self.chunk)
-                            while data and not self.stop:
-                                self.stream.write(data)
-                                data = self.wf.readframes(self.chunk)
+                        def __init__(self, fl):
+                            self.stop = False
+                            self.fl = fl
                             self.wf = wave.open(self.fl, 'rb')
+                            self.p = pyaudio.PyAudio()
+                            self.stream = self.p.open(
+                                format=self.p.get_format_from_width(self.wf.getsampwidth()),
+                                channels=self.wf.getnchannels(),
+                                rate=self.wf.getframerate(),
+                                # why no device?
+                                output_device_index=output_device_index,
+                                output=True)
 
-                    def close(self):
-                        self.stream.close()
-                        self.p.terminate()
+                        def play(self):
+                            while not self.stop:
+                                data = self.wf.readframes(self.chunk)
+                                # dunno
+                                if not data: break
+                                while data and not self.stop:
+                                    self.stream.write(data)
+                                    data = self.wf.readframes(self.chunk)
+                                self.wf = wave.open(self.fl, 'rb')
 
-                self.a = AudioFile(util.join_path(util.get_sounds_directory(), 'call.wav'))
-                self.a.play()
-                self.a.close()
+                        def close(self):
+                            try:
+                                self.stream.close()
+                                self.p.terminate()
+                            except Exception as e:
+                                # malloc_consolidate(): unaligned fastbin chunk detected
+                                LOG.warn("SoundPlay close exception {e}")
 
-        if self._settings['calls_sound']:
+                    self.a = AudioFile(util.join_path(util.get_sounds_directory(), 'call.wav'))
+                    self.a.play()
+                    self.a.close()
+
             self.thread = SoundPlay()
             self.thread.start()
         else:
             self.thread = None
 
     def stop(self):
+        if self._processing:
+            self.close()
         if self.thread is not None:
             self.thread.a.stop = True
-            self.thread.wait()
-        self.close()
+            i = 0
+            while i < ts.iTHREAD_JOINS:
+                self.thread.wait(ts.iTHREAD_TIMEOUT)
+                if not self.thread.isRunning(): break
+                i = i + 1
+            else:
+                LOG.warn(f"SoundPlay {self.thread.a} BLOCKED")
+                # Fatal Python error: Segmentation fault
+                self.thread.a.stream.close()
+                self.thread.a.p.terminate()
+                self.thread.a.close()
+            # dunno -failsafe
+            self.thread.terminate()
+        #? dunno
+        self._processing = False
 
     def accept_call_with_audio(self):
         if self._processing:
+            LOG.warn(f" accept_call_with_audio  from {self._friend_number}")
             return
+        LOG.debug(f" accept_call_with_audio  from {self._friend_number}")
         self._processing = True
-        self._calls_manager.accept_call(self._friend_number, True, False)
-        self.stop()
+        try:
+            self._calls_manager.accept_call(self._friend_number, True, False)
+        finally:
+            self.stop()
 
     def accept_call_with_video(self):
+        # ts.trepan_handler()
+
         if self._processing:
+            LOG.warn(__name__+f" accept_call_with_video from {self._friend_number}")
             return
+        self.setWindowTitle('Answering video call')
         self._processing = True
-        self._calls_manager.accept_call(self._friend_number, True, True)
-        self.stop()
+        LOG.debug(f" accept_call_with_video from {self._friend_number}")
+        try:
+            self._calls_manager.accept_call(self._friend_number, True, True)
+        finally:
+            self.stop()
 
     def decline_call(self):
         if self._processing:
             return
         self._processing = True
-        self._calls_manager.stop_call(self._friend_number, False)
-        self.stop()
+        try:
+            self._calls_manager.stop_call(self._friend_number, False)
+        finally:
+            self.stop()
 
     def set_pixmap(self, pixmap):
         self.avatar_label.setPixmap(pixmap)

@@ -1,9 +1,15 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 from contacts.friend import Friend
 from contacts.group_chat import GroupChat
 from messenger.messages import *
 from common.tox_save import ToxSave
 from contacts.group_peer_contact import GroupPeerContact
 
+# LOG=util.log
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
+log = lambda x: LOG.info(x)
 
 class ContactsManager(ToxSave):
     """
@@ -129,8 +135,8 @@ class ContactsManager(ToxSave):
             self._set_current_contact_data(contact)
             self._active_contact_changed(contact)
         except Exception as ex:  # no friend found. ignore
-            util.log('Friend value: ' + str(value))
-            util.log('Error in set active: ' + str(ex))
+            LOG.warn(f"no friend found. Friend value:  {value!s}")
+            LOG.error('in set active: ' + str(ex))
             raise
 
     active_contact = property(get_active, set_active)
@@ -235,8 +241,9 @@ class ContactsManager(ToxSave):
     def get_or_create_group_peer_contact(self, group_number, peer_id):
         group = self.get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
-        if not self.check_if_contact_exists(peer.public_key):
-            self.add_group_peer(group, peer)
+        if peer: # broken
+            if not self.check_if_contact_exists(peer.public_key):
+                self.add_group_peer(group, peer)
 
         return self.get_contact_by_tox_id(peer.public_key)
 
@@ -375,16 +382,18 @@ class ContactsManager(ToxSave):
 
     def remove_group_peer_by_id(self, group, peer_id):
         peer = group.get_peer_by_id(peer_id)
-        if not self.check_if_contact_exists(peer.public_key):
-            return
-        contact = self.get_contact_by_tox_id(peer.public_key)
-        self.remove_group_peer(contact)
+        if peer: # broken
+            if not self.check_if_contact_exists(peer.public_key):
+                return
+            contact = self.get_contact_by_tox_id(peer.public_key)
+            self.remove_group_peer(contact)
 
     def remove_group_peer(self, group_peer_contact):
         contact = self.get_contact_by_tox_id(group_peer_contact.tox_id)
-        self._cleanup_contact_data(contact)
-        num = self._contacts.index(contact)
-        self._delete_contact(num)
+        if contact:
+            self._cleanup_contact_data(contact)
+            num = self._contacts.index(contact)
+            self._delete_contact(num)
 
     def get_gc_peer_name(self, name):
         group = self.get_curr_contact()
@@ -432,7 +441,7 @@ class ContactsManager(ToxSave):
             self.save_profile()
             return True
         except Exception as ex:  # wrong data
-            util.log('Friend request failed with ' + str(ex))
+            LOG.error('Friend request failed with ' + str(ex))
             return str(ex)
 
     def process_friend_request(self, tox_id, message):
@@ -451,7 +460,7 @@ class ContactsManager(ToxSave):
                 data = self._tox.get_savedata()
                 self._profile_manager.save_profile(data)
         except Exception as ex:  # something is wrong
-            util.log('Accept friend request failed! ' + str(ex))
+            LOG.error('Accept friend request failed! ' + str(ex))
 
     def can_send_typing_notification(self):
         return self._settings['typing_notifications'] and not self.is_active_a_group_chat_peer()

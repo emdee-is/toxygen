@@ -1,3 +1,4 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import utils.util as util
 import os
 import importlib
@@ -5,6 +6,14 @@ import inspect
 import plugins.plugin_super_class as pl
 import sys
 
+# LOG=util.log
+global LOG
+import logging
+LOG = logging.getLogger('plugin_support')
+def trace(msg, *args, **kwargs): LOG._log(0, msg, [])
+LOG.trace = trace
+
+log = lambda x: LOG.info(x)
 
 class Plugin:
 
@@ -46,38 +55,49 @@ class PluginLoader:
         """
         path = util.get_plugins_directory()
         if not os.path.exists(path):
-            util.log('Plugin dir not found')
+            self._app._LOG('WARN: Plugin directory not found: ' + path)
             return
-        else:
-            sys.path.append(path)
+
+        sys.path.append(path)
         files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
         for fl in files:
             if fl in ('plugin_super_class.py', '__init__.py') or not fl.endswith('.py'):
                 continue
-            name = fl[:-3]  # module name without .py
+            base_name = fl[:-3]  # module name without .py
             try:
-                module = importlib.import_module(name)  # import plugin
-            except ImportError:
-                util.log('Import error in module ' + name)
+                module = importlib.import_module(base_name)  # import plugin
+                LOG.trace('Imported module: ' +base_name +' file: ' +fl)
+            except ImportError as e:
+                LOG.warn(f"Import error:  {e}" +' file: ' +fl)
                 continue
             except Exception as ex:
-                util.log('Exception in module ' + name + ' Exception: ' + str(ex))
+                LOG.error('importing ' + base_name + ' Exception: ' + str(ex))
                 continue
             for elem in dir(module):
                 obj = getattr(module, elem)
                 # looking for plugin class in module
                 if not inspect.isclass(obj) or not hasattr(obj, 'is_plugin') or not obj.is_plugin:
                     continue
-                print('Plugin', elem)
                 try:  # create instance of plugin class
-                    instance = obj(self._app)
-                    is_active = instance.get_short_name() in self._settings['plugins']
+                    instance = obj(self._app) # name, short_name, app
+                    # needed by bday...
+                    instance._profile=self._app._ms._profile
+                    instance._settings=self._settings
+                    short_name = instance.get_short_name()
+                    is_active = short_name in self._settings['plugins']
                     if is_active:
-                        instance.start()
+                        try:
+                            instance.start()
+                            self._app.LOG('INFO: Started Plugin ' +short_name)
+                        except Exception as e:
+                            self._app.LOG.error(f"Starting Plugin ' +short_name +'  {e}")
+                    # else: LOG.info('Defined Plugin ' +short_name)
                 except Exception as ex:
-                    util.log('Exception in module ' + name + ' Exception: ' + str(ex))
+                    LOG.error('in module ' + short_name + ' Exception: ' + str(ex))
                     continue
-                self._plugins[instance.get_short_name()] = Plugin(instance, is_active)
+                short_name = instance.get_short_name()
+                self._plugins[short_name] = Plugin(instance, is_active)
+                LOG.info('Added plugin: ' +short_name +' from file: ' +fl)
                 break
 
     def callback_lossless(self, friend_number, data):
@@ -114,7 +134,7 @@ class PluginLoader:
         for plugin in self._plugins.values():
             try:
                 result.append([plugin.instance.get_name(),  # plugin full name
-                               plugin.is_active,  # is enabled
+                               plugin.is_active,            # is enabled
                                plugin.instance.get_description(),  # plugin description
                                plugin.instance.get_short_name()])  # key - short unique name
             except:
@@ -126,7 +146,13 @@ class PluginLoader:
         """
         Return window or None for specified plugin
         """
-        return self._plugins[key].instance.get_window()
+        try:
+            if key in self._plugins and hasattr(self._plugins[key], 'instance'):
+                return self._plugins[key].instance.get_window()
+        except Exception as e:
+            self._app.LOG('WARN: ' +key +' _plugins no slot instance: ' +str(e))
+
+        return None
 
     def toggle_plugin(self, key):
         """
@@ -162,6 +188,7 @@ class PluginLoader:
         for plugin in self._plugins.values():
             if not plugin.is_active:
                 continue
+
             try:
                 result.extend(plugin.instance.get_menu(num))
             except:
@@ -172,6 +199,10 @@ class PluginLoader:
         result = []
         for plugin in self._plugins.values():
             if not plugin.is_active:
+                continue
+            if not hasattr(plugin.instance, 'get_message_menu'):
+                name = plugin.instance.get_short_name()
+                self._app.LOG('WARN: get_message_menu not found: ' + name)
                 continue
             try:
                 result.extend(plugin.instance.get_message_menu(menu, selected_text))
@@ -189,6 +220,11 @@ class PluginLoader:
             del self._plugins[key]
 
     def reload(self):
-        print('Reloading plugins')
+        path = util.get_plugins_directory()
+        if not os.path.exists(path):
+            self._app.LOG('WARN: Plugin directory not found: ' + path)
+            return
+
         self.stop()
+        self._app.LOG('INFO: Reloading plugins from ' +path)
         self.load()

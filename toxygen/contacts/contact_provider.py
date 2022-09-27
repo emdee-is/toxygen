@@ -15,8 +15,10 @@ class ContactProvider(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_friend_by_number(self, friend_number):
-        public_key = self._tox.friend_get_public_key(friend_number)
-
+        try:
+            public_key = self._tox.friend_get_public_key(friend_number)
+        except Exception as e:
+            return None
         return self.get_friend_by_public_key(public_key)
 
     def get_friend_by_public_key(self, public_key):
@@ -29,7 +31,10 @@ class ContactProvider(tox_save.ToxSave):
         return friend
 
     def get_all_friends(self):
-        friend_numbers = self._tox.self_get_friend_list()
+        try:
+            friend_numbers = self._tox.self_get_friend_list()
+        except Exception as e:
+            return None
         friends = map(lambda n: self.get_friend_by_number(n), friend_numbers)
 
         return list(friends)
@@ -39,13 +44,19 @@ class ContactProvider(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_all_groups(self):
-        group_numbers = range(self._tox.group_get_number_groups())
+        try:
+            group_numbers = range(self._tox.group_get_number_groups())
+        except Exception as e:
+            return None
         groups = map(lambda n: self.get_group_by_number(n), group_numbers)
 
         return list(groups)
 
     def get_group_by_number(self, group_number):
-        public_key = self._tox.group_get_chat_id(group_number)
+        try:
+            public_key = self._tox.group_get_chat_id(group_number)
+        except Exception as e:
+            return None
 
         return self.get_group_by_public_key(public_key)
 
@@ -67,8 +78,8 @@ class ContactProvider(tox_save.ToxSave):
 
     def get_group_peer_by_id(self, group, peer_id):
         peer = group.get_peer_by_id(peer_id)
-
-        return self._get_group_peer(group, peer)
+        if peer:
+            return self._get_group_peer(group, peer)
 
     def get_group_peer_by_public_key(self, group, public_key):
         peer = group.get_peer_by_public_key(public_key)

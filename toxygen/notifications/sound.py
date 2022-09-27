@@ -3,6 +3,9 @@ import wave
 import pyaudio
 import os.path
 
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
 
 SOUND_NOTIFICATION = {
     'MESSAGE': 0,
@@ -25,9 +28,19 @@ class AudioFile:
 
     def play(self):
         data = self.wf.readframes(self.chunk)
-        while data:
-            self.stream.write(data)
-            data = self.wf.readframes(self.chunk)
+        try:
+            while data:
+                self.stream.write(data)
+                data = self.wf.readframes(self.chunk)
+        except Exception as e:
+            LOG.error(f"Error during AudioFile play {e!s}")
+            LOG.debug("Error during AudioFile play " \
+                      +' rate=' +str(self.wf.getframerate()) \
+                      + 'format=' +str(self.p.get_format_from_width(self.wf.getsampwidth())) \
+                      +' channels=' +str(self.wf.getnchannels()) \
+                      )
+
+            raise
 
     def close(self):
         self.stream.close()

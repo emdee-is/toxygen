@@ -1,9 +1,13 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 from contacts import basecontact
 import random
 import threading
 import common.tox_save as tox_save
 from middleware.threads import invoke_in_main_thread
 
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
 
 class Profile(basecontact.BaseContact, tox_save.ToxSave):
     """
@@ -14,6 +18,7 @@ class Profile(basecontact.BaseContact, tox_save.ToxSave):
         :param tox: tox instance
         :param screen: ref to main screen
         """
+        assert tox
         basecontact.BaseContact.__init__(self,
                                          profile_manager,
                                          tox.self_get_name(),
