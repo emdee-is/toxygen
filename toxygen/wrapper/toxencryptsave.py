@@ -1,7 +1,13 @@
-from wrapper import libtox
-from ctypes import c_size_t, create_string_buffer, byref, c_int, ArgumentError, c_char_p, c_bool
-from wrapper.toxencryptsave_enums_and_consts import *
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 
+from ctypes import c_size_t, create_string_buffer, byref, c_int, ArgumentError, c_char_p, c_bool
+
+try:
+    from wrapper import libtox
+    from wrapper.toxencryptsave_enums_and_consts import *
+except:
+    import libtox
+    from toxencryptsave_enums_and_consts import *
 
 class ToxEncryptSave:
 

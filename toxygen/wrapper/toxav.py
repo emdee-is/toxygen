@@ -1,8 +1,16 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+
 from ctypes import c_int, POINTER, c_void_p, byref, ArgumentError, c_uint32, CFUNCTYPE, c_size_t, c_uint8, c_uint16
 from ctypes import c_char_p, c_int32, c_bool, cast
+
 from wrapper.libtox import LibToxAV
 from wrapper.toxav_enums import *
 
+def LOG_ERROR(a): print('EROR> '+a)
+def LOG_WARN(a): print('WARN> '+a)
+def LOG_INFO(a): print('INFO> '+a)
+def LOG_DEBUG(a): print('DBUG> '+a)
+def LOG_TRACE(a): pass # print('DEBUGx: '+a)
 
 class ToxAV:
     """
@@ -97,6 +105,7 @@ class ToxAV:
         :return: True on success.
         """
         toxav_err_call = c_int()
+        LOG_DEBUG(f"toxav_call")
         result = self.libtoxav.toxav_call(self._toxav_pointer, c_uint32(friend_number), c_uint32(audio_bit_rate),
                                            c_uint32(video_bit_rate), byref(toxav_err_call))
         toxav_err_call = toxav_err_call.value
@@ -129,6 +138,11 @@ class ToxAV:
         pointer (c_void_p) to user_data
         :param user_data: pointer (c_void_p) to user data
         """
+        if callback is None:
+            self.libtoxav.toxav_callback_call(self._toxav_pointer, POINTER(None)(), user_data)
+            self.call_cb = None
+            return
+        LOG_DEBUG(f"toxav_callback_call")
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_bool, c_bool, c_void_p)
         self.call_cb = c_callback(callback)
         self.libtoxav.toxav_callback_call(self._toxav_pointer, self.call_cb, user_data)
@@ -146,6 +160,7 @@ class ToxAV:
         :return: True on success.
         """
         toxav_err_answer = c_int()
+        LOG_DEBUG(f"toxav_answer")
         result = self.libtoxav.toxav_answer(self._toxav_pointer, c_uint32(friend_number), c_uint32(audio_bit_rate),
                                              c_uint32(video_bit_rate), byref(toxav_err_answer))
         toxav_err_answer = toxav_err_answer.value
@@ -182,6 +197,11 @@ class ToxAV:
         pointer (c_void_p) to user_data
         :param user_data: pointer (c_void_p) to user data
         """
+        if callback is None:
+            self.libtoxav.toxav_callback_call_state(self._toxav_pointer, POINTER(None)(), user_data)
+            self.call_state_cb = None
+            return
+        LOG_DEBUG(f"callback_call_state")
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_void_p)
         self.call_state_cb = c_callback(callback)
         self.libtoxav.toxav_callback_call_state(self._toxav_pointer, self.call_state_cb, user_data)
@@ -199,6 +219,7 @@ class ToxAV:
         :return: True on success.
         """
         toxav_err_call_control = c_int()
+        LOG_DEBUG(f"call_control")
         result = self.libtoxav.toxav_call_control(self._toxav_pointer, c_uint32(friend_number), c_int(control),
                                                    byref(toxav_err_call_control))
         toxav_err_call_control = toxav_err_call_control.value
@@ -241,7 +262,10 @@ class ToxAV:
         24000, or 48000.
         """
         toxav_err_send_frame = c_int()
-        result = self.libtoxav.toxav_audio_send_frame(self._toxav_pointer, c_uint32(friend_number),
+        LOG_DEBUG(f"toxav_audio_send_frame")
+        assert sampling_rate in [8000, 12000, 16000, 24000, 48000]
+        result = self.libtoxav.toxav_audio_send_frame(self._toxav_pointer,
+                                                       c_uint32(friend_number),
                                                        cast(pcm, c_void_p),
                                                        c_size_t(sample_count), c_uint8(channels),
                                                        c_uint32(sampling_rate), byref(toxav_err_send_frame))
@@ -281,6 +305,7 @@ class ToxAV:
         :param v: V (Chroma) plane data.
         """
         toxav_err_send_frame = c_int()
+        LOG_DEBUG(f"toxav_video_send_frame")
         result = self.libtoxav.toxav_video_send_frame(self._toxav_pointer, c_uint32(friend_number), c_uint16(width),
                                                        c_uint16(height), c_char_p(y), c_char_p(u), c_char_p(v),
                                                        byref(toxav_err_send_frame))
@@ -326,6 +351,11 @@ class ToxAV:
         pointer (c_void_p) to user_data
         :param user_data: pointer (c_void_p) to user data
         """
+        if callback is None:
+            self.libtoxav.toxav_callback_audio_receive_frame(self._toxav_pointer, POINTER(None)(), user_data)
+            self.audio_receive_frame_cb = None
+            return
+        LOG_DEBUG(f"toxav_callback_audio_receive_frame")
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, POINTER(c_uint8), c_size_t, c_uint8, c_uint32, c_void_p)
         self.audio_receive_frame_cb = c_callback(callback)
         self.libtoxav.toxav_callback_audio_receive_frame(self._toxav_pointer, self.audio_receive_frame_cb, user_data)
@@ -357,7 +387,15 @@ class ToxAV:
         user_data       pointer (c_void_p) to user_data
         :param user_data: pointer (c_void_p) to user data
         """
-        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint16, c_uint16, POINTER(c_uint8), POINTER(c_uint8),
-                               POINTER(c_uint8), c_int32, c_int32, c_int32, c_void_p)
+        if callback is None:
+            self.libtoxav.toxav_callback_video_receive_frame(self._toxav_pointer, POINTER(None)(), user_data)
+            self.video_receive_frame_cb = None
+            return
+        
+        LOG_DEBUG(f"toxav_callback_video_receive_frame")
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint16, c_uint16,
+                               POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8),
+                               c_int32, c_int32, c_int32,
+                               c_void_p)
         self.video_receive_frame_cb = c_callback(callback)
         self.libtoxav.toxav_callback_video_receive_frame(self._toxav_pointer, self.video_receive_frame_cb, user_data)

@@ -1,3 +1,5 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+
 TOX_USER_STATUS = {
     'NONE': 0,
     'AWAY': 1,
@@ -37,6 +39,7 @@ TOX_ERR_NEW = {
     'PROXY_NOT_FOUND': 7,
     'LOAD_ENCRYPTED': 8,
     'LOAD_BAD_FORMAT': 9,
+    'TCP_SERVER_ALLOC': 10,
 }
 
 TOX_ERR_BOOTSTRAP = {

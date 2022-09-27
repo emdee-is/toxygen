@@ -1,3 +1,5 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+
 TOXAV_ERR_NEW = {
     # The function returned successfully.
     'OK': 0,
