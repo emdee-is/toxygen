@@ -1,0 +1,19 @@
+.QWidget {font-family Helvetica;}
+.QCheckBox { font-family Helvetica;}
+.QComboBox { font-family Helvetica;}
+.QGroupBox { font-family Helvetica;}
+.QLabel {font-family Helvetica;}
+.QLineEdit { font-family Helvetica;}
+.QListWidget { font-family Helvetica;}
+.QListWidgetItem { font-family Helvetica;}
+.QMainWindow {font-family Helvetica;}
+.QMenu {font-family Helvetica;}
+.QMenuBar {font-family Helvetica;}
+.QPlainText {font-family Courier; weight: 75;}
+.QPlainTextEdit {font-family Courier;}
+.QPushButton {font-family Helvetica;}
+.QRadioButton { font-family Helvetica; }
+.QText {font-family Courier; weight: 75; }
+.QTextBrowser {font-family Courier; weight: 75; }
+.QTextSingleLine {font-family Courier; weight: 75; }
+.QToolBar { font-weight: bold; }
