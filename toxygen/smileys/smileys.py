@@ -4,11 +4,6 @@ import os
 from collections import OrderedDict
 from PyQt5 import QtCore
 
-# LOG=util.log
-global LOG
-import logging
-LOG = logging.getLogger('app.'+__name__)
-log = lambda x: LOG.info(x)
 
 class SmileyLoader:
     """
@@ -36,7 +31,7 @@ class SmileyLoader:
                     self._smileys = json.loads(fl.read())
                     fl.seek(0)
                     tmp = json.loads(fl.read(), object_pairs_hook=OrderedDict)
-                LOG.info('Smiley pack {} loaded'.format(pack_name))
+                print('Smiley pack {} loaded'.format(pack_name))
                 keys, values, self._list = [], [], []
                 for key, value in tmp.items():
                     value = util.join_path(self.get_smileys_path(), value)
@@ -47,7 +42,7 @@ class SmileyLoader:
             except Exception as ex:
                 self._smileys = {}
                 self._list = []
-                LOG.error('Smiley pack {} was not loaded. Error: {}'.format(pack_name, str(ex)))
+                print('Smiley pack {} was not loaded. Error: {}'.format(pack_name, ex))
 
     def get_smileys_path(self):
         return util.join_path(util.get_smileys_directory(), self._curr_pack) if self._curr_pack is not None else None

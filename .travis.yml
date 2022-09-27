@@ -12,13 +12,13 @@ before_install:
   - sudo apt-get install -y checkinstall build-essential
   - sudo apt-get install portaudio19-dev
   - sudo apt-get install libsecret-1-dev
-
   - sudo apt-get install libconfig-dev libvpx-dev check -qq
 install:
-  - pip3 install sip
-  - pip3 install pyaudio
-  - pip3 install pyqt5==5.14
-  - pip3 install opencv-python
+  - pip install sip
+  - pip install pyqt5
+  - pip install pyaudio
+  - pip install opencv-python
+  - pip install pydenticon
 before_script:
 # Opus
   - wget http://downloads.xiph.org/releases/opus/opus-1.0.3.tar.gz
@@ -38,14 +38,15 @@ before_script:
   - sudo ldconfig
   - cd ..
 # Toxcore
-  - git clone https://github.com/irungentoo/toxcore.git
+  - git clone https://github.com/ingvar1995/toxcore.git --branch=ngc_rebase
   - cd toxcore
-  - autoreconf -if
-  - ./configure
+  - mkdir _build && cd _build
+  - cmake ..
   - make -j$(nproc)
   - sudo make install
   - echo '/usr/local/lib/' | sudo tee -a /etc/ld.so.conf.d/locallib.conf
   - sudo ldconfig
+  - cd ..
   - cd ..
 script:
   - py.test tests/travis.py

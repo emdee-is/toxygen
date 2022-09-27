@@ -1,6 +1,5 @@
 *.pyc
 *.pyo
-*.ui
 toxygen/toxcore
 tests/tests
 tests/libs
@@ -25,3 +24,5 @@ html
 Toxygen.egg-info
 *.tox
 .cache
+*.db
+
