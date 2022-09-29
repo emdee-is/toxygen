@@ -35,8 +35,15 @@ class AddContact(CenteredWidget):
 
         self.messagePlainTextEdit.document().setPlainText(util_ui.tr('Hello! Please add me to your contact list.'))
         self.addContactPushButton.clicked.connect(self._add_friend)
+
+        # self.addBootstrapPushButton.clicked.connect(self._add_bootstrap)
         self._retranslate_ui()
 
+    def _add_bootstrap(self):
+        if self._bootstrap:
+            return
+        self._bootstrap = True
+        
     def _add_friend(self):
         if self._adding:
             return
@@ -59,6 +66,53 @@ class AddContact(CenteredWidget):
         self.toxIdLabel.setText(util_ui.tr('TOX ID:'))
         self.messageLabel.setText(util_ui.tr('Message:'))
         self.toxIdLineEdit.setPlaceholderText(util_ui.tr('TOX ID or public key of contact'))
+
+# unfinished copy of addContact
+class AddBootstrap(CenteredWidget):
+    """Add bootstrap form"""
+
+    def __init__(self, settings, bootstraps_manager, tox_id=''):
+        super().__init__()
+        self._app = QtWidgets.QApplication.instance()
+        self._settings = settings
+        self._bootstraps_manager = bootstraps_manager
+        uic.loadUi(get_views_path('add_bootstrap_screen'), self)
+        self._update_ui(tox_id)
+        self._adding = False
+
+    def _update_ui(self, tox_id):
+        self.toxIdLineEdit = LineEdit(self)
+        self.toxIdLineEdit.setGeometry(QtCore.QRect(50, 40, 460, 30))
+        self.toxIdLineEdit.setText(tox_id)
+
+        self.messagePlainTextEdit.document().setPlainText(util_ui.tr('Hello! Please add me to your bootstrap list.'))
+        self.addBootstrapPushButton.clicked.connect(self._add_friend)
+
+        # self.addBootstrapPushButton.clicked.connect(self._add_bootstrap)
+        self._retranslate_ui()
+
+    def _add_bootstrap(self):
+        if self._bootstrap:
+            return
+        self._bootstrap = True
+        tox_id = self.toxIdLineEdit.text().strip()
+        if tox_id.startswith('tox:'):
+            tox_id = tox_id[4:]
+        message = self.messagePlainTextEdit.toPlainText()
+        send = self._bootstraps_manager.send_friend_request(tox_id, message)
+        self._adding = False
+        if send is True:
+            # request was successful
+            self.close()
+        else:  # print error data
+            self.errorLabel.setText(send)
+
+    def _retranslate_ui(self):
+        self.setWindowTitle(util_ui.tr('Add bootstrap'))
+        self.addBootstrapPushButton.setText(util_ui.tr('Send request'))
+        self.toxIdLabel.setText(util_ui.tr('Port:'))
+        self.messageLabel.setText(util_ui.tr('Message:'))
+        self.toxIdLineEdit.setPlaceholderText(util_ui.tr('IP or hostname of public key of bootstrap'))
 
 
 class NetworkSettings(CenteredWidget):
@@ -562,7 +616,7 @@ class VideoSettings(CenteredWidget):
                     self.deviceComboBox.addItem(util_ui.tr('Device #') + str(i))
 
         if 'device' not in self._settings['video']:
-            LOG.warn("'device' not in self._settings['video']: {self._settings!r}")
+            LOG.warn(f"'device' not in self._settings['video']: {self._settings!r}")
             self._settings['video']['device'] = self._devices[-1]    
         iIndex = self._settings['video']['device']
         try:
@@ -570,9 +624,10 @@ class VideoSettings(CenteredWidget):
             self.deviceComboBox.setCurrentIndex(index)
         except Exception as e:
             # off by one - what's Desktop?
-            se = f"ERROR: Video devices index error: index={iIndex} {e}"
+            se = f"Video devices index error: index={iIndex} {e}"
             LOG.warn(se)
             # util_ui.message_box(se, util_ui.tr(f"ERROR: Video devices error"))
+            self._settings['video']['device'] = self._devices[-1]    
 
         self._retranslate_ui()
 

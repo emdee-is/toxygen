@@ -10,6 +10,7 @@ from gevent import monkey; monkey.patch_all(); del monkey   # noqa
 import gevent
 
 import tests.support_testing as ts
+from tests.tests_wrapper import bootstrap_iNodeInfo
 from user_data import settings
 
 IDLE_PERIOD = 0.10
@@ -116,9 +117,8 @@ from contacts.group_peer_factory import GroupPeerFactory
 from user_data.backup_service import BackupService
 import styles.style  # TODO: dynamic loading
 
-from tests.support_testing import lLOCAL, lGOOD, lNEW, lRELAYS, inodeinfo_test
-from tests.bootstrap_node_info import iNodeInfo
-from tests.tests_socks import main as oTOX_OPTIONS, iMain, ToxOptions
+from tests.support_testing import lLOCAL, lGOOD, lNEW, lRELAYS
+from tests.tests_wrapper import main as oTOX_OPTIONS, iMain, ToxOptions, iNodeInfo
 
 global iI
 iI = 0
@@ -949,9 +949,9 @@ class App:
         env = self._test_env()
         if lElts is None:
             lElts = env['lElts']
-        # shuffle(env['lElts'])
+        shuffle(env['lElts'])
         try:
-            inodeinfo_test(env['lElts'], env)
+            bootstrap_iNodeInfo(lElts)
         except Exception as e:
             # json.decoder.JSONDecodeError
             LOG.error(f"test_tox ' +' :  {e}")
