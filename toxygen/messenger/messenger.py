@@ -1,7 +1,7 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import common.tox_save as tox_save
 from messenger.messages import *
-from tests.support_testing import assert_main_thread
+from wrapper_tests.support_testing import assert_main_thread
 
 global LOG
 import logging
@@ -170,7 +170,9 @@ class Messenger(tox_save.ToxSave):
             return
         assert_main_thread()
 
+        # FixMe: peer_id is None?
         group_peer_contact = self._contacts_manager.get_or_create_group_peer_contact(group_number, peer_id)
+        # group_peer_contact now may be None
         group = self._get_group_by_number(group_number)
         messages = self._split_message(text.encode('utf-8'))
         t = util.get_unix_time()

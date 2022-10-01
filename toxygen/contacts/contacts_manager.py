@@ -40,8 +40,11 @@ class ContactsManager(ToxSave):
         self._history = history
         self._load_contacts()
 
-    def _log(self, s): self._ms(s)
-
+    def _log(self, s):
+        try:
+            self._ms._log(s)
+        except: pass
+        
     def get_contact(self, num):
         if num < 0 or num >= len(self._contacts):
             return None
@@ -431,6 +434,7 @@ class ContactsManager(ToxSave):
         :param message: additional message
         :return: True on success else error string
         """
+        retval = ''
         try:
             message = message or 'Hello! Add me to your contact list please'
             if len(tox_id) == TOX_PUBLIC_KEY_SIZE * 2:  # public key

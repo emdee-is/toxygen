@@ -5,18 +5,14 @@ from utils.util import *
 from PyQt5 import QtNetwork
 from PyQt5 import QtCore
 try:
-    import requests
-except ImportError:
-    requests = None
-try:
-    import pycurl
     import certifi
     from io import BytesIO
 except ImportError:
-    pycurl = None
+    certifi = None
 
 from user_data.settings import get_user_config_path
-from tests.support_testing import download_url, _get_nodes_path
+from wrapper_tests.support_testing import _get_nodes_path
+from wrapper_tests.support_http import download_url
 
 global LOG
 import logging
@@ -33,7 +29,7 @@ def download_nodes_list(settings, oArgs):
             result = fl.read()
             return result
     LOG.debug("downloading list of nodes")
-    result = download_url(url, settings._app)
+    result = download_url(url, settings._app._settings)
     if not result:
         LOG.warn("failed downloading list of nodes")
         return ''

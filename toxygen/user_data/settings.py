@@ -1,7 +1,8 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+
+import os
 from platform import system
 import json
-import os
 from pprint import pprint
 
 from utils.util import *
@@ -10,7 +11,7 @@ from common.event import Event
 import utils.ui as util_ui
 import utils.util as util_utils
 import user_data
-import tests.support_testing as ts
+import wrapper_tests.support_testing as ts
 
 global LOG
 import logging
@@ -210,10 +211,15 @@ class Settings(dict):
             text = bytes(self._toxes.pass_encrypt(bytes(text, 'utf-8')))
         else:
             text = bytes(text, 'utf-8')
-        with open(self._path, 'wb') as fl:
-            fl.write(text)
-
-        self._settings_saved_event(text)
+        tmp = self._path + str(os.getpid())
+        try:
+            with open(tmp, 'wb') as fl:
+                fl.write(text)
+            os.rename(tmp, self._path)
+        except Exception as e:
+            LOG.warn(f'Error saving to {self._path} ' +str(e))
+        else:
+            self._settings_saved_event(text)
 
     def close(self):
         path = self._profile_path + '.lock'

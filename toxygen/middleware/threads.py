@@ -6,7 +6,7 @@ from PyQt5 import QtCore
 
 from bootstrap.bootstrap import *
 from bootstrap.bootstrap import download_nodes_list
-import tests.support_testing as ts
+import wrapper_tests.support_testing as ts
 from utils import util
 
 if 'QtCore' in sys.modules:

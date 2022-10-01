@@ -10,7 +10,7 @@ from av.call import Call
 import common.tox_save
 
 from utils import ui as util_ui
-import tests.support_testing as ts
+import wrapper_tests.support_testing as ts
 from middleware.threads import invoke_in_main_thread
 from main import sleep
 from middleware.threads import BaseThread

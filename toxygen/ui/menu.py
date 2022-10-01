@@ -7,7 +7,7 @@ from utils.util import *
 from ui.widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
 import updater.updater as updater
 import utils.ui as util_ui
-import tests.support_testing as ts
+import wrapper_tests.support_testing as ts
 from user_data import settings
 
 global LOG
@@ -56,9 +56,10 @@ class AddContact(CenteredWidget):
         self._adding = False
         if send is True:
             # request was successful
-            self.close()
-        else:  # print error data
+            pass
+        elif send and type(send) == str:  # print error data
             self.errorLabel.setText(send)
+        self.close()
 
     def _retranslate_ui(self):
         self.setWindowTitle(util_ui.tr('Add contact'))

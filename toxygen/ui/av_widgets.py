@@ -6,7 +6,7 @@ import wave
 
 from ui import widgets
 import utils.util as util
-import tests.support_testing as ts
+import wrapper_tests.support_testing as ts
 
 global LOG
 import logging

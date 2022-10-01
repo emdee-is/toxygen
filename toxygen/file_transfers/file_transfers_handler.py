@@ -3,7 +3,7 @@ from messenger.messages import *
 from ui.contact_items import *
 import utils.util as util
 from common.tox_save import ToxSave
-from tests.support_testing import assert_main_thread
+from wrapper_tests.support_testing import assert_main_thread
 from copy import deepcopy
 
 # LOG=util.log

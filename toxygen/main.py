@@ -12,7 +12,7 @@ faulthandler.enable()
 import warnings
 warnings.filterwarnings('ignore')
 
-import tests.support_testing as ts
+import wrapper_tests.support_testing as ts
 try:
     from trepan.interfaces import server as Mserver
     from trepan.api import debug

@@ -9,8 +9,8 @@ from time import sleep
 from gevent import monkey; monkey.patch_all(); del monkey   # noqa
 import gevent
 
-import tests.support_testing as ts
-from tests.tests_wrapper import bootstrap_iNodeInfo
+import wrapper_tests.support_testing as ts
+from wrapper_tests.tests_wrapper import bootstrap_iNodeInfo
 from user_data import settings
 
 IDLE_PERIOD = 0.10
@@ -117,8 +117,8 @@ from contacts.group_peer_factory import GroupPeerFactory
 from user_data.backup_service import BackupService
 import styles.style  # TODO: dynamic loading
 
-from tests.support_testing import lLOCAL, lGOOD, lNEW, lRELAYS
-from tests.tests_wrapper import main as oTOX_OPTIONS, iMain, ToxOptions, iNodeInfo
+from wrapper_tests.support_testing import lLOCAL, lGOOD, lNEW, lRELAYS
+from wrapper_tests.tests_wrapper import main as oTOX_OPTIONS, iMain, ToxOptions, iNodeInfo
 
 global iI
 iI = 0
