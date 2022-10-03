@@ -271,8 +271,8 @@ def main_parser():
     parser.add_argument('--download_nodes_url', type=str,
                         default='https://nodes.tox.chat/json')
     parser.add_argument('--network', type=str,
-                        choices=['old', 'new', 'local', 'newlocal'],
-                        default='new')
+                        choices=['old', 'main', 'new', 'local', 'newlocal'],
+                        default='old')
     parser.add_argument('--video_input', type=str,
                         default=-1,
                         choices=default_video['output_devices'],

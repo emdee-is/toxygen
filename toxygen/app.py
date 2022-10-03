@@ -823,6 +823,17 @@ class App:
                  # LOG.error(traceback.format_exc())
         # LOG.info("Connected status: " +repr(self._tox.self_get_connection_status()))
 
+    def loop(self, n):
+        """
+        Im guessings - there are 3 sleeps - time, tox, and Qt
+        """
+        interval = self._tox.iteration_interval()
+        for i in range(n):
+            self._tox.iterate()
+            QtCore.QThread.msleep(interval)
+            # NO QtCore.QCoreApplication.processEvents()
+            sleep(interval / 1000.0)
+
     def _test_tox(self):
         self.test_net()
         self._ms.log_console()
@@ -872,10 +883,8 @@ class App:
             if status > 0:
                 LOG.info(f"Connected # {i}" +' : ' +repr(status))
                 break
-            QtCore.QThread.msleep(3000)
-            # NO QtCore.QCoreApplication.processEvents()
             LOG.trace(f"Connected status #{i}: {status!r}")
-            sleep(1)
+            self.loop(2)
 
     def _test_env(self):
         _settings = self._settings
@@ -899,11 +908,11 @@ class App:
             lElts = _settings['current_nodes']
         elif _settings['network'] in ['local', 'newlocal']:
             lElts = lLOCAL
-        elif _settings['network'] == 'old':
+        elif _settings['network'] in ['main', 'old']:
             lElts = lGOOD
         elif 'proxy_type' not in _settings or _settings['proxy_type'] == 0 or \
           not _settings['proxy_host'] or not _settings['proxy_port']:
-            lElts = lNEW
+            lElts = lGOOD
         else:
             lElts = lRELAYS
         env['lElts'] = lElts
@@ -917,7 +926,8 @@ class App:
         #shuffle(env['lElts'])
         LOG.debug(f"_test_bootstrap #Elts={len(lElts)}")
         LOG.trace(f"_test_bootstrap lElts={lElts[:10]}")
-        for host,port,key in lElts[:10]:
+        shuffle(env['lElts'])        
+        for host,port,key in lElts[:8]:
             try:
                 assert len(key) == 64, key
                 assert len(host) <= 16, host
