@@ -810,10 +810,10 @@ class App:
     def _test_relays(self, lElts=None):
         env = self._test_env()
         if lElts is None:
-            lElts = env['lElts']
-        # shuffle(env['lElts'])
+            lElts = self._settings['current_nodes_tcp']
+        shuffle(lElts)
         LOG.debug(f"_test_relays {len(env['lElts'])}")
-        for host,port,key in env['lElts'][:10]:
+        for host,port,key in lElts[:10]:
             try:
                 oRet = self._tox.add_tcp_relay(host, port, key)
                 LOG.debug('add_tcp_relay to ' +host +':' +str(port) \
@@ -842,12 +842,20 @@ class App:
 
         LOG.debug("test_net " +self._args.network)
         # bootstrap
-        LOG.debug('Calling generate_nodes: ')
-        lNodes = ts.generate_nodes(oArgs=self._args)
-        if lNodes:
-            self._settings['current_nodes'] = lNodes
-        else:
-            LOG.warn('empty generate_nodes: ')
+        LOG.debug('Calling generate_nodes: udp')
+        lNodes = ts.generate_nodes(oArgs=self._args,
+                                   ipv='ipv4',
+                                   udp_not_tcp=True)
+        self._settings['current_nodes_udp'] = lNodes
+        if not lNodes:
+            LOG.warn('empty generate_nodes udp')
+        LOG.debug('Calling generate_nodes: tcp')
+        lNodes = ts.generate_nodes(oArgs=self._args,
+                                   ipv='ipv4',
+                                   udp_not_tcp=False)
+        self._settings['current_nodes_tcp'] = lNodes
+        if not lNodes:
+            LOG.warn('empty generate_nodes tcp')
 
         # if oThread and oThread._stop_thread: return
         LOG.debug("test_net network=" +self._args.network +' iMax=' +str(iMax))
@@ -874,10 +882,10 @@ class App:
             # if oThread and oThread._stop_thread: return
             i = i + 1
             LOG.debug(f"bootstrapping status # {i}")
-            self._test_bootstrap()
+            self._test_bootstrap(self._settings['current_nodes_udp'])
             if hasattr(self._args, 'proxy_type') and self._args.proxy_type > 0:
                 LOG.debug(f"relaying status # {i}")
-                self._test_relays()
+                self._test_relays(self._settings['current_nodes_tcp'])
             status = self._tox.self_get_connection_status()
             LOG.debug(f"connecting status # {i}" +' : ' +repr(status))
             if status > 0:
@@ -891,41 +899,32 @@ class App:
         if 'proxy_type' not in _settings or _settings['proxy_type'] == 0 or \
           not _settings['proxy_host'] or not _settings['proxy_port']:
             env = dict( prot = 'ipv4')
+            lElts = self._settings['current_nodes_udp']
         elif _settings['proxy_type'] == 2:
             env = dict(prot = 'socks5',
                        https_proxy='', \
                        socks_proxy='socks5://' \
                        +_settings['proxy_host'] +':' \
                        +str(_settings['proxy_port']))
+            lElts = self._settings['current_nodes_tcp']
         elif _settings['proxy_type'] == 1:
             env = dict(prot = 'https',
                        socks_proxy='', \
                        https_proxy='http://' \
                        +_settings['proxy_host'] +':' \
                        +str(_settings['proxy_port']))
-        if 'current_nodes' in _settings and _settings['current_nodes']:
-            LOG.debug("Using current nodes "+' : ' +str(len(_settings['current_nodes'])))
-            lElts = _settings['current_nodes']
-        elif _settings['network'] in ['local', 'newlocal']:
-            lElts = lLOCAL
-        elif _settings['network'] in ['main', 'old']:
-            lElts = lGOOD
-        elif 'proxy_type' not in _settings or _settings['proxy_type'] == 0 or \
-          not _settings['proxy_host'] or not _settings['proxy_port']:
-            lElts = lGOOD
-        else:
-            lElts = lRELAYS
+            lElts = _settings['current_nodes_tcp']
         env['lElts'] = lElts
-        LOG.debug(f"test_env {len(env['lElts'])}")
+        LOG.debug(f"test_env {len(lElts)}")
         return env
 
     def _test_bootstrap(self, lElts=None):
         env = self._test_env()
         if lElts is None:
-            lElts = env['lElts']
-        #shuffle(env['lElts'])
+            lElts = self._settings['current_nodes_udp']
+        shuffle(lElts)
         LOG.debug(f"_test_bootstrap #Elts={len(lElts)}")
-        LOG.trace(f"_test_bootstrap lElts={lElts[:10]}")
+        LOG.trace(f"_test_bootstrap lElts={lElts[:8]}")
         shuffle(env['lElts'])        
         for host,port,key in lElts[:8]:
             try:

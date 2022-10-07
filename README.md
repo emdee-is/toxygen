@@ -49,4 +49,5 @@ Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pu
 This hard-forked from https://github.com/toxygen-project/toxygen
 ```next_gen``` branch.
 
-Work on this project is suspended until the MultiDevice problem is solved.
+Work on this project is suspended until the
+[MultiDevice](https://git.plastiras.org/emdee/tox_profile/wiki/MultiDevice-Announcements-POC) problem is solved. Fork me!
