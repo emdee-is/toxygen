@@ -43,7 +43,7 @@ class AddContact(CenteredWidget):
         if self._bootstrap:
             return
         self._bootstrap = True
-        
+
     def _add_friend(self):
         if self._adding:
             return
@@ -497,7 +497,7 @@ class AudioSettings(CenteredWidget):
         uic.loadUi(get_views_path('audio_settings_screen'), self)
         self._update_ui()
         self.center()
-        
+
     def closeEvent(self, event):
         if 'audio' not in self._settings:
             ex = f"self._settings=id(self._settings) {self._settings!r}"
@@ -618,7 +618,7 @@ class VideoSettings(CenteredWidget):
 
         if 'device' not in self._settings['video']:
             LOG.warn(f"'device' not in self._settings['video']: {self._settings!r}")
-            self._settings['video']['device'] = self._devices[-1]    
+            self._settings['video']['device'] = self._devices[-1]
         iIndex = self._settings['video']['device']
         try:
             index = self._devices.index(iIndex)
@@ -628,7 +628,7 @@ class VideoSettings(CenteredWidget):
             se = f"Video devices index error: index={iIndex} {e}"
             LOG.warn(se)
             # util_ui.message_box(se, util_ui.tr(f"ERROR: Video devices error"))
-            self._settings['video']['device'] = self._devices[-1]    
+            self._settings['video']['device'] = self._devices[-1]
 
         self._retranslate_ui()
 

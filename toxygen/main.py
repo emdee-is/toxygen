@@ -306,13 +306,13 @@ lKEEP_SETTINGS = ['uri',
                   'loglevel',
                   'logfile',
                   'mode',
-                  
+
                   # dunno
                   'audio_input',
                   'audio_output',
                   'audio',
                   'video',
-                  
+
                   'ipv6_enabled',
                   'udp_enabled',
                   'local_discovery_enabled',
@@ -378,15 +378,16 @@ def main(lArgs):
     #setattr(aArgs, 'video', setup_video(oArgs))
     aArgs.video = setup_video(oArgs)
     assert 'video' in aArgs.__dict__
-   
+
     #setattr(aArgs, 'audio', setup_audio(oArgs))
     aArgs.audio = setup_audio(oArgs)
     assert 'audio' in aArgs.__dict__
     oArgs = aArgs
-    
+
     toxygen = app.App(__version__, oArgs)
     global oAPP
     oAPP = toxygen
+    __builtins__['app'] = toxygen
     i = toxygen.iMain()
     return i
 

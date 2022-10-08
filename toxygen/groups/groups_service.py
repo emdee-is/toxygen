@@ -7,6 +7,9 @@ from groups.group_invite import GroupInvite
 import wrapper.toxcore_enums_and_consts as constants
 from wrapper.toxcore_enums_and_consts import *
 
+global LOG
+import logging
+LOG = logging.getLogger('app.'+'gs')
 
 class GroupsService(tox_save.ToxSave):
 
@@ -19,6 +22,8 @@ class GroupsService(tox_save.ToxSave):
         self._widgets_factory_provider = widgets_factory_provider
         self._group_invites = []
         self._screen = None
+        # maybe just use self
+        self._tox = tox
 
     def set_tox(self, tox):
         super().set_tox(tox)
@@ -30,7 +35,11 @@ class GroupsService(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def create_new_gc(self, name, privacy_state, nick, status):
-        group_number = self._tox.group_new(privacy_state, name, nick, status)
+        try:
+            group_number = self._tox.group_new(privacy_state, name, nick, status)
+        except Exception as e:
+            LOG.error(f"create_new_gc {e}")
+            return
         if group_number == -1:
             return
 
@@ -48,8 +57,9 @@ class GroupsService(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def leave_group(self, group_number):
-        self._tox.group_leave(group_number)
-        self._contacts_manager.delete_group(group_number)
+        if type(group_number) == int:
+            self._tox.group_leave(group_number)
+            self._contacts_manager.delete_group(group_number)
 
     def disconnect_from_group(self, group_number):
         self._tox.group_disconnect(group_number)
@@ -73,7 +83,7 @@ class GroupsService(tox_save.ToxSave):
             e = f"Friend not connected friend_number={friend_number}"
             util_ui.message_box(title +'\n' +str(e), title)
             return
-        
+
         try:
             self._tox.group_invite_friend(group_number, friend_number)
         except Exception as e:
@@ -246,8 +256,14 @@ class GroupsService(tox_save.ToxSave):
             self._group_invites.remove(invite)
 
     def _join_gc_via_invite(self, invite_data, friend_number, nick, status, password):
-        group_number = self._tox.group_invite_accept(invite_data, friend_number, nick, status, password)
-        self._add_new_group_by_number(group_number)
+        if nick is None: nick = ''
+        if invite_data is None: invite_data = ''
+        try:
+            group_number = self._tox.group_invite_accept(invite_data, friend_number, nick, status, password)
+        except Exception as e:
+            LOG.error(f"_join_gc_via_invite {e}")
+        else:
+            self._add_new_group_by_number(group_number)
 
     def _update_invites_button_state(self):
         self._main_screen.update_gc_invites_button_state()

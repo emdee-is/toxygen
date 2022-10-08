@@ -3,7 +3,6 @@ from PyQt5 import uic
 import utils.util as util
 import utils.ui as util_ui
 
-
 class GroupManagementScreen(CenteredWidget):
 
     def __init__(self, groups_service, group):
@@ -21,6 +20,7 @@ class GroupManagementScreen(CenteredWidget):
         self.privacyStateComboBox.setCurrentIndex(1 if self._group.is_private else 0)
         self.peersLimitSpinBox.setValue(self._group.peers_limit)
 
+        self.deletePushButton.clicked.connect(self._delete)
         self.savePushButton.clicked.connect(self._save)
 
     def _retranslate_ui(self):
@@ -28,11 +28,20 @@ class GroupManagementScreen(CenteredWidget):
         self.passwordLabel.setText(util_ui.tr('Password:'))
         self.peerLimitLabel.setText(util_ui.tr('Peer limit:'))
         self.privacyStateLabel.setText(util_ui.tr('Privacy state:'))
+        self.deletePushButton.setText(util_ui.tr('Delete'))
         self.savePushButton.setText(util_ui.tr('Save'))
 
         self.privacyStateComboBox.clear()
         self.privacyStateComboBox.addItem(util_ui.tr('Public'))
         self.privacyStateComboBox.addItem(util_ui.tr('Private'))
+
+    def _delete(self):
+        self._groups_service.leave_group(self._group.number)
+        self.close()
+
+    def _disconnect(self):
+        self._groups_service.disconnect_from_group(self._group.number)
+        self.close()
 
     def _save(self):
         password = self.passwordLineEdit.text()

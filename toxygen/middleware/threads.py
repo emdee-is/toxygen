@@ -119,11 +119,11 @@ class InitThread(BaseThread):
                                 args=list(),
                                 kwargs=dict(lElts=None, oThread=self, iMax=2)
                                 ).start()
-                
+
             if self._is_first_start:
                 LOG_INFO('starting plugins')
                 self._plugin_loader.load()
-                
+
         except Exception as e:
             LOG_DEBUG(f"InitThread run: ERROR {e}")
             pass
@@ -157,7 +157,7 @@ class ToxAVIterateThread(BaseQThread):
     def __init__(self, toxav):
         super().__init__()
         self._toxav = toxav
-        
+
     def run(self):
         LOG_DEBUG('ToxAVIterateThread run: ')
         while not self._stop_thread:

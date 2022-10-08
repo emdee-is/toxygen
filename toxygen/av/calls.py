@@ -101,7 +101,7 @@ class AV(common.tox_save.ToxAvSave):
     def accept_call(self, friend_number, audio_enabled, video_enabled):
         # obsolete
         return call_accept_call(self, friend_number, audio_enabled, video_enabled)
-    
+
     def call_accept_call(self, friend_number, audio_enabled, video_enabled):
         LOG.debug(f"call_accept_call from {friend_number} {self._running}" +
                   f"{audio_enabled} {video_enabled}")
@@ -304,7 +304,7 @@ class AV(common.tox_save.ToxAvSave):
         LOG.info("start_video_thread " \
                  +f" device: {s['video']['device']}" \
                  +f" supported: {s['video']['width']} {s['video']['height']}")
-            
+
         self._video_running = True
         self._video_thread = BaseThread(target=self.send_video,
                                         name='_video_thread')

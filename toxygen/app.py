@@ -38,7 +38,7 @@ def setup_logging(oArgs):
             setattr(oArgs, 'log_oFd', oFd)
             aKw['stream'] = oFd
         coloredlogs.install(**aKw)
-        
+
     else:
         aKw = dict(level=oArgs.loglevel,
                    format='%(name)s %(levelname)-4s %(message)s')
@@ -162,6 +162,7 @@ class App:
         LOG.info("Starting toxygen version " +version)
 
         self._version = version
+        self._tox = None
         self._app = self._settings = self._profile_manager = None
         self._plugin_loader = self._messenger = None
         self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
@@ -268,7 +269,7 @@ class App:
         if hasattr(oArgs, 'log_oFd'):
             oArgs.log_oFd.close()
             delattr(oArgs, 'log_oFd')
-            
+
         # failsafe: segfaults on exit
         if hasattr(self, '_tox'):
             if self._tox and hasattr(self._tox, 'kill'):
@@ -777,6 +778,7 @@ class App:
         retval = tox_factory(data=data, settings=settings_,
                              args=self._args, app=self)
         LOG.debug("_create_tox succeeded")
+        self._tox = retval
         return retval
 
     def _force_exit(self, retval=0):
@@ -925,7 +927,7 @@ class App:
         shuffle(lElts)
         LOG.debug(f"_test_bootstrap #Elts={len(lElts)}")
         LOG.trace(f"_test_bootstrap lElts={lElts[:8]}")
-        shuffle(env['lElts'])        
+        shuffle(env['lElts'])
         for host,port,key in lElts[:8]:
             try:
                 assert len(key) == 64, key

@@ -167,7 +167,7 @@ def friend_status_message(contacts_manager, messenger):
         friend = contacts_manager.get_friend_by_number(friend_number)
         key = f"friend_number={friend_number}"
         if bTooSoon(key, sSlot, 10): return
-                
+
         invoke_in_main_thread(friend.set_status_message, str(status_message, 'utf-8'))
         LOG_DEBUG(f'User #{friend_number} has new status message')
         invoke_in_main_thread(messenger.send_messages, friend_number)
@@ -480,7 +480,7 @@ def group_private_message(window, tray, tox, messenger, settings, profile):
         if settings['sound_notifications'] and bl and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['MESSAGE'])
         icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
-        if tray and hasattr(tray, 'setIcon'):        
+        if tray and hasattr(tray, 'setIcon'):
             invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
 
     return wrapped

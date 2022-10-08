@@ -50,7 +50,7 @@ class GroupBansScreen(CenteredWidget):
     def _retranslate_ui(self):
 #        self.setWindowTitle(util_ui.tr('Bans list for group "{}"').format(self._group.name))
         pass
-    
+
     def _refresh_bans_list(self):
         self.bansListWidget.clear()
         can_cancel_ban = self._group.is_self_moderator_or_founder()

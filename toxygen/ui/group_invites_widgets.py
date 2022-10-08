@@ -27,6 +27,7 @@ class GroupInvitesScreen(CenteredWidget):
         self._groups_service = groups_service
         self._profile = profile
         self._contacts_provider = contacts_provider
+        self._tox = self._groups_service._tox
 
         uic.loadUi(util.get_views_path('group_invites_screen'), self)
 
@@ -68,6 +69,8 @@ class GroupInvitesScreen(CenteredWidget):
         password = self.passwordLineEdit.text()
         status = self.statusComboBox.currentIndex()
 
+        if not nick:
+            nick = self._tox.self_get_name()
         selected_invites = self._get_selected_invites()
         for invite in selected_invites:
             self._groups_service.accept_group_invite(invite, nick, status, password)
@@ -90,7 +93,7 @@ class GroupInvitesScreen(CenteredWidget):
         for index in range(items_count):
             list_item = self.invitesListWidget.item(index)
             item_widget = self.invitesListWidget.itemWidget(list_item)
-            if item_widget.is_selected():
+            if item_widget and item_widget.is_selected():
                 selected.append(all_invites[index])
 
         return selected

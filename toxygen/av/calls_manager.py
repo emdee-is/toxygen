@@ -114,7 +114,7 @@ class CallsManager:
                             util_ui.tr('ERROR Accepting call from {friend_number}'))
         else:
             self._main_screen.active_call()
-            
+
         finally:
             # does not terminate call - just the av_widget
             if friend_number in self._incoming_calls:
@@ -127,7 +127,7 @@ class CallsManager:
 
                 pass
             LOG.debug(f" closed self._call_widgets[{friend_number}]")
-                
+
     def stop_call(self, friend_number, by_friend):
         """
         Stop call with friend

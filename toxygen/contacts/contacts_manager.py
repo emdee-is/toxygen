@@ -44,7 +44,7 @@ class ContactsManager(ToxSave):
         try:
             self._ms._log(s)
         except: pass
-        
+
     def get_contact(self, num):
         if num < 0 or num >= len(self._contacts):
             return None
@@ -254,10 +254,14 @@ class ContactsManager(ToxSave):
         group = self.get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
         if peer: # broken
-            if not self.check_if_contact_exists(peer.public_key):
-                self.add_group_peer(group, peer)
-
-        return self.get_contact_by_tox_id(peer.public_key)
+            if hasattr(peer, 'public_key'):
+                LOG.error(f'no peer public_key ' + repr(dir(peer)))
+            else:
+                if not self.check_if_contact_exists(peer.public_key):
+                    self.add_group_peer(group, peer)
+                return self.get_contact_by_tox_id(peer.public_key)
+        else:
+            LOG.warn(f'no peer group_number={group_number}')
 
     def check_if_contact_exists(self, tox_id):
         return any(filter(lambda c: c.tox_id == tox_id, self._contacts))
@@ -455,7 +459,7 @@ class ContactsManager(ToxSave):
                     title = 'Friend failed'
                     text = 'Friend failed sending friend request'
                     retval = text
-                    
+
         except Exception as ex:  # wrong data
             title = 'Friend add exception'
             text = 'Friend request exception with ' + str(ex)
@@ -466,7 +470,7 @@ class ContactsManager(ToxSave):
         text = util_ui.tr(text)
         util_ui.message_box(text, title)
         return retval
-    
+
     def process_friend_request(self, tox_id, message):
         """
         Accept or ignore friend request

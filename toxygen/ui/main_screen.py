@@ -76,13 +76,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self._contacts_manager = None
         self._tray = tray
         self._app = app
+        self._tox = app._tox
         self._widget_factory = None
         self._modal_window = None
         self._plugins_loader = None
         self.setAcceptDrops(True)
         self._saved = False
         self._smiley_window = None
-        self._profile = self._toxes = self._messenger = None
+        self._profile = None
+        self._toxes = None
+        self._messenger = None
         self._file_transfer_handler = self._history_loader = self._groups_service = self._calls_manager = None
         self._should_show_group_peers_list = False
         self.initUI()
@@ -91,6 +94,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # take a rough guess of 2/3 the default width at the default font
             iMAX = settings['width'] * 2/3 / settings['message_font_size']
         self._me = LogDialog(self, app)
+        self._pe = None
 
     def set_dependencies(self, widget_factory, tray, contacts_manager, messenger, profile, plugins_loader,
                          file_transfer_handler, history_loader, calls_manager, groups_service, toxes, app):
@@ -159,6 +163,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.actionLog_console = QtWidgets.QAction(window)
         self.actionLog_console.setObjectName("actionLog_console")
+        self.actionPython_console = QtWidgets.QAction(window)
+        self.actionPython_console.setObjectName("actionLog_console")
         self.updateSettings = QtWidgets.QAction(window)
         self.actionSettings = QtWidgets.QAction(window)
         self.actionSettings.setObjectName("actionSettings")
@@ -196,6 +202,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuPlugins.addAction(self.reloadPlugins)
         self.menuPlugins.addAction(self.reloadToxchat)
         self.menuPlugins.addAction(self.actionLog_console)
+        self.menuPlugins.addAction(self.actionPython_console)
 
         self.menuAbout.addAction(self.actionAbout_program)
 
@@ -211,6 +218,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionQuit_program.triggered.connect(self.quit_program)
         self.actionAbout_program.triggered.connect(self.about_program)
         self.actionLog_console.triggered.connect(self.log_console)
+        self.actionPython_console.triggered.connect(self.python_console)
         self.actionNetwork.triggered.connect(self.network_settings)
         self.actionAdd_friend.triggered.connect(self.add_contact_triggered)
         self.createGC.triggered.connect(self.create_gc)
@@ -264,6 +272,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionNetwork.setText(util_ui.tr("Network"))
         self.actionAbout_program.setText(util_ui.tr("About program"))
         self.actionLog_console.setText(util_ui.tr("Console Log"))
+        self.actionPython_console.setText(util_ui.tr("Python Console"))
         self.actionTest_tox.setText(util_ui.tr("Bootstrap"))
         self.actionTest_socks.setText(util_ui.tr("Test program"))
         self.actionQuit_program.setText(util_ui.tr("Quit program"))
@@ -553,6 +562,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def log_console(self):
         self._me.show()
+
+    def python_console(self):
+        try:
+            if not self._pe:
+                from pyqtconsole.console import PythonConsole
+                self._pe = PythonConsole(sFont="Courier New", bBold=True)
+            self._pe.show()
+            self._pe.eval_queued()
+            # self._pe.eval_in_thread()
+        except Exception as e:
+            LOG.debug(e)
+            self._me.show()
 
     def about_program(self):
         # TODO: replace with window

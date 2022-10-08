@@ -86,7 +86,7 @@ class GroupChat(contact.Contact, ToxSave):
         if peer_id >  self._peers_limit:
             LOG_WARN(f"add_peer id={peer_id} > {self._peers_limit}")
             return
-        
+
         peer = GroupChatPeer(peer_id,
                              self._tox.group_peer_get_name(self._number, peer_id),
                              self._tox.group_peer_get_status(self._number, peer_id),
