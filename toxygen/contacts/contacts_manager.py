@@ -201,6 +201,12 @@ class ContactsManager(ToxSave):
             part2 = sorted(part2, key=key_lambda)
             self._contacts = part1 + part2
         elif sorting == 0:
+            # AttributeError: 'NoneType' object has no attribute 'number'
+            for (i, contact) in enumerate(self._contacts):
+                if contact is None or not hasattr(contact, 'number'):
+                    LOG.error("Contact {i} is None or not hasattr 'number'")
+                    del self._contacts[i]
+                    continue
             contacts = sorted(self._contacts, key=lambda c: c.number)
             friends = filter(lambda c: type(c) is Friend, contacts)
             groups = filter(lambda c: type(c) is GroupChat, contacts)
@@ -370,13 +376,19 @@ class ContactsManager(ToxSave):
         return list(filter(lambda c: type(c) is GroupChat, self._contacts))
 
     def add_group(self, group_number):
-        group = self._contact_provider.get_group_by_number(group_number)
         index = len(self._contacts)
-        self._contacts.append(group)
-        group.reset_avatar(self._settings['identicons'])
-        self._save_profile()
-        self.set_active(index)
-        self.update_filtration()
+        group = self._contact_provider.get_group_by_number(group_number)
+        if not group:
+            LOG.warn(f"CM.add_group: NO group {group_number}")
+        else:
+            LOG.info(f"CM.add_group: Adding group {group._name}")
+            self._contacts.append(group)
+            LOG.info(f"contacts_manager.add_group: saving profile")
+            self._save_profile()
+            group.reset_avatar(self._settings['identicons'])
+            LOG.info(f"contacts_manager.add_group: setting active")
+            self.set_active(index)
+            self.update_filtration()
 
     def delete_group(self, group_number):
         group = self.get_group_by_number(group_number)
@@ -503,6 +515,7 @@ class ContactsManager(ToxSave):
 
     def update_groups_numbers(self):
         groups = self._contact_provider.get_all_groups()
+        LOG.info("update_groups_numbers len(groups)={len(groups)}")
         for i in range(len(groups)):
             chat_id = self._tox.group_get_chat_id(i)
             group = self.get_contact_by_tox_id(chat_id)
@@ -523,7 +536,13 @@ class ContactsManager(ToxSave):
         self._load_groups()
         if len(self._contacts):
             self.set_active(0)
-        for contact in filter(lambda c: not c.has_avatar(), self._contacts):
+        # filter(lambda c: not c.has_avatar(), self._contacts)
+        for (i, contact) in enumerate(self._contacts):
+            if not contact:
+                LOG.warn("_load_contacts NULL contact {i}")
+                del self._contacts[i]
+                continue
+            if contact.has_avatar(): continue
             contact.reset_avatar(self._settings['identicons'])
         self.update_filtration()
 

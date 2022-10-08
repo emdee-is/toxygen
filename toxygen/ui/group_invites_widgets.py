@@ -2,6 +2,9 @@ from PyQt5 import uic, QtWidgets
 import utils.util as util
 from ui.widgets import *
 
+global LOG
+import logging
+LOG = logging.getLogger('app')
 
 class GroupInviteItem(QtWidgets.QWidget):
 
@@ -73,6 +76,7 @@ class GroupInvitesScreen(CenteredWidget):
             nick = self._tox.self_get_name()
         selected_invites = self._get_selected_invites()
         for invite in selected_invites:
+            LOG.debug(f"_accept_invites {nick}")
             self._groups_service.accept_group_invite(invite, nick, status, password)
 
         self._refresh_invites_list()
@@ -81,6 +85,7 @@ class GroupInvitesScreen(CenteredWidget):
     def _decline_invites(self):
         selected_invites = self._get_selected_invites()
         for invite in selected_invites:
+            LOG.debug(f"_groups_service.decline_group_invite")
             self._groups_service.decline_group_invite(invite)
 
         self._refresh_invites_list()

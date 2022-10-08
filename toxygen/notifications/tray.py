@@ -10,7 +10,7 @@ def tray_notification(title, text, tray, window):
     :param tray: ref to tray icon
     :param window: main window
     """
-    if QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
+    if tray and QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
         if len(text) > 30:
             text = text[:27] + '...'
         tray.showMessage(title, text, QtWidgets.QSystemTrayIcon.NoIcon, 3000)

@@ -50,8 +50,11 @@ class GroupsService(tox_save.ToxSave):
 
     def join_gc_by_id(self, chat_id, password, nick, status):
         group_number = self._tox.group_join(chat_id, password, nick, status)
+        LOG.debug(f"_join_gc_via_id {group_number}")
         self._add_new_group_by_number(group_number)
-
+        group = self._get_group_by_number(group_number)
+        group.status = constants.TOX_USER_STATUS['NONE']
+        
     # -----------------------------------------------------------------------------------------------------------------
     # Groups reconnect and leaving
     # -----------------------------------------------------------------------------------------------------------------
@@ -92,6 +95,8 @@ class GroupsService(tox_save.ToxSave):
 
     def process_group_invite(self, friend_number, group_name, invite_data):
         friend = self._get_friend_by_number(friend_number)
+        # binary  {invite_data}
+        LOG.debug(f"process_group_invite {friend_number} {group_name}")
         invite = GroupInvite(friend.tox_id, group_name, invite_data)
         self._group_invites.append(invite)
         self._update_invites_button_state()
@@ -99,6 +104,7 @@ class GroupsService(tox_save.ToxSave):
     def accept_group_invite(self, invite, name, status, password):
         pk = invite.friend_public_key
         friend = self._get_friend_by_public_key(pk)
+        LOG.debug(f"accept_group_invite {name}")
         self._join_gc_via_invite(invite.invite_data, friend.number, name, status, password)
         self._delete_group_invite(invite)
         self._update_invites_button_state()
@@ -230,6 +236,7 @@ class GroupsService(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def _add_new_group_by_number(self, group_number):
+        LOG.debug(f"_add_new_group_by_number {group_number}")
         self._contacts_manager.add_group(group_number)
 
     def _get_group_by_number(self, group_number):
@@ -256,14 +263,21 @@ class GroupsService(tox_save.ToxSave):
             self._group_invites.remove(invite)
 
     def _join_gc_via_invite(self, invite_data, friend_number, nick, status, password):
-        if nick is None: nick = ''
-        if invite_data is None: invite_data = ''
+        LOG.debug(f"_join_gc_via_invite friend_number={friend_number} nick={nick} datalen={len(invite_data)}")
+        if nick is None:
+            nick = ''
+        if invite_data is None:
+            invite_data = b''
         try:
             group_number = self._tox.group_invite_accept(invite_data, friend_number, nick, status, password)
         except Exception as e:
-            LOG.error(f"_join_gc_via_invite {e}")
-        else:
+            LOG.error(f"_join_gc_via_invite ERROR {e}")
+            return
+        try:
             self._add_new_group_by_number(group_number)
+        except Exception as e:
+            LOG.error(f"_join_gc_via_invite group_number={group_number} {e}")
+            return
 
     def _update_invites_button_state(self):
         self._main_screen.update_gc_invites_button_state()

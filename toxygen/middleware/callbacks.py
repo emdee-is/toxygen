@@ -14,11 +14,18 @@ from notifications.sound import *
 from datetime import datetime
 
 iMAX_INT32 = 4294967295
+# callbacks can be called in any thread so were being careful
 def LOG_ERROR(l): print('EROR< '+l)
 def LOG_WARN(l):  print('WARN< '+l)
-def LOG_INFO(l):  print('INFO< '+l)
-def LOG_DEBUG(l): print('DBUG< '+l)
-def LOG_TRACE(l): pass # print('TRACE+ '+l)
+def LOG_INFO(l):
+    bIsVerbose = hasattr(__builtins__, 'app') and app.oArgs.loglevel <= 20-1
+    if bIsVerbose: print('INFO< '+l)
+def LOG_DEBUG(l):
+    bIsVerbose = hasattr(__builtins__, 'app') and app.oArgs.loglevel <= 10-1
+    if bIsVerbose: print('DBUG< '+l)
+def LOG_TRACE(l):
+    bIsVerbose = hasattr(__builtins__, 'app') and app.oArgs.loglevel < 10-1
+    pass # print('TRACE+ '+l)
 
 global aTIMES
 aTIMES=dict()
@@ -185,7 +192,9 @@ def friend_message(messenger, contacts_manager, profile, settings, window, tray)
         invoke_in_main_thread(messenger.new_message, friend_number, message_type, message)
         if not window.isActiveWindow():
             friend = contacts_manager.get_friend_by_number(friend_number)
-            if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
+            if settings['notifications'] \
+              and profile.status != TOX_USER_STATUS['BUSY'] \
+              and not settings.locked:
                 invoke_in_main_thread(tray_notification, friend.name, message, tray, window)
             if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
@@ -249,7 +258,9 @@ def tox_file_recv(window, tray, profile, file_transfer_handler, contacts_manager
                                   file_name)
             if not window.isActiveWindow():
                 friend = contacts_manager.get_friend_by_number(friend_number)
-                if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
+                if settings['notifications'] \
+                  and profile.status != TOX_USER_STATUS['BUSY'] \
+                  and not settings.locked:
                     file_from = util_ui.tr("File from")
                     invoke_in_main_thread(tray_notification, file_from + ' ' + friend.name, file_name, tray, window)
                 if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
@@ -452,13 +463,14 @@ def group_message(window, tray, tox, messenger, settings, profile):
         if settings['sound_notifications'] and bl and \
            profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['MESSAGE'])
-        if False and settings['tray_icon']:
+        if False and settings['tray_icon'] and tray:
             if settings['notifications'] and \
                profile.status != TOX_USER_STATUS['BUSY'] and \
                    (not settings.locked) and bl:
                 invoke_in_main_thread(tray_notification, name, message, tray, window)
-            icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
-            invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
+            if tray:
+                icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
+                invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
 
     return wrapped
 
@@ -475,7 +487,9 @@ def group_private_message(window, tray, tox, messenger, settings, profile):
             return
         bl = settings['notify_all_gc'] or profile.name in message
         name = tox.group_peer_get_name(group_number, peer_id)
-        if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and (not settings.locked) and bl:
+        if settings['notifications'] and settings['tray_icon'] \
+           and profile.status != TOX_USER_STATUS['BUSY'] \
+           and (not settings.locked) and bl:
             invoke_in_main_thread(tray_notification, name, message, tray, window)
         if settings['sound_notifications'] and bl and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['MESSAGE'])
@@ -485,7 +499,7 @@ def group_private_message(window, tray, tox, messenger, settings, profile):
 
     return wrapped
 
-
+# Exception ignored on calling ctypes callback function: <function group_invite.<locals>.wrapped at 0x7ffede910700>
 def group_invite(window, settings, tray, profile, groups_service, contacts_provider):
     def wrapped(tox, friend_number, invite_data, length, group_name, group_name_length, user_data):
         LOG_DEBUG(f"group_invite friend_number={friend_number}")
@@ -495,14 +509,18 @@ def group_invite(window, settings, tray, profile, groups_service, contacts_provi
                               bytes(invite_data[:length]))
         if window.isActiveWindow():
             return
-        if settings['notifications'] and \
-           profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
+        bHasTray = tray and settings['tray_icon']
+        if settings['notifications'] \
+           and bHasTray \
+           and profile.status != TOX_USER_STATUS['BUSY'] \
+           and not settings.locked:
             friend = contacts_provider.get_friend_by_number(friend_number)
             title = util_ui.tr('New invite to group chat')
             text = util_ui.tr('{} invites you to group "{}"').format(friend.name, group_name)
             invoke_in_main_thread(tray_notification, title, text, tray, window)
-        icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
-        invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
+        if tray:
+            icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
+            invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
 
     return wrapped
 

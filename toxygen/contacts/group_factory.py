@@ -1,7 +1,12 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+
 from contacts.group_chat import GroupChat
 from common.tox_save import ToxSave
 import wrapper.toxcore_enums_and_consts as constants
 
+global LOG
+import logging
+LOG = logging.getLogger(__name__)
 
 class GroupFactory(ToxSave):
 
@@ -18,6 +23,7 @@ class GroupFactory(ToxSave):
         return self.create_group_by_number(group_number)
 
     def create_group_by_number(self, group_number):
+        LOG.info(f"create_group_by_number {group_number}")
         aliases = self._settings['friends_aliases']
         tox_id = self._tox.group_get_chat_id(group_number)
         try:

@@ -1,19 +1,65 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import os
 import logging
+
+from PyQt5 import uic
+from PyQt5 import QtWidgets, QtGui
+from qtpy.QtGui import (QColor, QTextCharFormat, QFont, QSyntaxHighlighter)
+
 from ui.contact_items import *
 from ui.widgets import MultilineEdit
 from ui.main_screen_widgets import *
 import utils.util as util
 import utils.ui as util_ui
-from PyQt5 import uic
-from PyQt5 import QtWidgets, QtGui
 from user_data.settings import Settings
 
-iMAX = 70
 global LOG
 LOG = logging.getLogger('app.'+'mains')
 
+iMAX = 70
+
+try:
+    # https://github.com/pyqtconsole/pyqtconsole
+    from pyqtconsole.console import PythonConsole
+    import pyqtconsole.highlighter as hl    
+except Exception as e:
+    LOG.warn(e)
+    PythonConsole = None
+else:
+    def hl_format(color, style=''):
+        """Return a QTextCharFormat with the given attributes.
+        unused
+        """
+        _color = QColor()
+        _color.setNamedColor(color)
+
+        _format = QTextCharFormat()
+        _format.setBackground(_color)
+        if 'bold' in style:
+            _format.setFontWeight(QFont.Bold)
+        if 'italic' in style:
+            _format.setFontItalic(True)
+            
+        _fgcolor = QColor()
+        _fgcolor.setNamedColor('white')
+        _format.setForeground(_fgcolor)
+        return _format
+    
+    aFORMATS = {
+        'keyword':    hl.format('blue', 'bold'),
+        'operator':   hl.format('red'),
+        'brace':      hl.format('darkGray'),
+        'defclass':   hl.format('black', 'bold'),
+        'string':     hl.format('magenta'),
+        'string2':    hl.format('darkMagenta'),
+        'comment':    hl.format('darkGreen', 'italic'),
+        'self':       hl.format('black', 'italic'),
+        'numbers':    hl.format('brown'),
+        'inprompt':   hl.format('darkBlue', 'bold'),
+        'outprompt':  hl.format('darkRed', 'bold'),
+    }
+
+    
 class QTextEditLogger(logging.Handler):
     def __init__(self, parent, app):
         super().__init__()
@@ -564,21 +610,45 @@ class MainWindow(QtWidgets.QMainWindow):
         self._me.show()
 
     def python_console(self):
-        try:
-            if not self._pe:
-                from pyqtconsole.console import PythonConsole
-                self._pe = PythonConsole(sFont="Courier New", bBold=True)
-            self._pe.show()
-            self._pe.eval_queued()
-            # self._pe.eval_in_thread()
-        except Exception as e:
-            LOG.debug(e)
-            self._me.show()
+        if PythonConsole:
+            app = self._app
+            if app and app._settings:
+                size = app._settings['message_font_size']
+                font_name = app._settings['font']
+            else:
+                size = 12
+                font_name = "Courier New"
+                
+            size = font_width = 10
+            font_name = "DejaVu Sans Mono"
+            
+            try:
+                if not self._pe:
+                    self._pe = PythonConsole(sFont=font_name,
+                                             formats=aFORMATS,
+                                             bBold=True,
+                                             font_width=size)
+                self._pe.setWindowTitle('variable: app is the application')
+#                self._pe.edit.setStyleSheet('foreground: white; background-color: black;}')
+                # Fix the pyconsole geometry
+                geometry = self._pe.geometry()
+                geometry.setWidth(font_width*80+20)
+                geometry.setHeight(font_width*40)
+                self._pe.setGeometry(geometry)
+                self._pe.resize(font_width*80+20, font_width*40)
+
+                self._pe.show()
+                self._pe.eval_queued()
+                # or self._pe.eval_in_thread()
+                return
+            except Exception as e:
+                LOG.debug(e)
+        self._me.show()
 
     def about_program(self):
         # TODO: replace with window
         text = util_ui.tr('Toxygen is Tox client written in Python.\nVersion: ')
-        text += '' + '\nGitHub: https://github.com/toxygen-project/toxygen/'
+        text += '' + '\nGitHub: https://git.plastiras.org/emdee/toxygen'
         title = util_ui.tr('About')
         util_ui.message_box(text, title)
 
@@ -861,8 +931,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def update_gc_invites_button_state(self):
         invites_count = self._groups_service.group_invites_count
-        LOG.debug(f"invites_count={invites_count}")
+        LOG.debug(f"update_gc_invites_button_state invites_count={invites_count}")
+
+        # Fixme
         self.groupInvitesPushButton.setVisible(True) # invites_count > 0
-        text = util_ui.tr('{} new invites to group chats').format(invites_count)
+        text = util_ui.tr(f'{invites_count} new invites to group chats')
         self.groupInvitesPushButton.setText(text)
         self.resizeEvent()

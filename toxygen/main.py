@@ -333,8 +333,6 @@ lKEEP_SETTINGS = ['uri',
 
 class A(): pass
 
-global oAPP
-oAPP = None
 def main(lArgs):
     global oPYA
     from argparse import Namespace
@@ -385,9 +383,8 @@ def main(lArgs):
     oArgs = aArgs
 
     toxygen = app.App(__version__, oArgs)
-    global oAPP
-    oAPP = toxygen
-    __builtins__['app'] = toxygen
+    # for pyqtconsole
+    __builtins__.app = toxygen
     i = toxygen.iMain()
     return i
 

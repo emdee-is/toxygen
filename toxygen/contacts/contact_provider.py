@@ -1,4 +1,10 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+
 import common.tox_save as tox_save
+
+global LOG
+import logging
+LOG = logging.getLogger(__name__)
 
 
 class ContactProvider(tox_save.ToxSave):
@@ -54,11 +60,21 @@ class ContactProvider(tox_save.ToxSave):
 
     def get_group_by_number(self, group_number):
         try:
-            public_key = self._tox.group_get_chat_id(group_number)
+            if True:
+                # original code
+                public_key = self._tox.group_get_chat_id(group_number)
+                LOG.info(f"group_get_chat_id {group_number} {public_key}")
+                return self.get_group_by_public_key(public_key)
+            else:
+                # guessing
+                chat_id = self._tox.group_get_chat_id(group_number)
+                LOG.info(f"group_get_chat_id {group_number} {chat_id}")
+                group = self.get_contact_by_tox_id(chat_id)
+                return group
         except Exception as e:
+            LOG.warn(f"group_get_chat_id {group_number} {e}")
             return None
 
-        return self.get_group_by_public_key(public_key)
 
     def get_group_by_public_key(self, public_key):
         group = self._get_contact_from_cache(public_key)

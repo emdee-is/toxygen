@@ -26,4 +26,3 @@ Toxygen.egg-info
 .cache
 *.db
 
-.pylint.sh

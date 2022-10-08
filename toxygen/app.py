@@ -9,11 +9,9 @@ from time import sleep
 from gevent import monkey; monkey.patch_all(); del monkey   # noqa
 import gevent
 
-import wrapper_tests.support_testing as ts
-from wrapper_tests.tests_wrapper import bootstrap_iNodeInfo
-from user_data import settings
-
-IDLE_PERIOD = 0.10
+from PyQt5 import QtWidgets, QtGui, QtCore
+from qtpy.QtCore import QTimer
+from qtpy.QtWidgets import QApplication
 
 try:
     import coloredlogs
@@ -23,9 +21,66 @@ try:
 except ImportError as e:
     coloredlogs = False
 
+try:
+    # https://github.com/pyqtconsole/pyqtconsole
+    from pyqtconsole.console import PythonConsole
+except Exception as e:
+    PythonConsole = None
+
+try:
+    import qdarkstylexxx
+except ImportError:
+    qdarkstyle = None
+
+from middleware import threads
+import middleware.callbacks as callbacks
+import updater.updater as updater
+from middleware.tox_factory import tox_factory
+import wrapper.toxencryptsave as tox_encrypt_save
+import user_data.toxes
+from user_data import settings
+from user_data.settings import get_user_config_path, merge_args_into_settings
+from user_data.settings import Settings
+from user_data.profile_manager import ProfileManager
+
+from plugin_support.plugin_support import PluginLoader
+
+import ui.password_screen as password_screen
+from ui.login_screen import LoginScreen
+from ui.main_screen import MainWindow
+from ui import tray
+
+import utils.ui as util_ui
+import utils.util as util
+from av.calls_manager import CallsManager
+from common.provider import Provider
+from contacts.contact_provider import ContactProvider
+from contacts.contacts_manager import ContactsManager
+from contacts.friend_factory import FriendFactory
+from contacts.group_factory import GroupFactory
+from contacts.group_peer_factory import GroupPeerFactory
+from contacts.profile import Profile
+from file_transfers.file_transfers_handler import FileTransfersHandler
+from file_transfers.file_transfers_messages_service import FileTransfersMessagesService
+from groups.groups_service import GroupsService
+from history.database import Database
+from history.history import History
+from messenger.messenger import Messenger
+from network.tox_dns import ToxDns
+from smileys.smileys import SmileyLoader
+from ui.create_profile_screen import CreateProfileScreen
+from ui.items_factories import MessagesItemsFactory, ContactItemsFactory
+from ui.widgets_factory import WidgetsFactory
+from user_data.backup_service import BackupService
+import styles.style  # TODO: dynamic loading
+
+import wrapper_tests.support_testing as ts
+from wrapper_tests.tests_wrapper import bootstrap_iNodeInfo
+
 global LOG
 import logging
 LOG = logging.getLogger('app')
+IDLE_PERIOD = 0.10
 
 def setup_logging(oArgs):
     global LOG
@@ -68,57 +123,6 @@ logging.getLogger('PyQt5.uic').setLevel(logging.ERROR)
 logging.getLogger('PyQt5.uic.uiparser').setLevel(logging.ERROR)
 logging.getLogger('PyQt5.uic.properties').setLevel(logging.ERROR)
 
-from PyQt5 import QtWidgets, QtGui, QtCore
-from qtpy.QtCore import QTimer
-from qtpy.QtWidgets import QApplication
-
-try:
-    import qdarkstylexxx
-except ImportError:
-    qdarkstyle = None
-
-from middleware import threads
-import middleware.callbacks as callbacks
-import ui.password_screen as password_screen
-import updater.updater as updater
-from middleware.tox_factory import tox_factory
-import wrapper.toxencryptsave as tox_encrypt_save
-import user_data.toxes
-from user_data import settings
-from user_data.settings import get_user_config_path, merge_args_into_settings
-
-from user_data.settings import Settings
-from ui.login_screen import LoginScreen
-from user_data.profile_manager import ProfileManager
-from plugin_support.plugin_support import PluginLoader
-from ui.main_screen import MainWindow
-from ui import tray
-import utils.ui as util_ui
-import utils.util as util
-from contacts.profile import Profile
-from file_transfers.file_transfers_handler import FileTransfersHandler
-from contacts.contact_provider import ContactProvider
-from contacts.friend_factory import FriendFactory
-from contacts.group_factory import GroupFactory
-from contacts.contacts_manager import ContactsManager
-from av.calls_manager import CallsManager
-from history.database import Database
-from ui.widgets_factory import WidgetsFactory
-from smileys.smileys import SmileyLoader
-from ui.items_factories import MessagesItemsFactory, ContactItemsFactory
-from messenger.messenger import Messenger
-from network.tox_dns import ToxDns
-from history.history import History
-from file_transfers.file_transfers_messages_service import FileTransfersMessagesService
-from groups.groups_service import GroupsService
-from ui.create_profile_screen import CreateProfileScreen
-from common.provider import Provider
-from contacts.group_peer_factory import GroupPeerFactory
-from user_data.backup_service import BackupService
-import styles.style  # TODO: dynamic loading
-
-from wrapper_tests.support_testing import lLOCAL, lGOOD, lNEW, lRELAYS
-from wrapper_tests.tests_wrapper import main as oTOX_OPTIONS, iMain, ToxOptions, iNodeInfo
 
 global iI
 iI = 0
@@ -147,18 +151,19 @@ sSTYLE = """
 from copy import deepcopy
 class App:
 
-    def __init__(self, version, args):
+    def __init__(self, version, oArgs):
         global LOG
-        self._args = args
-        self._path = path_to_profile = args.profile
-        uri = args.uri
-        logfile = args.logfile
-        loglevel = args.loglevel
+        self._args = oArgs
+        self.oArgs = oArgs
+        self._path = path_to_profile = oArgs.profile
+        uri = oArgs.uri
+        logfile = oArgs.logfile
+        loglevel = oArgs.loglevel
 
-        setup_logging(args)
+        setup_logging(oArgs)
         # sys.stderr.write( 'Command line args: ' +repr(oArgs) +'\n')
         LOG.info("Command line: " +' '.join(sys.argv[1:]))
-        LOG.debug(f'oArgs = {args!r}')
+        LOG.debug(f'oArgs = {oArgs!r}')
         LOG.info("Starting toxygen version " +version)
 
         self._version = version

@@ -148,9 +148,12 @@ class Messenger(tox_save.ToxSave):
         """
         t = util.get_unix_time()
         group = self._get_group_by_number(group_number)
+        if not group:
+            LOG.error(f"FixMe new_group_message _get_group_by_number({group_number})")
+            return
         peer = group.get_peer_by_id(peer_id)
         if not peer:
-            LOG.warn('FixMe new_group_message group.get_peer_by_id ' + str(peer_id))
+            LOG.error('FixMe new_group_message group.get_peer_by_id ' + str(peer_id))
             return
         text_message = TextMessage(message, MessageAuthor(peer.name, MESSAGE_AUTHOR['GC_PEER']), t, message_type)
         self._add_message(text_message, group)
