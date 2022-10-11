@@ -16,7 +16,8 @@ LOG = logging.getLogger('app.'+__name__)
 class CallsManager:
 
     def __init__(self, toxav, settings, main_screen, contacts_manager, app=None):
-        self._call = av.calls.AV(toxav, settings)  # object with data about calls
+        self._callav = av.calls.AV(toxav, settings)  # object with data about calls
+        self._call = self._callav
         self._call_widgets = {}  # dict of incoming call widgets
         self._incoming_calls = set()
         self._settings = settings
@@ -27,7 +28,7 @@ class CallsManager:
         self._app = app
 
     def set_toxav(self, toxav):
-        self._call.set_toxav(toxav)
+        self._callav.set_toxav(toxav)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Events
@@ -52,13 +53,13 @@ class CallsManager:
         num = self._contacts_manager.get_active_number()
         if not self._contacts_manager.is_active_a_friend():
             return
-        if num not in self._call and self._contacts_manager.is_active_online():  # start call
+        if num not in self._callav and self._contacts_manager.is_active_online():  # start call
             if not self._settings['audio']['enabled']:
                 return
-            self._call(num, audio, video)
+            self._callav(num, audio, video)
             self._main_screen.active_call()
             self._call_started_event(num, audio, video, True)
-        elif num in self._call:  # finish or cancel call if you call with active friend
+        elif num in self._callav:  # finish or cancel call if you call with active friend
             self.stop_call(num, False)
 
     def incoming_call(self, audio, video, friend_number):
@@ -89,7 +90,7 @@ class CallsManager:
         sys.stdout.flush()
 
         try:
-            self._call.call_accept_call(friend_number, audio, video)
+            self._callav.call_accept_call(friend_number, audio, video)
         except Exception as e:
             LOG.error(f"accept_call _call.accept_call ERROR for {friend_number} {e}")
             self._main_screen.call_finished()
@@ -139,14 +140,14 @@ class CallsManager:
         else:
             is_declined = False
         self._main_screen.call_finished()
-        self._call.finish_call(friend_number, by_friend)  # finish or decline call
+        self._callav.finish_call(friend_number, by_friend)  # finish or decline call
         if friend_number in self._call_widgets:
             self._call_widgets[friend_number].close()
             del self._call_widgets[friend_number]
 
         def destroy_window():
             #??? FixMed
-            is_video = self._call.is_video_call(friend_number)
+            is_video = self._callav.is_video_call(friend_number)
             if is_video:
                 import cv2
                 cv2.destroyWindow(str(friend_number))
@@ -155,8 +156,8 @@ class CallsManager:
         self._call_finished_event(friend_number, is_declined)
 
     def friend_exit(self, friend_number):
-        if friend_number in self._call:
-            self._call.finish_call(friend_number, True)
+        if friend_number in self._callav:
+            self._callav.finish_call(friend_number, True)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

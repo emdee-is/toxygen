@@ -360,7 +360,6 @@ class Settings(dict):
             'y': 400,
             'message_font_size': 14,
             'unread_color': 'red',
-            'save_unsent_only': False,
             'compact_mode': False,
             'identicons': True,
             'show_welcome_screen': True,

@@ -93,7 +93,7 @@ class ContactsManager(ToxSave):
             return False
         if not self._contacts[self._active_contact]:
             return False
-            
+
         return self._contacts[self._active_contact].tox_id == contact.tox_id
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -198,7 +198,7 @@ class ContactsManager(ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
     # Filtration
     # -----------------------------------------------------------------------------------------------------------------
-        
+
     def filtration_and_sorting(self, sorting=0, filter_str=''):
         """
         Filtration of friends list
@@ -245,7 +245,7 @@ class ContactsManager(ToxSave):
         else:
             self._contacts = sorted(self._contacts, key=lambda x: x.name.lower())
 
- 
+
         # change item widgets
         for index, contact in enumerate(self._contacts):
             list_item = self._screen.friends_list.item(index)

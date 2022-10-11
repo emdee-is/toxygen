@@ -86,29 +86,29 @@ iNODES=8
 
 def setup_logging(oArgs):
     global LOG
+    logging._defaultFormatter = logging.Formatter(datefmt='%m-%d %H:%M:%S',
+                                                  fmt='%(levelname)s:%(name)s %(message)s')
+    logging._defaultFormatter.default_time_format = '%m-%d %H:%M:%S'
+    logging._defaultFormatter.default_msec_format = ''
+
     if coloredlogs:
         aKw = dict(level=oArgs.loglevel,
                    logger=LOG,
                    fmt='%(name)s %(levelname)s %(message)s')
-        if oArgs.logfile:
-            oFd = open(oArgs.logfile, 'wt')
-            setattr(oArgs, 'log_oFd', oFd)
-            aKw['stream'] = oFd
+        aKw['stream'] = sys.stdout
         coloredlogs.install(**aKw)
 
     else:
         aKw = dict(level=oArgs.loglevel,
                    format='%(name)s %(levelname)-4s %(message)s')
-        if oArgs.logfile:
-            aKw['filename'] = oArgs.logfile
+        aKw['stream'] = sys.stdout
         logging.basicConfig(**aKw)
-        if not oArgs.logfile:
-            oHandler = logging.StreamHandler(stream=sys.stdout)
-            LOG.addHandler(oHandler)
 
-    logging._defaultFormatter = logging.Formatter(datefmt='%m-%d %H:%M:%S')
-    logging._defaultFormatter.default_time_format = '%m-%d %H:%M:%S'
-    logging._defaultFormatter.default_msec_format = ''
+    if oArgs.logfile:
+        oFd = open(oArgs.logfile, 'wt')
+        setattr(oArgs, 'log_oFd', oFd)
+        oHandler = logging.StreamHandler(stream=oFd)
+        LOG.addHandler(oHandler)
 
     LOG.setLevel(oArgs.loglevel)
     LOG.trace = lambda l: LOG.log(0, repr(l))
@@ -123,7 +123,6 @@ def setup_logging(oArgs):
 logging.getLogger('PyQt5.uic').setLevel(logging.ERROR)
 logging.getLogger('PyQt5.uic.uiparser').setLevel(logging.ERROR)
 logging.getLogger('PyQt5.uic.properties').setLevel(logging.ERROR)
-
 
 global iI
 iI = 0
@@ -155,7 +154,7 @@ class App:
     def __init__(self, version, oArgs):
         global LOG
         self._args = oArgs
-        self.oArgs = oArgs
+        self._oArgs = oArgs
         self._path = path_to_profile = oArgs.profile
         uri = oArgs.uri
         logfile = oArgs.logfile
@@ -179,18 +178,21 @@ class App:
         self._group_factory = self._groups_service = self._profile = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
+        self._history = None
 
     # -----------------------------------------------------------------------------------------------------------------
     # Public methods
     # -----------------------------------------------------------------------------------------------------------------
 
     def set_trace(self):
+        """unused"""
         LOG.debug('pdb.set_trace ')
         sys.stdin = sys.__stdin__
         sys.stdout = sys.__stdout__
         import pdb; pdb.set_trace()
 
     def ten(self, i=0):
+        """unused"""
         global iI
         iI += 1
         if logging.getLogger('app').getEffectiveLevel() != 10:
@@ -219,11 +221,11 @@ class App:
             # this throws everything as errors
             if not self._select_and_load_profile():
                 return 2
-            if hasattr(self._args, 'update') and self._args.update:
+            if hasattr(self._oArgs, 'update') and self._oArgs.update:
                 if self._try_to_update(): return 3
 
             self._load_app_styles()
-            if self._args.language != 'English':
+            if self._oArgs.language != 'English':
                 # > /var/local/src/toxygen/toxygen/app.py(303)_load_app_translations()->None
                 # -> self._app.translator = translator
                 # (Pdb) Fatal Python error: Segmentation fault
@@ -271,26 +273,34 @@ class App:
 
     def quit(self, retval=0):
         LOG.debug("quit")
-        oArgs = self._args
-        if hasattr(oArgs, 'log_oFd'):
-            oArgs.log_oFd.close()
-            delattr(oArgs, 'log_oFd')
+        self._stop_app()
 
         # failsafe: segfaults on exit
         if hasattr(self, '_tox'):
             if self._tox and hasattr(self._tox, 'kill'):
+                LOG.debug(f"quit: Killing {self._tox}")
                 self._tox.kill()
             del self._tox
 
-        self._stop_app()
         if hasattr(self, '_app'):
             self._app.quit()
             del self._app.quit
             del self._app
+            
+        sys.stderr.write('quit raising SystemExit' +'\n')
+        # hanging on gevents
+        # Thread 1 "python3.9" received signal SIGSEGV, Segmentation fault.
+        #44 0x00007ffff7fb2f93 in  () at /usr/lib/python3.9/site-packages/greenlet/_greenlet.cpython-39-x86_64-linux-gnu.so
+        #45 0x00007ffff7fb31ef in  () at /usr/lib/python3.9/site-packages/greenlet/_greenlet.cpython-39-x86_64-linux-gnu.so
+        #46 0x00007ffff452165c in hb_shape_plan_create_cached2 () at /usr/lib64/libharfbuzz.so.0
+
         raise SystemExit(retval)
 
     def _stop_app(self):
         LOG.debug("_stop_app")
+        self._save_profile()
+        #? self._history.save_history()
+
         self._plugin_loader.stop()
         try:
             self._stop_threads(is_app_closing=True)
@@ -299,31 +309,38 @@ class App:
             pass
         if hasattr(self, '_tray') and self._tray:
             self._tray.hide()
-        self._save_profile()
         self._settings.close()
+        
+        LOG.debug(f"stop_app: Killing {self._tox}")
         self._kill_toxav()
         self._kill_tox()
-        sys.stderr.write('_stop_app end' +'\n')
+        del self._tox
+
+        oArgs = self._oArgs
+        if hasattr(oArgs, 'log_oFd'):
+            LOG.debug(f"Closing {oArgs.log_oFd}")
+            oArgs.log_oFd.close()
+            delattr(oArgs, 'log_oFd')
 
     # -----------------------------------------------------------------------------------------------------------------
     # App loading
     # -----------------------------------------------------------------------------------------------------------------
 
     def _load_base_style(self):
-        if self._args.theme in ['', 'default']: return
+        if self._oArgs.theme in ['', 'default']: return
 
         if qdarkstyle:
-            LOG.debug("_load_base_style qdarkstyle " +self._args.theme)
+            LOG.debug("_load_base_style qdarkstyle " +self._oArgs.theme)
             # QDarkStyleSheet
-            if self._args.theme == 'light':
+            if self._oArgs.theme == 'light':
                 from qdarkstyle.light.palette import LightPalette
                 style = qdarkstyle.load_stylesheet(palette=LightPalette)
             else:
                 from qdarkstyle.dark.palette import DarkPalette
                 style = qdarkstyle.load_stylesheet(palette=DarkPalette)
         else:
-            LOG.debug("_load_base_style qss " +self._args.theme)
-            name = self._args.theme + '.qss'
+            LOG.debug("_load_base_style qss " +self._oArgs.theme)
+            name = self._oArgs.theme + '.qss'
             with open(util.join_path(util.get_styles_directory(), name)) as fl:
                 style = fl.read()
         style += '\n' +sSTYLE
@@ -337,9 +354,9 @@ class App:
             if self._settings['theme'] != theme:
                 continue
             if qdarkstyle:
-                LOG.debug("_load_base_style qdarkstyle " +self._args.theme)
+                LOG.debug("_load_base_style qdarkstyle " +self._oArgs.theme)
                 # QDarkStyleSheet
-                if self._args.theme == 'light':
+                if self._oArgs.theme == 'light':
                     from qdarkstyle.light.palette import LightPalette
                     style = qdarkstyle.load_stylesheet(palette=LightPalette)
                 else:
@@ -356,7 +373,7 @@ class App:
                 LOG.debug('_load_app_styles: loading theme file ' + file_path)
             style += '\n' +sSTYLE
             self._app.setStyleSheet(style)
-            LOG.info('_load_app_styles: loaded theme ' +self._args.theme)
+            LOG.info('_load_app_styles: loaded theme ' +self._oArgs.theme)
             break
 
     def _load_login_screen_translations(self):
@@ -503,7 +520,7 @@ class App:
 
     def _select_profile(self):
         LOG.debug("_select_profile")
-        if self._args.language != 'English':
+        if self._oArgs.language != 'English':
             self._load_login_screen_translations()
         ls = LoginScreen()
         profiles = ProfileManager.find_profiles()
@@ -542,7 +559,7 @@ class App:
                                 util_ui.tr('Error'))
             return False
         name = profile_name or 'toxygen_user'
-        assert self._args
+        assert self._oArgs
         self._path = profile_path
         if result.password:
             self._toxes.set_password(result.password)
@@ -644,7 +661,7 @@ class App:
 
     def _create_dependencies(self):
         LOG.info(f"_create_dependencies toxygen version {self._version}")
-        if hasattr(self._args, 'update') and self._args.update:
+        if hasattr(self._oArgs, 'update') and self._oArgs.update:
             self._backup_service = BackupService(self._settings,
                                                  self._profile_manager)
         self._smiley_loader = SmileyLoader(self._settings)
@@ -697,9 +714,11 @@ class App:
                                                  self._ms,
                                                  self._profile_manager,
                                                  self._contacts_provider,
-                                                 history, self._tox_dns,
+                                                 history,
+                                                 self._tox_dns,
                                                  messages_items_factory)
         history.set_contacts_manager(self._contacts_manager)
+        self._history = history
         self._calls_manager = CallsManager(self._tox.AV,
                                            self._settings,
                                            self._ms,
@@ -754,14 +773,14 @@ class App:
         self._ms.show()
 
         # FixMe:
-        self._log = lambda line: LOG.log(self._args.loglevel,
+        self._log = lambda line: LOG.log(self._oArgs.loglevel,
                                          self._ms.status(line))
         self._ms._log = self._log # used in callbacks.py
         self.LOG = self._log # backwards
 
         if False:
             self.status_handler = logging.Handler()
-            self.status_handler.setLevel(logging.INFO) # self._args.loglevel
+            self.status_handler.setLevel(logging.INFO) # self._oArgs.loglevel
             self.status_handler.handle = self._ms.status
 
         self._init_callbacks()
@@ -780,9 +799,9 @@ class App:
 
     def _create_tox(self, data, settings_):
         LOG.info("_create_tox calling tox_factory")
-        assert self._args
+        assert self._oArgs
         retval = tox_factory(data=data, settings=settings_,
-                             args=self._args, app=self)
+                             args=self._oArgs, app=self)
         LOG.debug("_create_tox succeeded")
         self._tox = retval
         return retval
@@ -807,12 +826,12 @@ class App:
             self._profile.reset_avatar(self._settings['identicons'])
 
     def _kill_toxav(self):
-        LOG.debug("_kill_toxav")
+#        LOG_debug("_kill_toxav")
         self._calls_manager.set_toxav(None)
         self._tox.AV.kill()
 
     def _kill_tox(self):
-        LOG.debug("_kill_tox")
+#        LOG.debug("_kill_tox")
         self._tox.kill()
 
     def loop(self, n):
@@ -832,17 +851,17 @@ class App:
 
     def test_net(self, lElts=None, oThread=None, iMax=4):
 
-        LOG.debug("test_net " +self._args.network)
+        LOG.debug("test_net " +self._oArgs.network)
         # bootstrap
         LOG.debug('Calling generate_nodes: udp')
-        lNodes = ts.generate_nodes(oArgs=self._args,
+        lNodes = ts.generate_nodes(oArgs=self._oArgs,
                                    ipv='ipv4',
                                    udp_not_tcp=True)
         self._settings['current_nodes_udp'] = lNodes
         if not lNodes:
             LOG.warn('empty generate_nodes udp')
         LOG.debug('Calling generate_nodes: tcp')
-        lNodes = ts.generate_nodes(oArgs=self._args,
+        lNodes = ts.generate_nodes(oArgs=self._oArgs,
                                    ipv='ipv4',
                                    udp_not_tcp=False)
         self._settings['current_nodes_tcp'] = lNodes
@@ -850,8 +869,8 @@ class App:
             LOG.warn('empty generate_nodes tcp')
 
         # if oThread and oThread._stop_thread: return
-        LOG.debug("test_net network=" +self._args.network +' iMax=' +str(iMax))
-        if self._args.network not in ['local', 'localnew', 'newlocal']:
+        LOG.debug("test_net network=" +self._oArgs.network +' iMax=' +str(iMax))
+        if self._oArgs.network not in ['local', 'localnew', 'newlocal']:
             b = ts.bAreWeConnected()
             if b is None:
                 i = os.system('ip route|grep ^def')
@@ -860,22 +879,22 @@ class App:
                 else:
                     b = True
             if not b:
-                LOG.warn("No default route for network " +self._args.network)
+                LOG.warn("No default route for network " +self._oArgs.network)
                 text = 'You have no default route - are you connected?'
                 reply = util_ui.question(text, "Are you connected?")
                 if not reply: return
                 iMax = 1
             else:
-                LOG.debug("Have default route for network " +self._args.network)
+                LOG.debug("Have default route for network " +self._oArgs.network)
 
-        LOG.debug(f"test_net {self._args.network} iMax= {iMax}")
+        LOG.debug(f"test_net {self._oArgs.network} iMax= {iMax}")
         i = 0
         while i < iMax:
             # if oThread and oThread._stop_thread: return
             i = i + 1
             LOG.debug(f"bootstrapping status # {i}")
             self._test_bootstrap(self._settings['current_nodes_udp'])
-            if hasattr(self._args, 'proxy_type') and self._args.proxy_type > 0:
+            if hasattr(self._oArgs, 'proxy_type') and self._oArgs.proxy_type > 0:
                 LOG.debug(f"relaying status # {i}")
                 self._test_relays(self._settings['current_nodes_tcp'])
             status = self._tox.self_get_connection_status()
@@ -906,16 +925,14 @@ class App:
                        +_settings['proxy_host'] +':' \
                        +str(_settings['proxy_port']))
             lElts = _settings['current_nodes_tcp']
-        LOG.debug(f"test_env {len(lElts)}")
+#        LOG.debug(f"test_env {len(lElts)}")
         return env
 
     def _test_bootstrap(self, lElts=None):
-        env = self._test_env()
         if lElts is None:
             lElts = self._settings['current_nodes_udp']
         shuffle(lElts)
         LOG.debug(f"_test_bootstrap #Elts={len(lElts)}")
-        shuffle(lElts)
         ts.bootstrap_good(lElts[:iNODES], [self._tox])
         LOG.info("Connected status: " +repr(self._tox.self_get_connection_status()))
 
@@ -962,10 +979,10 @@ class App:
         text = 'Run the Extended Test Suite?\nThe program may freeze for 20-60 minutes.'
         reply = util_ui.question(text, title)
         if reply:
-            if hasattr(self._args, 'proxy_type') and self._args.proxy_type:
-                lArgs = ['--proxy_host', self._args.proxy_host,
-                         '--proxy_port', str(self._args.proxy_port),
-                         '--proxy_type', str(self._args.proxy_type), ]
+            if hasattr(self._oArgs, 'proxy_type') and self._oArgs.proxy_type:
+                lArgs = ['--proxy_host', self._oArgs.proxy_host,
+                         '--proxy_port', str(self._oArgs.proxy_port),
+                         '--proxy_type', str(self._oArgs.proxy_type), ]
             else:
                 lArgs = list()
             try:

@@ -53,7 +53,7 @@ class GroupsService(tox_save.ToxSave):
         try:
             group_number = self._tox.group_join(chat_id, password, nick, status)
             assert type(group_number) == int, group_number
-            assert group_number < UINT32_MAX, group_number            
+            assert group_number < UINT32_MAX, group_number
         except Exception as e:
             # gui
             title = f"join_gc_by_id {chat_id}"
@@ -73,7 +73,7 @@ class GroupsService(tox_save.ToxSave):
             return
         group.status = constants.TOX_USER_STATUS['NONE']
         self._contacts_manager.update_filtration()
-        
+
     # -----------------------------------------------------------------------------------------------------------------
     # Groups reconnect and leaving
     # -----------------------------------------------------------------------------------------------------------------

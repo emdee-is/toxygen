@@ -21,7 +21,7 @@ iMAX = 70
 try:
     # https://github.com/pyqtconsole/pyqtconsole
     from pyqtconsole.console import PythonConsole
-    import pyqtconsole.highlighter as hl    
+    import pyqtconsole.highlighter as hl
 except Exception as e:
     LOG.warn(e)
     PythonConsole = None
@@ -39,12 +39,12 @@ else:
             _format.setFontWeight(QFont.Bold)
         if 'italic' in style:
             _format.setFontItalic(True)
-            
+
         _fgcolor = QColor()
         _fgcolor.setNamedColor('white')
         _format.setForeground(_fgcolor)
         return _format
-    
+
     aFORMATS = {
         'keyword':    hl.format('blue', 'bold'),
         'operator':   hl.format('red'),
@@ -59,7 +59,7 @@ else:
         'outprompt':  hl.format('darkRed', 'bold'),
     }
 
-    
+
 class QTextEditLogger(logging.Handler):
     def __init__(self, parent, app):
         super().__init__()
@@ -194,7 +194,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.actionAdd_friend = QtWidgets.QAction(window)
         self.actionAdd_friend.setObjectName("actionAdd_friend")
-        
+
         self.actionProfile_settings = QtWidgets.QAction(window)
         self.actionProfile_settings.setObjectName("actionProfile_settings")
         self.actionPrivacy_settings = QtWidgets.QAction(window)
@@ -621,10 +621,10 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 size = 12
                 font_name = "Courier New"
-                
+
             size = font_width = 10
             font_name = "DejaVu Sans Mono"
-            
+
             try:
                 if not self._pe:
                     self._pe = PythonConsole(sFont=font_name,

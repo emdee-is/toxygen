@@ -6,15 +6,16 @@ The code is in there but it's not working.
 
 ## Fix Audio
 
-The code is in there but it's not working.
-I may have broken it trying to wire up the ability to
-set the audio device from the command line.
+The code is in there but it's not working. It looks like audio input
+is working but not output. The code is all in there; I may have broken
+it trying to wire up the ability to set the audio device from the
+command line.
 
 ## Fix Video
 
-The code is in there but it's not working.
-I may have broken it trying to wire up the ability to
-set the audio device from the command line.
+The code is in there but it's not working.  I may have broken it
+trying to wire up the ability to set the audio device from the command
+line.
 
 ## Groups
 
@@ -22,9 +23,6 @@ set the audio device from the command line.
    ```group.peer_id``` The code is broken in places because I have not
    seen the path to change from the old API ro the new one.
 
-2. There is no way to delete a group in the UI
-
-3. Distinguish between Frieds, Groups and Whispers in the UI.
 
 ## Plugin system
 
@@ -33,6 +31,8 @@ set the audio device from the command line.
 2. There's something broken in the way some of them plug into Qt menus.
 
 3. Should the plugins be in toxygen or a separate repo?
+
+4. There needs to be a uniform way for plugins to wire into callbacks.
 
 ## check toxygen_wrapper
 

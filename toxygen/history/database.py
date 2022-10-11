@@ -6,20 +6,16 @@ import utils.util as util
 # LOG=util.log
 global LOG
 import logging
-LOG = logging.getLogger('app.'+__name__)
-log = lambda x: LOG.info(x)
+LOG = logging.getLogger('app.db')
 
 TIMEOUT = 11
-
 SAVE_MESSAGES = 500
-
 MESSAGE_AUTHOR = {
     'ME': 0,
     'FRIEND': 1,
     'NOT_SENT': 2,
     'GC_PEER': 3
 }
-
 CONTACT_TYPE = {
     'FRIEND': 0,
     'GC_PEER': 1,
@@ -54,6 +50,7 @@ class Database:
         except Exception as ex:
             LOG.error('Db writing error: ' +path +' ' + str(ex))
             os.remove(path)
+        LOG.info('Db opened: ' +path)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -75,6 +72,7 @@ class Database:
             data = self._toxes.pass_encrypt(data)
         with open(new_path, 'wb') as fout:
             fout.write(data)
+        LOG.info('Db exported: ' +new_path)
 
     def add_friend_to_db(self, tox_id):
         db = self._connect()
@@ -91,11 +89,12 @@ class Database:
             db.commit()
             return True
         except Exception as e:
-            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
+            LOG.error("dd_friend_to_db " +self._name +' Database exception! ' +str(e))
             db.rollback()
             return False
         finally:
             db.close()
+            LOG.debug(f"add_friend_to_db {tox_id}")
 
     def delete_friend_from_db(self, tox_id):
         db = self._connect()
@@ -105,11 +104,12 @@ class Database:
             db.commit()
             return True
         except Exception as e:
-            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
+            LOG.error("delete_friend_from_db " +self._name +' Database exception! ' +str(e))
             db.rollback()
             return False
         finally:
             db.close()
+            LOG.debug(f"delete_friend_from_db {tox_id}")
 
     def save_messages_to_db(self, tox_id, messages_iter):
         db = self._connect()
@@ -117,15 +117,16 @@ class Database:
             cursor = db.cursor()
             cursor.executemany('INSERT INTO id' + tox_id +
                                '(message, author_name, author_type, unix_time, message_type) ' +
-                               'VALUES (?, ?, ?, ?, ?, ?);', messages_iter)
+                               'VALUES (?, ?, ?, ?, ?);', messages_iter)
             db.commit()
             return True
         except Exception as e:
-            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
+            LOG.error("" +self._name +' Database exception! ' +str(e))
             db.rollback()
             return False
         finally:
             db.close()
+            LOG.debug(f"save_messages_to_db {tox_id}")
 
     def update_messages(self, tox_id, message_id):
         db = self._connect()
@@ -136,11 +137,12 @@ class Database:
             db.commit()
             return True
         except Exception as e:
-            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
+            LOG.error("" +self._name +' Database exception! ' +str(e))
             db.rollback()
             return False
         finally:
             db.close()
+            LOG.debug(f"update_messages {tox_id}")
 
     def delete_message(self, tox_id, unique_id):
         db = self._connect()
@@ -150,11 +152,12 @@ class Database:
             db.commit()
             return True
         except Exception as e:
-            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
+            LOG.error("" +self._name +' Database exception! ' +str(e))
             db.rollback()
             return False
         finally:
             db.close()
+            LOG.debug(f"delete_message {tox_id}")
 
     def delete_messages(self, tox_id):
         db = self._connect()
@@ -164,11 +167,12 @@ class Database:
             db.commit()
             return True
         except Exception as e:
-            LOG("ERROR: " +self._name +' Database exception! ' +str(e))
+            LOG.error("" +self._name +' Database exception! ' +str(e))
             db.rollback()
             return False
         finally:
             db.close()
+            LOG.debug(f"delete_messages {tox_id}")
 
     def messages_getter(self, tox_id):
         self.add_friend_to_db(tox_id)

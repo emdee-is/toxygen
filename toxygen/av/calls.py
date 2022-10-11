@@ -18,6 +18,18 @@ from middleware.threads import BaseThread
 global LOG
 import logging
 LOG = logging.getLogger('app.'+__name__)
+# callbacks can be called in any thread so were being careful
+def LOG_ERROR(l): print('EROR< '+l)
+def LOG_WARN(l):  print('WARN< '+l)
+def LOG_INFO(l):
+    bIsVerbose = hasattr(__builtins__, 'app') and app.oArgs.loglevel <= 20-1
+    if bIsVerbose: print('INFO< '+l)
+def LOG_DEBUG(l):
+    bIsVerbose = hasattr(__builtins__, 'app') and app.oArgs.loglevel <= 10-1
+    if bIsVerbose: print('DBUG< '+l)
+def LOG_TRACE(l):
+    bIsVerbose = hasattr(__builtins__, 'app') and app.oArgs.loglevel < 10-1
+    pass # print('TRACE+ '+l)
 
 TIMER_TIMEOUT = 30.0
 bSTREAM_CALLBACK = False
@@ -27,6 +39,7 @@ class AV(common.tox_save.ToxAvSave):
 
     def __init__(self, toxav, settings):
         super().__init__(toxav)
+        self._toxav = toxav
         self._settings = settings
         self._running = True
         s = settings
@@ -62,7 +75,10 @@ class AV(common.tox_save.ToxAvSave):
         self._video_width = 320
         self._video_height = 240
 
-        iOutput = self._settings._args.audio['output']
+        # was iOutput = self._settings._args.audio['output']
+        iInput = self._settings['audio']['input']
+        self.lPaSampleratesI = ts.lSdSamplerates(iInput)
+        iOutput = self._settings['audio']['output']
         self.lPaSampleratesO = ts.lSdSamplerates(iOutput)
         global oPYA
         oPYA = self._audio = pyaudio.PyAudio()
@@ -180,33 +196,35 @@ class AV(common.tox_save.ToxAvSave):
     def start_audio_thread(self):
         """
         Start audio sending
+        from a callback
         """
         global oPYA
-        iInput = self._settings._args.audio['input']
+        # was iInput = self._settings._args.audio['input']
+        iInput = self._settings['audio']['input']
         if self._audio_thread is not None:
-            LOG.warn(f"start_audio_thread device={iInput}")
+            LOG_WARN(f"start_audio_thread device={iInput}")
             return
-        iInput = self._settings._args.audio['input']
-        LOG.debug(f"start_audio_thread device={iInput}")
+        LOG_DEBUG(f"start_audio_thread device={iInput}")
         lPaSamplerates = ts.lSdSamplerates(iInput)
         if not(len(lPaSamplerates)):
             e = f"No supported sample rates for device: audio[input]={iInput!r}"
-            LOG.error(f"No supported sample rates {e}")
-            raise RuntimeError(e)
+            LOG_ERROR(f"start_audio_thread {e}")
+            #?? dunno - cancel call?
+            return
         if not self._audio_rate_pa in lPaSamplerates:
-            LOG.warn(f"{self._audio_rate_pa} not in {lPaSamplerates!r}")
+            LOG_WARN(f"{self._audio_rate_pa} not in {lPaSamplerates!r}")
             if False:
                 self._audio_rate_pa = oPYA.get_device_info_by_index(iInput)['defaultSampleRate']
             else:
-                LOG.warn(f"Setting audio_rate to: {lPaSamplerates[0]}")
+                LOG_WARN(f"Setting audio_rate to: {lPaSamplerates[0]}")
                 self._audio_rate_pa = lPaSamplerates[0]
 
         try:
-            LOG.debug( f"start_audio_thread framerate: {self._audio_rate_pa}" \
+            LOG_DEBUG( f"start_audio_thread framerate: {self._audio_rate_pa}" \
                      +f" device: {iInput}"
                      +f" supported: {lPaSamplerates!r}")
             if self._audio_rate_pa not in lPaSamplerates:
-                LOG.warn(f"PAudio sampling rate was {self._audio_rate_pa} changed to {lPaSamplerates[0]}")
+                LOG_WARN(f"PAudio sampling rate was {self._audio_rate_pa} changed to {lPaSamplerates[0]}")
                 self._audio_rate_pa = lPaSamplerates[0]
 
             if bSTREAM_CALLBACK:
@@ -244,10 +262,12 @@ class AV(common.tox_save.ToxAvSave):
                                 input=True,
                                 input_device_index=iInput,
                                 frames_per_buffer=self._audio_sample_count_pa * 10)))
-            # catcher in place in calls_manager
-            raise RuntimeError(e)
+            # catcher in place in calls_manager? not if from a callback
+            # calls_manager._call.toxav_call_state_cb(friend_number, mask)
+            # raise RuntimeError(e)
+            return
         else:
-            LOG.debug(f"start_audio_thread {self._audio_stream!r}")
+            LOG_DEBUG(f"start_audio_thread {self._audio_stream!r}")
 
     def stop_audio_thread(self):
 
@@ -339,7 +359,8 @@ class AV(common.tox_save.ToxAvSave):
         """
 
         if self._out_stream is None:
-            iOutput = self._settings._args.audio['output']
+            # was iOutput = self._settings._args.audio['output']
+            iOutput = self._settings['audio']['output']
             if not rate in self.lPaSampleratesO:
                 LOG.warn(f"{rate} not in {self.lPaSampleratesO!r}")
                 if False:
@@ -362,7 +383,8 @@ class AV(common.tox_save.ToxAvSave):
                 self.stop()
                 return
 
-        LOG.debug(f"audio_chunk output_device_index={self._settings._args.audio['input']} rate={rate} channels={channels_count}")
+        iOutput = self._settings['audio']['output']
+        LOG.debug(f"audio_chunk output_device_index={iOutput} rate={rate} channels={channels_count}")
         self._out_stream.write(samples)
 
     # -----------------------------------------------------------------------------------------------------------------

@@ -28,7 +28,7 @@ class BaseContact:
         self._kind = kind
         self._status, self._widget = None, widget
         self._tox_id = tox_id
-        
+
         self._name_changed_event = event.Event()
         self._status_message_changed_event = event.Event()
         self._status_changed_event = event.Event()

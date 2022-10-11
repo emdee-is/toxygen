@@ -1,7 +1,6 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 from history.history_logs_generators import *
 
-
 class History:
 
     def __init__(self, contact_provider, db, settings, main_screen, messages_items_factory):
@@ -28,7 +27,7 @@ class History:
         Save history to db
         """
         # me a mistake? was _db not _history
-        if self._settings['save_history'] or self._settings['save_db']:
+        if self._settings['save_history']:
             for friend in self._contact_provider.get_all_friends():
                 self._db.add_friend_to_db(friend.tox_id)
                 if not self._settings['save_unsent_only']:
