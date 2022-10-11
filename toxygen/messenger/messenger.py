@@ -204,6 +204,9 @@ class Messenger(tox_save.ToxSave):
         text_message = TextMessage(message, MessageAuthor(peer.name, MESSAGE_AUTHOR['GC_PEER']),
                                    t, message_type)
         group_peer_contact = self._contacts_manager.get_or_create_group_peer_contact(group_number, peer_id)
+        if not group_peer_contact:
+            LOG.warn('FixMe new_group_private_message group_peer_contact ' + str(peer_id))
+            return
         self._add_message(text_message, group_peer_contact)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -316,6 +319,9 @@ class Messenger(tox_save.ToxSave):
 
     def _add_message(self, text_message, contact):
         assert_main_thread()
+        if not contact:
+            LOG.warn("_add_message null contact")
+            return
         if self._contacts_manager.is_contact_active(contact):  # add message to list
             self._create_message_item(text_message)
             self._screen.messages.scrollToBottom()

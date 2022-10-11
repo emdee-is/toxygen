@@ -15,17 +15,20 @@ class BaseContact:
     Base class for all contacts.
     """
 
-    def __init__(self, profile_manager, name, status_message, widget, tox_id):
+    def __init__(self, profile_manager, name, status_message, widget, tox_id, kind=''):
         """
         :param name: name, example: 'Toxygen user'
         :param status_message: status message, example: 'Toxing on Toxygen'
         :param widget: ContactItem instance
         :param tox_id: tox id of contact
+        :param kind: one of ['bot', 'friend', 'group', 'invite', 'grouppeer', '']
         """
         self._profile_manager = profile_manager
         self._name, self._status_message = name, status_message
+        self._kind = kind
         self._status, self._widget = None, widget
         self._tox_id = tox_id
+        
         self._name_changed_event = event.Event()
         self._status_message_changed_event = event.Event()
         self._status_changed_event = event.Event()
@@ -169,6 +172,8 @@ class BaseContact:
     def init_widget(self):
         self._widget.name.setText(self._name)
         self._widget.status_message.setText(self._status_message)
+        if hasattr(self._widget, 'kind'):
+            self._widget.kind.setText(self._kind)
         self._widget.connection_status.update(self._status)
         self.load_avatar()
 

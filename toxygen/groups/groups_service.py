@@ -6,6 +6,7 @@ from groups.peers_list import PeersListGenerator
 from groups.group_invite import GroupInvite
 import wrapper.toxcore_enums_and_consts as constants
 from wrapper.toxcore_enums_and_consts import *
+from wrapper.tox import UINT32_MAX
 
 global LOG
 import logging
@@ -49,11 +50,29 @@ class GroupsService(tox_save.ToxSave):
         self._contacts_manager.update_filtration()
 
     def join_gc_by_id(self, chat_id, password, nick, status):
-        group_number = self._tox.group_join(chat_id, password, nick, status)
+        try:
+            group_number = self._tox.group_join(chat_id, password, nick, status)
+            assert type(group_number) == int, group_number
+            assert group_number < UINT32_MAX, group_number            
+        except Exception as e:
+            # gui
+            title = f"join_gc_by_id {chat_id}"
+            util_ui.message_box(title +'\n' +str(e), title)
+            LOG.error(f"_join_gc_via_id {e}")
+            return
         LOG.debug(f"_join_gc_via_id {group_number}")
         self._add_new_group_by_number(group_number)
         group = self._get_group_by_number(group_number)
+        try:
+            assert group and hasattr(group, 'status')
+        except Exception as e:
+            # gui
+            title = f"join_gc_by_id {chat_id}"
+            util_ui.message_box(title +'\n' +str(e), title)
+            LOG.error(f"_join_gc_via_id {e}")
+            return
         group.status = constants.TOX_USER_STATUS['NONE']
+        self._contacts_manager.update_filtration()
         
     # -----------------------------------------------------------------------------------------------------------------
     # Groups reconnect and leaving

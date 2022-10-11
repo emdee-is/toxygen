@@ -9,7 +9,7 @@ class ContactItem(QtWidgets.QWidget):
     Contact in friends list
     """
 
-    def __init__(self, settings, parent=None):
+    def __init__(self, settings, parent=None, kind='friend'):
         QtWidgets.QWidget.__init__(self, parent)
         mode = settings['compact_mode']
         self.setBaseSize(QtCore.QSize(250, 40 if mode else 70))
@@ -30,6 +30,10 @@ class ContactItem(QtWidgets.QWidget):
         font.setPointSize(10)
         font.setBold(False)
         self.status_message.setFont(font)
+        self.kind = DataLabel(self)
+        self.kind.setGeometry(QtCore.QRect(50 if mode else 75, 38 if mode else 48, 190, 15 if mode else 20))
+        font.setBold(True)
+        self.kind.setFont(font)
         self.connection_status = StatusCircle(self)
         self.connection_status.setGeometry(QtCore.QRect(230, -2 if mode else 5, 32, 32))
         self.messages = UnreadMessagesCount(settings, self)

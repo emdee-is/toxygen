@@ -7,6 +7,7 @@ from contacts.group_chat import GroupChat
 from messenger.messages import *
 from common.tox_save import ToxSave
 from contacts.group_peer_contact import GroupPeerContact
+from groups.group_peer import GroupChatPeer
 
 # LOG=util.log
 global LOG
@@ -15,6 +16,21 @@ LOG = logging.getLogger('app.'+__name__)
 log = lambda x: LOG.info(x)
 
 UINT32_MAX = 2 ** 32 -1
+
+def set_contact_kind(contact):
+    bInvite = len(contact.name) == TOX_PUBLIC_KEY_SIZE * 2 and \
+      contact.status_message == ''
+    bBot = not bInvite and contact.name.lower().endswith(' bot')
+    if type(contact) == Friend and bInvite:
+        contact._kind = 'invite'
+    elif type(contact) == Friend and bBot:
+        contact._kind = 'bot'
+    elif type(contact) == Friend:
+        contact._kind = 'friend'
+    elif type(contact) == GroupChat:
+        contact._kind = 'group'
+    elif type(contact) == GroupChatPeer:
+        contact._kind = 'grouppeer'
 
 class ContactsManager(ToxSave):
     """
@@ -70,6 +86,14 @@ class ContactsManager(ToxSave):
         return self.get_curr_contact().number == group_number
 
     def is_contact_active(self, contact):
+        if not self._active_contact:
+            LOG.warn("No self._active_contact")
+            return False
+        if self._active_contact not in self._contacts:
+            return False
+        if not self._contacts[self._active_contact]:
+            return False
+            
         return self._contacts[self._active_contact].tox_id == contact.tox_id
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -174,18 +198,22 @@ class ContactsManager(ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
     # Filtration
     # -----------------------------------------------------------------------------------------------------------------
-
+        
     def filtration_and_sorting(self, sorting=0, filter_str=''):
         """
         Filtration of friends list
         :param sorting: 0 - no sorting, 1 - online only, 2 - online first, 3 - by name,
-        4 - online and by name, 5 - online first and by name
+        4 - online and by name, 5 - online first and by name, 6 kind
         :param filter_str: show contacts which name contains this substring
         """
         filter_str = filter_str.lower()
         current_contact = self.get_curr_contact()
 
-        if sorting > 5 or sorting < 0:
+        for index, contact in enumerate(self._contacts):
+            if not contact._kind:
+                set_contact_kind(contact)
+
+        if sorting > 6 or sorting < 0:
             sorting = 0
 
         if sorting in (1, 2, 4, 5):  # online first
@@ -212,9 +240,12 @@ class ContactsManager(ToxSave):
             groups = filter(lambda c: type(c) is GroupChat, contacts)
             group_peers = filter(lambda c: type(c) is GroupPeerContact, contacts)
             self._contacts = list(friends) + list(groups) + list(group_peers)
+        elif sorting == 6:
+            self._contacts = sorted(self._contacts, key=lambda x: x._kind)
         else:
             self._contacts = sorted(self._contacts, key=lambda x: x.name.lower())
 
+ 
         # change item widgets
         for index, contact in enumerate(self._contacts):
             list_item = self._screen.friends_list.item(index)
@@ -260,7 +291,7 @@ class ContactsManager(ToxSave):
         group = self.get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
         if peer: # broken
-            if hasattr(peer, 'public_key'):
+            if not hasattr(peer, 'public_key'):
                 LOG.error(f'no peer public_key ' + repr(dir(peer)))
             else:
                 if not self.check_if_contact_exists(peer.public_key):
@@ -404,6 +435,7 @@ class ContactsManager(ToxSave):
         contact = self._contact_provider.get_group_peer_by_id(group, peer.id)
         if self.check_if_contact_exists(contact.tox_id):
             return
+        contact._kind = 'grouppeer'
         self._contacts.append(contact)
         contact.reset_avatar(self._settings['identicons'])
         self._save_profile()
@@ -443,24 +475,24 @@ class ContactsManager(ToxSave):
     # Friend requests
     # -----------------------------------------------------------------------------------------------------------------
 
-    def send_friend_request(self, tox_id, message):
+    def send_friend_request(self, sToxPkOrId, message):
         """
         Function tries to send request to contact with specified id
-        :param tox_id: id of new contact or tox dns 4 value
+        :param sToxPkOrId: id of new contact or tox dns 4 value
         :param message: additional message
         :return: True on success else error string
         """
         retval = ''
         try:
             message = message or 'Hello! Add me to your contact list please'
-            if len(tox_id) == TOX_PUBLIC_KEY_SIZE * 2:  # public key
-                self.add_friend(tox_id)
+            if len(sToxPkOrId) == TOX_PUBLIC_KEY_SIZE * 2:  # public key
+                self.add_friend(sToxPkOrId)
                 title = 'Friend added'
                 text = 'Friend added without sending friend request'
             else:
-                num = self._tox.friend_add(tox_id, message.encode('utf-8'))
+                num = self._tox.friend_add(sToxPkOrId, message.encode('utf-8'))
                 if num < UINT32_MAX:
-                    tox_pk = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
+                    tox_pk = sToxPkOrId[:TOX_PUBLIC_KEY_SIZE * 2]
                     self._add_friend(tox_pk)
                     self.update_filtration()
                     title = 'Friend added'

@@ -5,6 +5,8 @@ import threading
 import common.tox_save as tox_save
 from middleware.threads import invoke_in_main_thread
 
+iUMAXINT = 4294967295
+
 global LOG
 import logging
 LOG = logging.getLogger('app.'+__name__)
@@ -65,10 +67,10 @@ class Profile(basecontact.BaseContact, tox_save.ToxSave):
 
     def set_new_nospam(self):
         """Sets new nospam part of tox id"""
-        self._tox.self_set_nospam(random.randint(0, 4294967295))  # no spam - uint32
+        self._tox.self_set_nospam(random.randint(0, iUMAXINT))  # no spam - uint32
         self._tox_id = self._tox.self_get_address()
-
-        return self._tox_id
+        self._sToxId = self._tox.self_get_address()
+        return self._sToxId
 
     # -----------------------------------------------------------------------------------------------------------------
     # Reset

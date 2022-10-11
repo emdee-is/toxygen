@@ -83,11 +83,12 @@ class GroupChat(contact.Contact, ToxSave):
         return self.get_self_role() == constants.TOX_GROUP_ROLE['FOUNDER']
 
     def add_peer(self, peer_id, is_current_user=False):
+        "called from callbacks"
         if peer_id >  self._peers_limit:
             LOG_WARN(f"add_peer id={peer_id} > {self._peers_limit}")
             return
 
-        LOG_INFO(f"add_peer id={peer_id}")
+        LOG_TRACE(f"add_peer id={peer_id}")
         peer = GroupChatPeer(peer_id,
                              self._tox.group_peer_get_name(self._number, peer_id),
                              self._tox.group_peer_get_status(self._number, peer_id),

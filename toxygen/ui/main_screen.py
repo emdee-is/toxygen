@@ -342,6 +342,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.contactsFilterComboBox.addItem(util_ui.tr("Name"))
         self.contactsFilterComboBox.addItem(util_ui.tr("Online and by name"))
         self.contactsFilterComboBox.addItem(util_ui.tr("Online first and by name"))
+        self.contactsFilterComboBox.addItem(util_ui.tr("Kind"))
 
     def setup_right_bottom(self, Form):
         Form.resize(650, 60)

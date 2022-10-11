@@ -80,7 +80,9 @@ from wrapper_tests.tests_wrapper import bootstrap_iNodeInfo
 global LOG
 import logging
 LOG = logging.getLogger('app')
+
 IDLE_PERIOD = 0.10
+iNODES=8
 
 def setup_logging(oArgs):
     global LOG
@@ -100,8 +102,7 @@ def setup_logging(oArgs):
         if oArgs.logfile:
             aKw['filename'] = oArgs.logfile
         logging.basicConfig(**aKw)
-
-        if oArgs.logfile:
+        if not oArgs.logfile:
             oHandler = logging.StreamHandler(stream=sys.stdout)
             LOG.addHandler(oHandler)
 
@@ -814,22 +815,6 @@ class App:
         LOG.debug("_kill_tox")
         self._tox.kill()
 
-    def _test_relays(self, lElts=None):
-        env = self._test_env()
-        if lElts is None:
-            lElts = self._settings['current_nodes_tcp']
-        shuffle(lElts)
-        LOG.debug(f"_test_relays {len(env['lElts'])}")
-        for host,port,key in lElts[:10]:
-            try:
-                oRet = self._tox.add_tcp_relay(host, port, key)
-                LOG.debug('add_tcp_relay to ' +host +':' +str(port) \
-                        +' : ' +str(oRet))
-            except Exception as e:
-                LOG.warn('tox_add_tcp_relay ' +host +' : ' +str(e))
-                 # LOG.error(traceback.format_exc())
-        # LOG.info("Connected status: " +repr(self._tox.self_get_connection_status()))
-
     def loop(self, n):
         """
         Im guessings - there are 3 sleeps - time, tox, and Qt
@@ -921,7 +906,6 @@ class App:
                        +_settings['proxy_host'] +':' \
                        +str(_settings['proxy_port']))
             lElts = _settings['current_nodes_tcp']
-        env['lElts'] = lElts
         LOG.debug(f"test_env {len(lElts)}")
         return env
 
@@ -931,25 +915,16 @@ class App:
             lElts = self._settings['current_nodes_udp']
         shuffle(lElts)
         LOG.debug(f"_test_bootstrap #Elts={len(lElts)}")
-        LOG.trace(f"_test_bootstrap lElts={lElts[:8]}")
-        shuffle(env['lElts'])
-        for host,port,key in lElts[:8]:
-            try:
-                assert len(key) == 64, key
-                assert len(host) <= 16, host
-                if type(port) == str:
-                    port = int(port)
-                oRet = self._tox.bootstrap(host, port, key)
-                LOG.debug('bootstrap to ' +host +':' +str(port) \
-                         +' : ' +repr(oRet))
-            except Exception as e:
-                LOG.warn('self._tox.bootstrap host=' +host \
-                         +' port=' +str(port) \
-                         +' key=' +key \
-                         +' : ' +str(e))
-                # LOG.error(traceback.format_exc())
+        shuffle(lElts)
+        ts.bootstrap_good(lElts[:iNODES], [self._tox])
+        LOG.info("Connected status: " +repr(self._tox.self_get_connection_status()))
 
-        LOG.debug("Connected status: " +repr(self._tox.self_get_connection_status()))
+    def _test_relays(self, lElts=None):
+        if lElts is None:
+            lElts = self._settings['current_nodes_tcp']
+        shuffle(lElts)
+        LOG.debug(f"_test_relays {len(lElts)}")
+        ts.bootstrap_tcp(lElts[:iNODES], [self._tox])
 
     def _test_socks(self, lElts=None):
         LOG.debug("_test_socks")
@@ -962,10 +937,9 @@ class App:
         reply = util_ui.question(text, title)
         if not reply: return
 
-        env = self._test_env()
         if lElts is None:
-            lElts = env['lElts']
-        shuffle(env['lElts'])
+            lElts = self._settings['current_nodes_tcp']
+        shuffle(lElts)
         try:
             bootstrap_iNodeInfo(lElts)
         except Exception as e:
@@ -973,8 +947,8 @@ class App:
             LOG.error(f"test_tox ' +' :  {e}")
             LOG.error('_test_tox(): ' \
                          +'\n' + traceback.format_exc())
-            title = 'Extended Test Suite Error'
-            text = 'Error:' + str(e)
+            title = 'Test Suite Error'
+            text = 'Error: ' + str(e)
             util_ui.message_box(text, title)
 
         # LOG.info("Connected status: " +repr(self._tox.self_get_connection_status()))

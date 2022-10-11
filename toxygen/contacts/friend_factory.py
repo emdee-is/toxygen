@@ -13,21 +13,21 @@ class FriendFactory(ToxSave):
 
     def create_friend_by_public_key(self, public_key):
         friend_number = self._tox.friend_by_public_key(public_key)
-
         return self.create_friend_by_number(friend_number)
 
     def create_friend_by_number(self, friend_number):
         aliases = self._settings['friends_aliases']
-        tox_id = self._tox.friend_get_public_key(friend_number)
+        sToxPk = self._tox.friend_get_public_key(friend_number)
+        assert sToxPk, sToxPk
         try:
-            alias = list(filter(lambda x: x[0] == tox_id, aliases))[0][1]
+            alias = list(filter(lambda x: x[0] == sToxPk, aliases))[0][1]
         except:
             alias = ''
         item = self._create_friend_item()
-        name = alias or self._tox.friend_get_name(friend_number) or tox_id
+        name = alias or self._tox.friend_get_name(friend_number) or sToxPk
         status_message = self._tox.friend_get_status_message(friend_number)
-        message_getter = self._db.messages_getter(tox_id)
-        friend = Friend(self._profile_manager, message_getter, friend_number, name, status_message, item, tox_id)
+        message_getter = self._db.messages_getter(sToxPk)
+        friend = Friend(self._profile_manager, message_getter, friend_number, name, status_message, item, sToxPk)
         friend.set_alias(alias)
 
         return friend
