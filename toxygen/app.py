@@ -488,7 +488,7 @@ class App:
         LOG.debug(f"_start_threads init: {te()!r}")
 
         # starting threads for tox iterate and toxav iterate
-        self._main_loop = threads.ToxIterateThread(self._tox)
+        self._main_loop = threads.ToxIterateThread(self._tox, self)
         self._main_loop.start()
 
         self._av_loop = threads.ToxAVIterateThread(self._tox.AV)
@@ -849,7 +849,7 @@ class App:
         self.test_net()
         self._ms.log_console()
 
-    def test_net(self, lElts=None, oThread=None, iMax=4):
+    def test_net(self, oThread=None, iMax=4):
 
         LOG.debug("test_net " +self._oArgs.network)
         # bootstrap
@@ -904,6 +904,9 @@ class App:
                 break
             LOG.trace(f"Connected status #{i}: {status!r}")
             self.loop(2)
+
+        global iLAST_CONN
+        iLAST_CONN = time.time()
 
     def _test_env(self):
         _settings = self._settings

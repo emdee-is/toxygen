@@ -6,6 +6,7 @@ from PyQt5 import QtCore
 
 from bootstrap.bootstrap import *
 from bootstrap.bootstrap import download_nodes_list
+from wrapper.toxcore_enums_and_consts import TOX_USER_STATUS, TOX_CONNECTION
 import wrapper_tests.support_testing as ts
 from utils import util
 
@@ -35,6 +36,9 @@ def LOG_WARN(l):  print('WARN+ '+l)
 def LOG_INFO(l):  print('INFO+ '+l)
 def LOG_DEBUG(l): print('DBUG+ '+l)
 def LOG_TRACE(l): pass # print('TRACE+ '+l)
+
+iLAST_CONN = 0
+iLAST_DELTA = 60
 
 # -----------------------------------------------------------------------------------------------------------------
 # Base threads
@@ -117,7 +121,7 @@ class InitThread(BaseThread):
                 threading.Timer(1.0,
                                 self._app.test_net,
                                 args=list(),
-                                kwargs=dict(lElts=None, oThread=self, iMax=2)
+                                kwargs=dict(oThread=self, iMax=4)
                                 ).start()
 
             if self._is_first_start:
@@ -136,10 +140,11 @@ class InitThread(BaseThread):
 
 class ToxIterateThread(BaseQThread):
 
-    def __init__(self, tox):
+    def __init__(self, tox, app=None):
         super().__init__()
         self._tox = tox
-
+        self._app = app
+        
     def run(self):
         LOG_DEBUG('ToxIterateThread run: ')
         while not self._stop_thread:
@@ -150,8 +155,31 @@ class ToxIterateThread(BaseQThread):
                 # Fatal Python error: Segmentation fault
                 LOG_ERROR(f"ToxIterateThread run: {e}")
             else:
-                sleep(iMsec / 1000)
+                sleep(iMsec / 1000.0)
+                
+            global iLAST_CONN
+            if not iLAST_CONN:
+                iLAST_CONN = time.time()
+            # TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
 
+            # and segv
+            if \
+                time.time() - iLAST_CONN > iLAST_DELTA and \
+                ts.bAreWeConnected() and \
+                self._tox.self_get_status() == TOX_USER_STATUS['NONE'] and \
+                self._tox.self_get_connection_status() == TOX_CONNECTION['NONE']:
+                    iLAST_CONN = time.time()
+                    LOG_INFO(f"ToxIterateThread calling test_net")
+                    if True:
+                        invoke_in_main_thread(
+                            self._app.test_net, oThread=self, iMax=2)
+                    else:
+                        threading.Timer(1.0,
+                                self._app.test_net,
+                                args=list(),
+                                kwargs=dict(lElts=None, oThread=self, iMax=2)
+                                ).start()
+                
 
 class ToxAVIterateThread(BaseQThread):
     def __init__(self, toxav):

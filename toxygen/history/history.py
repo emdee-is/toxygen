@@ -1,6 +1,10 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 from history.history_logs_generators import *
 
+global LOG
+import logging
+LOG = logging.getLogger('app.db')
+
 class History:
 
     def __init__(self, contact_provider, db, settings, main_screen, messages_items_factory):

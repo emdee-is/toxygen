@@ -17,6 +17,20 @@ from ctypes import *
 from utils import util
 from utils import ui as util_ui
 
+# callbacks can be called in any thread so were being careful
+# tox.py can be called by callbacks
+def LOG_ERROR(a): print('EROR> '+a)
+def LOG_WARN(a): print('WARN> '+a)
+def LOG_INFO(a):
+    bVERBOSE = hasattr(__builtins__, 'app') and app.oArgs.loglevel <= 20
+    if bVERBOSE: print('INFO> '+a)
+def LOG_DEBUG(a):
+    bVERBOSE = hasattr(__builtins__, 'app') and app.oArgs.loglevel <= 10-1
+    if bVERBOSE: print('DBUG> '+a)
+def LOG_TRACE(a):
+    bVERBOSE = hasattr(__builtins__, 'app') and app.oArgs.loglevel < 10
+    if bVERBOSE: print('TRAC> '+a)
+
 def tox_log_cb(iTox, level, file, line, func, message, *args):
     """
     * @param level The severity of the log message.
@@ -42,7 +56,7 @@ def tox_factory(data=None, settings=None, args=None, app=None):
     :return: new tox instance
     """
     if not settings:
-        LOG.warn("tox_factory using get_default_settings")
+        LOG_WARN("tox_factory using get_default_settings")
         settings = user_data.settings.Settings.get_default_settings()
     else:
         user_data.settings.clean_settings(settings)
@@ -88,13 +102,14 @@ def tox_factory(data=None, settings=None, args=None, app=None):
                 tox_options._options_pointer,
                 tox_options.self_logger_cb)
         else:
-            logging.warn("No tox_options._options_pointer to add self_logger_cb" )
+            logging_WARN("No tox_options._options_pointer to add self_logger_cb" )
 
         retval = wrapper.tox.Tox(tox_options)
     except Exception as e:
         if app and hasattr(app, '_log'):
-            app._log(f"ERROR: wrapper.tox.Tox failed:  {e}")
-            LOG.warn(traceback.format_exc())
+            pass
+        LOG_ERROR(f"wrapper.tox.Tox failed:  {e}")
+        LOG_WARN(traceback.format_exc())
         raise
 
     if app and hasattr(app, '_log'):

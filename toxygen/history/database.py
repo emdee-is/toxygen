@@ -3,7 +3,6 @@ from sqlite3 import connect
 import os.path
 import utils.util as util
 
-# LOG=util.log
 global LOG
 import logging
 LOG = logging.getLogger('app.db')
