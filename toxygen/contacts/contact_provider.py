@@ -63,12 +63,12 @@ class ContactProvider(tox_save.ToxSave):
             if True:
                 # original code
                 public_key = self._tox.group_get_chat_id(group_number)
-                LOG.info(f"group_get_chat_id {group_number} {public_key}")
+#                LOG.info(f"group_get_chat_id {group_number} {public_key}")
                 return self.get_group_by_public_key(public_key)
             else:
                 # guessing
                 chat_id = self._tox.group_get_chat_id(group_number)
-                LOG.info(f"group_get_chat_id {group_number} {chat_id}")
+#                LOG.info(f"group_get_chat_id {group_number} {chat_id}")
                 group = self.get_contact_by_tox_id(chat_id)
                 return group
         except Exception as e:

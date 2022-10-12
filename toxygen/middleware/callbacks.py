@@ -265,8 +265,9 @@ def tox_file_recv(window, tray, profile, file_transfer_handler, contacts_manager
                     invoke_in_main_thread(tray_notification, file_from + ' ' + friend.name, file_name, tray, window)
                 if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
-                icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
-                invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
+                if tray:
+                    icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
+                    invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
         else:  # avatar
             LOG_DEBUG(f'file_transfer_handler Avatar')
             invoke_in_main_thread(file_transfer_handler.incoming_avatar,

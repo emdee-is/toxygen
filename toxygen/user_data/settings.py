@@ -48,7 +48,7 @@ def clean_settings(self):
     # overrides
     self['mirror_mode'] = False
     # REQUIRED!!
-    if self['ipv6_enabled'] and not os.path.exists('/proc/sys/net/ipv6'):
+    if not os.path.exists('/proc/sys/net/ipv6'):
         LOG.warn('Disabling IPV6 because /proc/sys/net/ipv6 does not exist')
         self['ipv6_enabled'] = False
 

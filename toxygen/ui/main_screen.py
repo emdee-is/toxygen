@@ -350,6 +350,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.messageEdit.setGeometry(QtCore.QRect(0, 3, 450, 55))
         font = QtGui.QFont()
         font.setPointSize(11)
+        font.setBold(True)
         font.setFamily(self._settings['font'])
         self.messageEdit.setFont(font)
 

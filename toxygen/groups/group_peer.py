@@ -13,7 +13,8 @@ class GroupChatPeer:
         self._public_key = public_key
         self._is_current_user = is_current_user
         self._is_muted = is_muted
-
+        # unused?
+        self._kind = 'grouppeer'
     # -----------------------------------------------------------------------------------------------------------------
     # Readonly properties
     # -----------------------------------------------------------------------------------------------------------------

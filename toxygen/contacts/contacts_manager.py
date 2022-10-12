@@ -13,7 +13,13 @@ from groups.group_peer import GroupChatPeer
 global LOG
 import logging
 LOG = logging.getLogger('app.'+__name__)
-log = lambda x: LOG.info(x)
+
+def LOG_ERROR(l): print('ERROR_: '+l)
+def LOG_WARN(l): print('WARN_: '+l)
+def LOG_INFO(l): print('INFO_: '+l)
+def LOG_DEBUG(l): print('DEBUG_: '+l)
+def LOG_TRACE(l): pass # print('TRACE+ '+l)
+
 
 UINT32_MAX = 2 ** 32 -1
 
@@ -291,7 +297,7 @@ class ContactsManager(ToxSave):
         group = self.get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
         if peer: # broken
-            if not hasattr(peer, 'public_key'):
+            if not hasattr(peer, 'public_key') or not peer.public_key:
                 LOG.error(f'no peer public_key ' + repr(dir(peer)))
             else:
                 if not self.check_if_contact_exists(peer.public_key):
@@ -547,10 +553,17 @@ class ContactsManager(ToxSave):
 
     def update_groups_numbers(self):
         groups = self._contact_provider.get_all_groups()
-        LOG.info("update_groups_numbers len(groups)={len(groups)}")
+        LOG.info(f"update_groups_numbers len(groups)={len(groups)}")
+        # Thread 76 "ToxIterateThrea" received signal SIGSEGV, Segmentation fault.
         for i in range(len(groups)):
             chat_id = self._tox.group_get_chat_id(i)
+            if not chat_id:
+                LOG.warn(f"update_groups_numbers {i} chat_id")
+                continue
             group = self.get_contact_by_tox_id(chat_id)
+            if not group:
+                LOG.warn(f"update_groups_numbers {i} group")
+                continue
             group.number = i
         self.update_filtration()
 

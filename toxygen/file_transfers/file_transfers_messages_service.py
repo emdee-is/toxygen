@@ -2,6 +2,15 @@ from messenger.messenger import *
 import utils.util as util
 from file_transfers.file_transfers import *
 
+global LOG
+import logging
+LOG = logging.getLogger('app.'+__name__)
+
+def LOG_ERROR(l): print('ERROR_: '+l)
+def LOG_WARN(l): print('WARN_: '+l)
+def LOG_INFO(l): print('INFO_: '+l)
+def LOG_DEBUG(l): print('DEBUG_: '+l)
+def LOG_TRACE(l): pass # print('TRACE+ '+l)
 
 class FileTransfersMessagesService:
 
@@ -40,7 +49,12 @@ class FileTransfersMessagesService:
         return tm
 
     def add_inline_message(self, transfer, index):
+        """callback"""
         if not self._is_friend_active(transfer.friend_number):
+            return
+        if transfer is None or not hasattr(transfer, 'data') or \
+           not transfer.data:
+            LOG_ERROR(f"add_inline_message empty data")
             return
         count = self._messages.count()
         if count + index + 1 >= 0:

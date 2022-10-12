@@ -44,10 +44,27 @@ class MessagesItemsFactory:
         self._messages.setItemWidget(elem, item)
 
         return item
+    
+#   File "/var/local/src/toxygen/toxygen/file_transfers/file_transfers_handler.py", line 216, in transfer_finished
+#     self._file_transfers_message_service.add_inline_message(transfer, index)
+#   File "/var/local/src/toxygen/toxygen/file_transfers/file_transfers_messages_service.py", line 47, in add_inline_message
+#     self._create_inline_item(transfer.data, count + index + 1)
+#   File "/var/local/src/toxygen/toxygen/file_transfers/file_transfers_messages_service.py", line 75, in _create_inline_item
+#     return self._messages_items_factory.create_inline_item(data, False, position)
+#   File "/var/local/src/toxygen/toxygen/ui/items_factories.py", line 50, in create_inline_item
+#     item = InlineImageItem(message.data, self._messages.width(), elem, self._messages)
+# AttributeError: 'bytes' object has no attribute 'data'
 
     def create_inline_item(self, message, append=True, position=0):
         elem = QtWidgets.QListWidgetItem()
-        item = InlineImageItem(message.data, self._messages.width(), elem, self._messages)
+        # AttributeError: 'bytes' object has no attribute 'data'
+        if type(message) == bytes:
+            data = message
+        elif hasattr(message, 'data'):
+            data = message.data
+        else:
+            return
+        item = InlineImageItem(data, self._messages.width(), elem, self._messages)
         elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
         if append:
             self._messages.addItem(elem)

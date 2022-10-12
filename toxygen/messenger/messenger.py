@@ -25,6 +25,9 @@ class Messenger(tox_save.ToxSave):
         calls_manager.call_started_event.add_callback(self._on_call_started)
         calls_manager.call_finished_event.add_callback(self._on_call_finished)
 
+    def __repr__(self):
+        return "<Messenger>"
+    
     def get_last_message(self):
         contact = self._contacts_manager.get_curr_contact()
         if contact is None:
@@ -67,7 +70,7 @@ class Messenger(tox_save.ToxSave):
         if self._contacts_manager.is_active_a_friend():
             self.send_message_to_friend(text, message_type)
         elif self._contacts_manager.is_active_a_group():
-            self.send_message_to_group(text, message_type)
+            self.send_message_to_group('~'+text, message_type)
         elif self._contacts_manager.is_active_a_group_chat_peer():
             self.send_message_to_group_peer(text, message_type)
 
