@@ -4,7 +4,7 @@ import sys
 import traceback
 from random import shuffle
 import threading
-from time import sleep
+from time import sleep, time
 
 from gevent import monkey; monkey.patch_all(); del monkey   # noqa
 import gevent
@@ -75,7 +75,7 @@ from user_data.backup_service import BackupService
 import styles.style  # TODO: dynamic loading
 
 import wrapper_tests.support_testing as ts
-from wrapper_tests.tests_wrapper import bootstrap_iNodeInfo
+from wrapper_tests.tests_wrapper import test_bootstrap_iNmapInfo
 
 global LOG
 import logging
@@ -846,10 +846,10 @@ class App:
             sleep(interval / 1000.0)
 
     def _test_tox(self):
-        self.test_net()
+        self.test_net(iMax=8)
         self._ms.log_console()
 
-    def test_net(self, oThread=None, iMax=4):
+    def test_net(self, oThread=None, iMax=6):
 
         LOG.debug("test_net " +self._oArgs.network)
         # bootstrap
@@ -906,7 +906,7 @@ class App:
             self.loop(2)
 
         global iLAST_CONN
-        iLAST_CONN = time.time()
+        iLAST_CONN = time()
 
     def _test_env(self):
         _settings = self._settings
@@ -961,7 +961,7 @@ class App:
             lElts = self._settings['current_nodes_tcp']
         shuffle(lElts)
         try:
-            bootstrap_iNodeInfo(lElts)
+            test_bootstrap_iNmapInfo(lElts)
         except Exception as e:
             # json.decoder.JSONDecodeError
             LOG.error(f"test_tox ' +' :  {e}")

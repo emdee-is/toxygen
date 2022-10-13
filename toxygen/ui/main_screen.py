@@ -733,8 +733,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def test_tox(self):
         self._app._test_tox()
 
-    def test_socks(self):
-        self._app._test_socks()
+    def test_nmap(self):
+        self._app._test_nmap()
 
     def quit_program(self):
         try:
@@ -904,9 +904,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def show_search_field(self):
         if hasattr(self, 'search_field') and self.search_field.isVisible():
+            #?
+            self.search_field.show()
             return
-        if self._contacts_manager.get_curr_friend() is None:
-            return
+        if not hasattr(self._contacts_manager, 'get_curr_friend') or \
+            self._contacts_manager.get_curr_friend() is None:
+            #? return
+            pass
         self.search_field = self._widget_factory.create_search_screen(self.messages)
         x, y = self.messages.x(), self.messages.y() + self.messages.height() - 40
         self.search_field.setGeometry(x, y, self.messages.width(), 40)

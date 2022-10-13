@@ -21,6 +21,8 @@ LOG = logging.getLogger('app.'+'bootstrap')
 def download_nodes_list(settings, oArgs):
     if not settings['download_nodes_list']:
         return ''
+    if not ts.bAreWeConnected():
+        return ''        
     url = settings['download_nodes_url']
     path = _get_nodes_path(oArgs=oArgs)
     # dont download blindly so we can edit the file and not block on startup

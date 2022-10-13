@@ -1,7 +1,10 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import common.tox_save as tox_save
+import utils.ui as util_ui
+
 from messenger.messages import *
 from wrapper_tests.support_testing import assert_main_thread
+from wrapper.toxcore_enums_and_consts import TOX_MAX_MESSAGE_LENGTH
 
 global LOG
 import logging
@@ -60,34 +63,54 @@ class Messenger(tox_save.ToxSave):
             self._screen.messageEdit.clear()
             return
 
-        action_message_prefix = '/me '
-        if text.startswith(action_message_prefix):
-            message_type = TOX_MESSAGE_TYPE['ACTION']
-            text = text[len(action_message_prefix):]
-        else:
-            message_type = TOX_MESSAGE_TYPE['NORMAL']
+        message_type = TOX_MESSAGE_TYPE['NORMAL']
+        if False: # undocumented
+            action_message_prefix = '/me '
+            if text.startswith(action_message_prefix):
+                message_type = TOX_MESSAGE_TYPE['ACTION']
+                text = text[len(action_message_prefix):]
 
-        if self._contacts_manager.is_active_a_friend():
-            self.send_message_to_friend(text, message_type)
-        elif self._contacts_manager.is_active_a_group():
-            self.send_message_to_group('~'+text, message_type)
-        elif self._contacts_manager.is_active_a_group_chat_peer():
-            self.send_message_to_group_peer(text, message_type)
-
+        if len(text) > TOX_MAX_MESSAGE_LENGTH:
+            text = text[:TOX_MAX_MESSAGE_LENGTH] # 1372
+        try:
+            if self._contacts_manager.is_active_a_friend():
+                self.send_message_to_friend(text, message_type)
+            elif self._contacts_manager.is_active_a_group():
+                self.send_message_to_group('~'+text, message_type)
+            elif self._contacts_manager.is_active_a_group_chat_peer():
+                self.send_message_to_group_peer(text, message_type)
+            else:
+                LOG.warn(f'Unknown friend type for Messenger send_message')
+        except Exception as e:
+            LOG.error(f'Messenger send_message {e}')
+            import traceback
+            LOG.warn(traceback.format_exc())
+            title = 'Messenger send_message Error'
+            text = 'Error: ' + str(e)
+            assert_main_thread()
+            util_ui.message_box(text, title)
+            
     def send_message_to_friend(self, text, message_type, friend_number=None):
         """
         Send message
         :param text: message text
         :param friend_number: number of friend
+        from Qt callback
         """
         if friend_number is None:
             friend_number = self._contacts_manager.get_active_number()
-
+        if friend_number is None:
+            LOG.error(f"No _contacts_manager.get_active_number")
+            return
         if not text or friend_number < 0:
             return
         assert_main_thread()
 
         friend = self._get_friend_by_number(friend_number)
+        if not friend:
+            LOG.error(f"No self._get_friend_by_number")
+            return
+        assert friend
         messages = self._split_message(text.encode('utf-8'))
         t = util.get_unix_time()
         for message in messages:
@@ -172,10 +195,14 @@ class Messenger(tox_save.ToxSave):
             group = self._get_group_by_public_key(group_peer_contact.group_pk)
             group_number = group.number
 
-        if not text or group_number < 0 or peer_id < 0:
+        if not text:
             return
+        if group.number < 0:
+            return
+        if peer_id and peer_id < 0:
+            return
+        
         assert_main_thread()
-
         # FixMe: peer_id is None?
         group_peer_contact = self._contacts_manager.get_or_create_group_peer_contact(group_number, peer_id)
         # group_peer_contact now may be None
@@ -309,6 +336,7 @@ class Messenger(tox_save.ToxSave):
         self._add_info_message(friend_number, text)
 
     def _add_info_message(self, friend_number, text):
+        assert friend
         friend = self._get_friend_by_number(friend_number)
         message = InfoMessage(text, util.get_unix_time())
         friend.append_message(message)
@@ -330,6 +358,7 @@ class Messenger(tox_save.ToxSave):
             self._screen.messages.scrollToBottom()
             self._contacts_manager.get_curr_contact().append_message(text_message)
         else:
+            LOG.debug("_add_message not is_contact_active(contact)")
             contact.inc_messages()
             contact.append_message(text_message)
             if not contact.visibility:

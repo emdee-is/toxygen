@@ -103,26 +103,14 @@ class InitThread(BaseThread):
     def run(self):
         LOG_DEBUG('InitThread run: ')
         try:
-            if self._is_first_start:
+            if self._is_first_start and ts.bAreWeConnected():
                 if self._settings['download_nodes_list']:
                     LOG_INFO('downloading list of nodes')
                     download_nodes_list(self._settings, oArgs=self._app._args)
 
-            if False:
-                lNodes = ts.generate_nodes()
-                LOG_INFO(f"bootstrapping {len(lNodes)!s} nodes")
-                for data in lNodes:
-                    if self._stop_thread:
-                        return
-                    self._tox.bootstrap(*data)
-                    self._tox.add_tcp_relay(*data)
-            else:
+            if ts.bAreWeConnected():
                 LOG_INFO(f"calling test_net nodes")
-                threading.Timer(1.0,
-                                self._app.test_net,
-                                args=list(),
-                                kwargs=dict(oThread=self, iMax=4)
-                                ).start()
+                self._app.test_net(oThread=self, iMax=4)
 
             if self._is_first_start:
                 LOG_INFO('starting plugins')
@@ -170,15 +158,8 @@ class ToxIterateThread(BaseQThread):
                 self._tox.self_get_connection_status() == TOX_CONNECTION['NONE']:
                     iLAST_CONN = time.time()
                     LOG_INFO(f"ToxIterateThread calling test_net")
-                    if True:
-                        invoke_in_main_thread(
-                            self._app.test_net, oThread=self, iMax=2)
-                    else:
-                        threading.Timer(1.0,
-                                self._app.test_net,
-                                args=list(),
-                                kwargs=dict(lElts=None, oThread=self, iMax=2)
-                                ).start()
+                    invoke_in_main_thread(
+                        self._app.test_net, oThread=self, iMax=2)
                 
 
 class ToxAVIterateThread(BaseQThread):

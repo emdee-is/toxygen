@@ -48,8 +48,9 @@ class MessageArea(QtWidgets.QPlainTextEdit):
                     self._messenger.send_typing(False)
                     self._messenger.send_message()
                 except Exception as e:
+                    LOG.error(f"keyPressEvent ERROR send_message to {self._messenger}")
                     util_ui.message_box(str(e),
-                                        util_ui.tr(f"ERROR send_message to {self._messenger}"))
+                                        util_ui.tr(f"keyPressEvent ERROR send_message to {self._messenger}"))
                     
         elif event.key() == QtCore.Qt.Key_Up and not self.toPlainText():
             self.appendPlainText(self._messenger.get_last_message())

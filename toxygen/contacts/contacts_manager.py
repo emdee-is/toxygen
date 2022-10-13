@@ -96,10 +96,13 @@ class ContactsManager(ToxSave):
             LOG.warn("No self._active_contact")
             return False
         if self._active_contact not in self._contacts:
+            LOG.debug(f"_active_contact={self._active_contact}  len={len(self._contacts)}")
             return False
         if not self._contacts[self._active_contact]:
+            LOG.debug(f"{self._contacts[self._active_contact]}  {contact.tox_id}")
             return False
 
+        LOG.debug(f"{self._contacts[self._active_contact].tox_id} == {contact.tox_id}")
         return self._contacts[self._active_contact].tox_id == contact.tox_id
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -296,7 +299,7 @@ class ContactsManager(ToxSave):
     def get_or_create_group_peer_contact(self, group_number, peer_id):
         group = self.get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
-        if peer: # broken
+        if peer: # broken?
             if not hasattr(peer, 'public_key') or not peer.public_key:
                 LOG.error(f'no peer public_key ' + repr(dir(peer)))
             else:
@@ -304,7 +307,7 @@ class ContactsManager(ToxSave):
                     self.add_group_peer(group, peer)
                 return self.get_contact_by_tox_id(peer.public_key)
         else:
-            LOG.warn(f'no peer group_number={group_number}')
+            LOG.warn(f'no peer group_number={group_number} peer_id={peer_id}')
 
     def check_if_contact_exists(self, tox_id):
         return any(filter(lambda c: c.tox_id == tox_id, self._contacts))

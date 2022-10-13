@@ -9,9 +9,6 @@ import os
 global LOG
 import logging
 LOG = logging.getLogger('app.'+'tox_factory')
-def LOG_INFO(l): print('DBUG> '+l)
-def LOG_DEBUG(l): print('DBUG> '+l)
-def LOG_LOG(l): print('TRAC> '+l)
 
 from ctypes import *
 from utils import util
@@ -30,6 +27,7 @@ def LOG_DEBUG(a):
 def LOG_TRACE(a):
     bVERBOSE = hasattr(__builtins__, 'app') and app.oArgs.loglevel < 10
     if bVERBOSE: print('TRAC> '+a)
+def LOG_LOG(a): print('TRAC> '+a)
 
 def tox_log_cb(iTox, level, file, line, func, message, *args):
     """
@@ -40,15 +38,20 @@ def tox_log_cb(iTox, level, file, line, func, message, *args):
     * @param message The log message.
     * @param user_data The user data pointer passed to tox_new in options.
     """
-    file = str(file, 'UTF-8')
-    func = str(func, 'UTF-8')
-    message = str(message, 'UTF-8')
-    if file == 'network.c' and line == 660: return
-    # root WARNING 3network.c#944:b'send_packet'attempted to send message with network family 10 (probably IPv6) on IPv4 socket
-    if file == 'network.c' and line == 944: return
-    message = f"{file}#{line}:{func} {message}"
-    LOG_LOG(message)
-
+    try:
+        if type(file) == bytes:
+            file = str(file, 'UTF-8')
+        if file == 'network.c' and line in [944, 660]: return
+        # root WARNING 3network.c#944:b'send_packet'attempted to send message with network family 10 (probably IPv6) on IPv4 socket
+        if type(func) == bytes:
+            func = str(func, 'UTF-8')
+        if type(message) == bytes:
+            message = str(message, 'UTF-8')
+        message = f"{file}#{line}:{func} {message}"
+        LOG_LOG(message)
+    except Exception as e:
+        LOG_ERROR("tox_log_cb {e}")
+        
 def tox_factory(data=None, settings=None, args=None, app=None):
     """
     :param data: user data from .tox file. None = no saved data, create new profile
@@ -102,7 +105,7 @@ def tox_factory(data=None, settings=None, args=None, app=None):
                 tox_options._options_pointer,
                 tox_options.self_logger_cb)
         else:
-            logging_WARN("No tox_options._options_pointer to add self_logger_cb" )
+            LOG_WARN("No tox_options._options_pointer to add self_logger_cb" )
 
         retval = wrapper.tox.Tox(tox_options)
     except Exception as e:

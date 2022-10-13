@@ -21,6 +21,7 @@ class FileTransfersMessagesService:
         self._messages = main_screen.messages
 
     def add_incoming_transfer_message(self, friend, accepted, size, file_name, file_number):
+        assert friend
         author = MessageAuthor(friend.name, MESSAGE_AUTHOR['FRIEND'])
         status = FILE_TRANSFER_STATE['RUNNING'] if accepted else FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']
         tm = TransferMessage(author, util.get_unix_time(), status, size, file_name, friend.number, file_number)
@@ -36,6 +37,7 @@ class FileTransfersMessagesService:
         return tm
 
     def add_outgoing_transfer_message(self, friend, size, file_name, file_number):
+        assert friend
         author = MessageAuthor(self._profile.name, MESSAGE_AUTHOR['ME'])
         status = FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         tm = TransferMessage(author, util.get_unix_time(), status, size, file_name, friend.number, file_number)
@@ -61,6 +63,7 @@ class FileTransfersMessagesService:
             self._create_inline_item(transfer.data, count + index + 1)
 
     def add_unsent_file_message(self, friend, file_path, data):
+        assert friend
         author = MessageAuthor(self._profile.name, MESSAGE_AUTHOR['ME'])
         size = os.path.getsize(file_path) if data is None else len(data)
         tm = UnsentFileMessage(file_path, data, util.get_unix_time(), author, size, friend.number)
