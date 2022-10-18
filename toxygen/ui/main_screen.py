@@ -26,39 +26,75 @@ except Exception as e:
     LOG.warn(e)
     PythonConsole = None
 else:
-    def hl_format(color, style=''):
-        """Return a QTextCharFormat with the given attributes.
-        unused
-        """
-        _color = QColor()
-        _color.setNamedColor(color)
+    if True:
+        # I want to do reverse video but I cant figure how
+        bg='white'
+        def hl_format(color, style=''):
+            """Return a QTextCharFormat with the given attributes.
+            """
+            _color = QColor()
+            _color.setNamedColor(color)
 
-        _format = QTextCharFormat()
-        _format.setBackground(_color)
-        if 'bold' in style:
-            _format.setFontWeight(QFont.Bold)
-        if 'italic' in style:
-            _format.setFontItalic(True)
+            _format = QTextCharFormat()
+            _format.setForeground(_color)
+            if 'bold' in style:
+                _format.setFontWeight(QFont.Bold)
+            if 'italic' in style:
+                _format.setFontItalic(True)
 
-        _fgcolor = QColor()
-        _fgcolor.setNamedColor('white')
-        _format.setForeground(_fgcolor)
-        return _format
+            _bgcolor = QColor()
+            _bgcolor.setNamedColor(bg)
+            _format.setBackground(_bgcolor)
+            return _format
 
-    aFORMATS = {
-        'keyword':    hl.format('blue', 'bold'),
-        'operator':   hl.format('red'),
-        'brace':      hl.format('darkGray'),
-        'defclass':   hl.format('black', 'bold'),
-        'string':     hl.format('magenta'),
-        'string2':    hl.format('darkMagenta'),
-        'comment':    hl.format('darkGreen', 'italic'),
-        'self':       hl.format('black', 'italic'),
-        'numbers':    hl.format('brown'),
-        'inprompt':   hl.format('darkBlue', 'bold'),
-        'outprompt':  hl.format('darkRed', 'bold'),
-    }
+        aFORMATS = {
+            'keyword':    hl_format('blue', 'bold'),
+            'operator':   hl_format('red'),
+            'brace':      hl_format('darkGray'),
+            'defclass':   hl_format('black', 'bold'),
+            'string':     hl_format('magenta'),
+            'string2':    hl_format('darkMagenta'),
+            'comment':    hl_format('darkGreen', 'italic'),
+            'self':       hl_format('black', 'italic'),
+            'numbers':    hl_format('brown'),
+            'inprompt':   hl_format('darkBlue', 'bold'),
+            'outprompt':  hl_format('darkRed', 'bold'),
+        }
+    else:
+        bg = 'black'
+        def hl_format(color, style=''):
+            
+            """Return a QTextCharFormat with the given attributes.
+            unused
+            """
+            _color = QColor()
+            _color.setNamedColor(color)
 
+            _format = QTextCharFormat()
+            _format.setForeground(_color)
+            if 'bold' in style:
+                _format.setFontWeight(QFont.Bold)
+            if 'italic' in style:
+                _format.setFontItalic(True)
+
+            _bgcolor = QColor()
+            _bgcolor.setNamedColor(bg)
+            _format.setBackground(_bgcolor)
+            return _format
+        aFORMATS = {
+            'keyword':    hl_format('blue', 'bold'),
+            'operator':   hl_format('red'),
+            'brace':      hl_format('lightGray'),
+            'defclass':   hl_format('white', 'bold'),
+            'string':     hl_format('magenta'),
+            'string2':    hl_format('lightMagenta'),
+            'comment':    hl_format('lightGreen', 'italic'),
+            'self':       hl_format('white', 'italic'),
+            'numbers':    hl_format('lightBrown'),
+            'inprompt':   hl_format('lightBlue', 'bold'),
+            'outprompt':  hl_format('lightRed', 'bold'),
+        }
+        
 
 class QTextEditLogger(logging.Handler):
     def __init__(self, parent, app):
@@ -177,8 +213,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.actionTest_tox = QtWidgets.QAction(window)
         self.actionTest_tox.setObjectName("actionTest_tox")
-        self.actionTest_socks = QtWidgets.QAction(window)
-        self.actionTest_socks.setObjectName("actionTest_socks")
+        self.actionTest_nmap = QtWidgets.QAction(window)
+        self.actionTest_nmap.setObjectName("actionTest_nmap")
+        self.actionTest_main = QtWidgets.QAction(window)
+        self.actionTest_main.setObjectName("actionTest_main")
         self.actionQuit_program = QtWidgets.QAction(window)
         self.actionQuit_program.setObjectName("actionQuit_program")
 
@@ -231,7 +269,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuProfile.addAction(self.actionSettings)
         self.menuProfile.addAction(self.lockApp)
         self.menuProfile.addAction(self.actionTest_tox)
-        self.menuProfile.addAction(self.actionTest_socks)
+        self.menuProfile.addAction(self.actionTest_nmap)
+        self.menuProfile.addAction(self.actionTest_main)
         self.menuProfile.addAction(self.actionQuit_program)
 
         self.menuGC.addAction(self.createGC)
@@ -260,7 +299,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menubar.addAction(self.menuPlugins.menuAction())
         self.menubar.addAction(self.menuAbout.menuAction())
 
-        self.actionTest_socks.triggered.connect(self.test_socks)
+        self.actionTest_nmap.triggered.connect(self.test_nmap)
+        self.actionTest_main.triggered.connect(self.test_main)
         self.actionTest_tox.triggered.connect(self.test_tox)
 
         self.actionQuit_program.triggered.connect(self.quit_program)
@@ -322,7 +362,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionLog_console.setText(util_ui.tr("Console Log"))
         self.actionPython_console.setText(util_ui.tr("Python Console"))
         self.actionTest_tox.setText(util_ui.tr("Bootstrap"))
-        self.actionTest_socks.setText(util_ui.tr("Test program"))
+        self.actionTest_nmap.setText(util_ui.tr("Test Nmap"))
+        self.actionTest_main.setText(util_ui.tr("Test Program"))
         self.actionQuit_program.setText(util_ui.tr("Quit program"))
         self.actionSettings.setText(util_ui.tr("Settings"))
         self.audioSettings.setText(util_ui.tr("Audio"))
@@ -628,13 +669,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
             try:
                 if not self._pe:
-                    self._pe = PythonConsole(sFont=font_name,
-                                             formats=aFORMATS,
-                                             bBold=True,
-                                             font_width=size)
+                    self._pe = PythonConsole(formats=aFORMATS)
                 self._pe.setWindowTitle('variable: app is the application')
 #                self._pe.edit.setStyleSheet('foreground: white; background-color: black;}')
                 # Fix the pyconsole geometry
+                
+                font = self._pe.edit.document().defaultFont()
+                font.setFamily(font_name)
+                font.setBold(True)
+                if font_width is None:
+                    font_width = QFontMetrics(font).width('M')
+                self._pe.setFont(font)
                 geometry = self._pe.geometry()
                 geometry.setWidth(font_width*80+20)
                 geometry.setHeight(font_width*40)
@@ -735,6 +780,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def test_nmap(self):
         self._app._test_nmap()
+
+    def test_main(self):
+        self._app._test_main()
 
     def quit_program(self):
         try:

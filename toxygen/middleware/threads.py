@@ -10,18 +10,6 @@ from wrapper.toxcore_enums_and_consts import TOX_USER_STATUS, TOX_CONNECTION
 import wrapper_tests.support_testing as ts
 from utils import util
 
-if 'QtCore' in sys.modules:
-    def qt_sleep(fSec):
-        if fSec > .001:
-            QtCore.QThread.msleep(int(fSec*1000.0))
-        QtCore.QCoreApplication.processEvents()
-    sleep = qt_sleep
-elif 'gevent' in sys.modules:
-    import gevent
-    sleep = gevent.sleep
-else:
-    import time
-    sleep = time.sleep
 import time
 sleep = time.sleep
 
@@ -63,7 +51,7 @@ class BaseThread(threading.Thread):
             if not self.is_alive(): break
             i = i + 1
         else:
-            LOG_WARN(f"BaseThread {self.name} BLOCKED")
+            LOG_WARN(f"BaseThread {self.name} BLOCKED after {ts.iTHREAD_JOINS}")
 
 class BaseQThread(QtCore.QThread):
 
@@ -101,12 +89,14 @@ class InitThread(BaseThread):
         self._is_first_start = is_first_start
 
     def run(self):
+        # DBUG+ InitThread run: ERROR name 'ts' is not defined
+        import wrapper_tests.support_testing as ts
         LOG_DEBUG('InitThread run: ')
         try:
-            if self._is_first_start and ts.bAreWeConnected():
-                if self._settings['download_nodes_list']:
-                    LOG_INFO('downloading list of nodes')
-                    download_nodes_list(self._settings, oArgs=self._app._args)
+            if self._is_first_start and ts.bAreWeConnected() and \
+              self._settings['download_nodes_list']:
+                LOG_INFO('downloading list of nodes')
+                download_nodes_list(self._settings, oArgs=self._app._args)
 
             if ts.bAreWeConnected():
                 LOG_INFO(f"calling test_net nodes")

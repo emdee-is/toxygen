@@ -93,10 +93,10 @@ class ContactsManager(ToxSave):
 
     def is_contact_active(self, contact):
         if not self._active_contact:
-            LOG.warn("No self._active_contact")
+#            LOG.debug("No self._active_contact")
             return False
         if self._active_contact not in self._contacts:
-            LOG.debug(f"_active_contact={self._active_contact}  len={len(self._contacts)}")
+            LOG.warn(f"_active_contact={self._active_contact} not in contacts len={len(self._contacts)}")
             return False
         if not self._contacts[self._active_contact]:
             LOG.debug(f"{self._contacts[self._active_contact]}  {contact.tox_id}")
@@ -241,7 +241,7 @@ class ContactsManager(ToxSave):
             # AttributeError: 'NoneType' object has no attribute 'number'
             for (i, contact) in enumerate(self._contacts):
                 if contact is None or not hasattr(contact, 'number'):
-                    LOG.error("Contact {i} is None or not hasattr 'number'")
+                    LOG.error(f"Contact {i} is None or not hasattr 'number'")
                     del self._contacts[i]
                     continue
             contacts = sorted(self._contacts, key=lambda c: c.number)

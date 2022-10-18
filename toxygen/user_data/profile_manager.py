@@ -63,9 +63,17 @@ class ProfileManager:
     def save_profile(self, data):
         if self._toxes.has_password():
             data = self._toxes.pass_encrypt(data)
-        with open(self._path, 'wb') as fl:
-            fl.write(data)
-        LOG_INFO('Profile saved successfully to' +self._path)
+        try:
+            suf = f"{os.getpid()}"
+            with open(self._path+suf, 'wb') as fl:
+                fl.write(data)
+            stat = os.stat(self._path+suf)
+            if hasattr(stat, 'st_blocks'):
+                assert stat.st_blocks > 0, f"Zero length file {self._path+suf}"
+            os.rename(self._path+suf,self._path)
+            LOG_INFO('Profile saved successfully to' +self._path)
+        except Exception as e:
+            LOG_WARN(f"Profile save failed to {self._path}\n{e}")
 
         self._profile_saved_event(data)
 

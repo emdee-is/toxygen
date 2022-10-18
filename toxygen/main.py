@@ -35,19 +35,8 @@ with ts.ignoreStderr():
 __maintainer__ = 'Ingvar'
 __version__ = '0.5.0+'
 
-from PyQt5 import QtCore
-import gevent
-if 'QtCore' in sys.modules:
-    def qt_sleep(fSec):
-        if fSec > .001:
-            QtCore.QThread.msleep(int(fSec*1000.0))
-        QtCore.QCoreApplication.processEvents()
-    sleep = qt_sleep
-elif 'gevent' in sys.modules:
-    sleep = gevent.sleep
-else:
-    import time
-    sleep = time.sleep
+import time
+sleep = time.sleep
 
 def reset():
     Settings.reset_auto_profile()
@@ -230,6 +219,9 @@ def main_parser():
     parser.add_argument('--udp_enabled',type=str,
                         default='True', choices=['True','False'],
                         help='En/Disable udp')
+    parser.add_argument('--trace_enabled',type=str,
+                        default='False', choices=['True','False'],
+                        help='Debugging from toxcore logger_trace')
     parser.add_argument('--ipv6_enabled',type=str,
                         default=bIpV6, choices=lIpV6Choices,
                         help='En/Disable ipv6')

@@ -22,7 +22,7 @@ def LOG_INFO(a):
     bVERBOSE = hasattr(__builtins__, 'app') and app.oArgs.loglevel <= 20
     if bVERBOSE: print('INFO> '+a)
 def LOG_DEBUG(a):
-    bVERBOSE = hasattr(__builtins__, 'app') and app.oArgs.loglevel <= 10-1
+    bVERBOSE = hasattr(__builtins__, 'app') and app.oArgs.loglevel <= 10
     if bVERBOSE: print('DBUG> '+a)
 def LOG_TRACE(a):
     bVERBOSE = hasattr(__builtins__, 'app') and app.oArgs.loglevel < 10
@@ -39,18 +39,21 @@ def tox_log_cb(iTox, level, file, line, func, message, *args):
     * @param user_data The user data pointer passed to tox_new in options.
     """
     try:
-        if type(file) == bytes:
-            file = str(file, 'UTF-8')
-        if file == 'network.c' and line in [944, 660]: return
+        file = str(file, 'UTF-8')
         # root WARNING 3network.c#944:b'send_packet'attempted to send message with network family 10 (probably IPv6) on IPv4 socket
-        if type(func) == bytes:
-            func = str(func, 'UTF-8')
-        if type(message) == bytes:
-            message = str(message, 'UTF-8')
+        if file == 'network.c' and line in [944, 660]: return
+        func = str(func, 'UTF-8')
+        message = str(message, 'UTF-8')
         message = f"{file}#{line}:{func} {message}"
         LOG_LOG(message)
     except Exception as e:
-        LOG_ERROR("tox_log_cb {e}")
+        LOG_ERROR(f"tox_log_cb {e}")
+
+#tox_log_handler (context=0x24763d0, 
+#    level=LOGGER_LEVEL_TRACE, file=0x7fffe599fb99 "TCP_common.c", line=203, 
+#    func=0x7fffe599fc50 <__func__.2> "read_TCP_packet", 
+#    message=0x7fffba7fabd0 "recv buffer has 0 bytes, but requested 10 bytes", 
+#    userdata=0x0) at /var/local/src/c-toxcore/toxcore/tox.c:78
         
 def tox_factory(data=None, settings=None, args=None, app=None):
     """
@@ -98,7 +101,8 @@ def tox_factory(data=None, settings=None, args=None, app=None):
 
         LOG.debug("wrapper.tox.Tox settings: " +repr(settings))
 
-        if tox_options._options_pointer:
+        if 'trace_enabled' in settings and settings['trace_enabled'] and \
+          tox_options._options_pointer:
             c_callback = CFUNCTYPE(None, c_void_p, c_int, c_char_p, c_int, c_char_p, c_char_p, c_void_p)
             tox_options.self_logger_cb = c_callback(tox_log_cb)
             wrapper.tox.Tox.libtoxcore.tox_options_set_log_callback(

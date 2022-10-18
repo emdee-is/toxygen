@@ -97,12 +97,12 @@ class Messenger(tox_save.ToxSave):
         :param friend_number: number of friend
         from Qt callback
         """
+        if not text:
+            return
         if friend_number is None:
             friend_number = self._contacts_manager.get_active_number()
-        if friend_number is None:
+        if friend_number is None  or friend_number < 0:
             LOG.error(f"No _contacts_manager.get_active_number")
-            return
-        if not text or friend_number < 0:
             return
         assert_main_thread()
 
@@ -110,7 +110,6 @@ class Messenger(tox_save.ToxSave):
         if not friend:
             LOG.error(f"No self._get_friend_by_number")
             return
-        assert friend
         messages = self._split_message(text.encode('utf-8'))
         t = util.get_unix_time()
         for message in messages:
@@ -336,8 +335,8 @@ class Messenger(tox_save.ToxSave):
         self._add_info_message(friend_number, text)
 
     def _add_info_message(self, friend_number, text):
-        assert friend
         friend = self._get_friend_by_number(friend_number)
+        assert friend
         message = InfoMessage(text, util.get_unix_time())
         friend.append_message(message)
         if self._contacts_manager.is_friend_active(friend_number):

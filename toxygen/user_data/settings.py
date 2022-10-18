@@ -138,9 +138,8 @@ class Settings(dict):
         self._profile_path = path.replace('.json', '.tox')
         self._toxes = toxes
         self._app = app
-        self._args = app._args
-        self.LOG = lambda l: LOG.log(self._args.loglevel, l)
-        self._log = self.LOG
+        self._oArgs = app._oArgs
+        self._log = lambda l: LOG.log(self._oArgs.loglevel, l)
 
         self._settings_saved_event = Event()
         if path and os.path.isfile(path):
@@ -156,29 +155,29 @@ class Settings(dict):
                 text = title + path
                 LOG.error(title +str(ex))
                 util_ui.message_box(text, title)
-                info = Settings.get_default_settings(app._args)
+                info = Settings.get_default_settings(app._oArgs)
             user_data.settings.clean_settings(info)
         else:
             LOG.debug('get_default_settings for: ' + repr(path))
-            info = Settings.get_default_settings(app._args)
+            info = Settings.get_default_settings(app._oArgs)
 
         if not os.path.exists(path):
-            merge_args_into_settings(app._args, info)
+            merge_oArgs_into_settings(app._oArgs, info)
         else:
-            aC = self._changed(app._args, info)
+            aC = self._changed(app._oArgs, info)
             if aC:
                 title = 'Override profile with commandline - '
                 if path:
                     title += os.path.basename(path)
                 text = 'Override profile with command-line settings? \n'
     #            text += '\n'.join([str(key) +'=' +str(val) for
-    #                               key,val in self._changed(app._args).items()])
+    #                               key,val in self._changed(app._oArgs).items()])
                 text += repr(aC)
                 reply = util_ui.question(text, title)
                 if reply:
-                    merge_args_into_settings(app._args, info)
-        info['audio'] = getattr(app._args, 'audio')
-        info['video'] = getattr(app._args, 'video')
+                    merge_oArgs_into_settings(app._oArgs, info)
+        info['audio'] = getattr(app._oArgs, 'audio')
+        info['video'] = getattr(app._oArgs, 'video')
         super().__init__(info)
         self._upgrade()
 
@@ -316,6 +315,7 @@ class Settings(dict):
             # FixMe: match? /var/local/src/c-toxcore/toxcore/tox.h
             'ipv6_enabled': True,
             'udp_enabled': True,
+            'trace_enabled': False,
             'local_discovery_enabled': True,
             'dht_announcements_enabled': True,
             'proxy_type': 0,

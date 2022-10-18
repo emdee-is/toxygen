@@ -4,7 +4,7 @@ import sys
 import traceback
 from random import shuffle
 import threading
-from time import sleep, time
+from time import sleep
 
 from gevent import monkey; monkey.patch_all(); del monkey   # noqa
 import gevent
@@ -75,7 +75,6 @@ from user_data.backup_service import BackupService
 import styles.style  # TODO: dynamic loading
 
 import wrapper_tests.support_testing as ts
-from wrapper_tests.tests_wrapper import test_bootstrap_iNmapInfo
 
 global LOG
 import logging
@@ -488,7 +487,7 @@ class App:
         LOG.debug(f"_start_threads init: {te()!r}")
 
         # starting threads for tox iterate and toxav iterate
-        self._main_loop = threads.ToxIterateThread(self._tox, self)
+        self._main_loop = threads.ToxIterateThread(self._tox)
         self._main_loop.start()
 
         self._av_loop = threads.ToxAVIterateThread(self._tox.AV)
@@ -775,8 +774,7 @@ class App:
         # FixMe:
         self._log = lambda line: LOG.log(self._oArgs.loglevel,
                                          self._ms.status(line))
-        self._ms._log = self._log # used in callbacks.py
-        self.LOG = self._log # backwards
+        # self._ms._log = self._log # was used in callbacks.py
 
         if False:
             self.status_handler = logging.Handler()
@@ -812,6 +810,7 @@ class App:
 
     def _init_callbacks(self, ms=None):
         LOG.debug("_init_callbacks")
+        # this will block if you are not connected
         callbacks.init_callbacks(self._tox, self._profile, self._settings,
                                  self._plugin_loader, self._contacts_manager,
                                  self._calls_manager,
@@ -846,10 +845,10 @@ class App:
             sleep(interval / 1000.0)
 
     def _test_tox(self):
-        self.test_net(iMax=8)
+        self.test_net()
         self._ms.log_console()
 
-    def test_net(self, oThread=None, iMax=6):
+    def test_net(self, lElts=None, oThread=None, iMax=4):
 
         LOG.debug("test_net " +self._oArgs.network)
         # bootstrap
@@ -905,9 +904,6 @@ class App:
             LOG.trace(f"Connected status #{i}: {status!r}")
             self.loop(2)
 
-        global iLAST_CONN
-        iLAST_CONN = time()
-
     def _test_env(self):
         _settings = self._settings
         if 'proxy_type' not in _settings or _settings['proxy_type'] == 0 or \
@@ -961,7 +957,7 @@ class App:
             lElts = self._settings['current_nodes_tcp']
         shuffle(lElts)
         try:
-            test_bootstrap_iNmapInfo(lElts)
+            bootstrap_iNodeInfo(lElts)
         except Exception as e:
             # json.decoder.JSONDecodeError
             LOG.error(f"test_tox ' +' :  {e}")
