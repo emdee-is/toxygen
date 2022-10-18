@@ -1,5 +1,13 @@
 # Toxygen ToDo List
 
+## Bugs
+
+1. There is an agravating bug  where new messages are not put in the
+   current window, and a messages waiting indicator appears. You have
+   to focus out of the window and then back in the window.
+
+
+
 ## Fix history
 
 The code is in there but it's not working.
@@ -14,7 +22,7 @@ command line.
 ## Fix Video
 
 The code is in there but it's not working.  I may have broken it
-trying to wire up the ability to set the audio device from the command
+trying to wire up the ability to set the video device from the command
 line.
 
 ## Groups
@@ -37,9 +45,8 @@ line.
 ## check toxygen_wrapper
 
 1. I've broken out toxygen_wrapper to be standalone,
-   https://git.plastiras.org/emdee/toxygen_wrapper but the tox.py
+   https://git.macaw.me/emdee/toxygen_wrapper but the tox.py
    needs each call double checking.
 
-
-
-
+2. https://git.macaw.me/emdee/toxygen_wrapper needs packaging
+   and making a dependency.

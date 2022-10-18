@@ -15,14 +15,11 @@ if system() == 'Windows':
     MODULES = ['PyQt5', 'PyAudio', 'numpy', 'opencv-python', 'pydenticon', 'cv2']
 else:
     MODULES = ['pydenticon']
+    MODULES.append('PyQt5')
     try:
         import pyaudio
     except ImportError:
         MODULES.append('PyAudio')
-    try:
-        import PyQt5
-    except ImportError:
-        MODULES.append('PyQt5')
     try:
         import numpy
     except ImportError:
@@ -35,6 +32,10 @@ else:
         import coloredlogs
     except ImportError:
         MODULES.append('coloredlogs')
+    try:
+        import pyqtconsole
+    except ImportError:
+        MODULES.append('pyqtconsole')
 
 
 def get_packages():
@@ -42,9 +43,7 @@ def get_packages():
     for root, dirs, files in os.walk(directory):
         packages = map(lambda d: 'toxygen.' + d, dirs)
         packages = ['toxygen'] + list(packages)
-
         return packages
-
 
 class InstallScript(install):
     """This class configures Toxygen after installation"""
@@ -72,20 +71,16 @@ setup(name='Toxygen',
       version=version,
       description='Toxygen - Tox client',
       long_description='Toxygen is powerful Tox client written in Python3',
-      url='https://github.com/toxygen-project/toxygen/',
-      keywords='toxygen tox messenger',
+      url='https://git.macaw.me/emdee/toxygen/',
+      keywords='toxygen Tox messenger',
       author='Ingvar',
-      maintainer='Ingvar',
+      maintainer='',
       license='GPL3',
       packages=get_packages(),
       install_requires=MODULES,
       include_package_data=True,
       classifiers=[
           'Programming Language :: Python :: 3 :: Only',
-          'Programming Language :: Python :: 3.5',
-          'Programming Language :: Python :: 3.6',
-          'Programming Language :: Python :: 3.7',
-          'Programming Language :: Python :: 3.8',
           'Programming Language :: Python :: 3.9',
       ],
       entry_points={
@@ -93,4 +88,6 @@ setup(name='Toxygen',
       },
       cmdclass={
           'install': InstallScript
-      })
+      },
+      zip_safe=False
+      )
