@@ -162,7 +162,7 @@ class Settings(dict):
             info = Settings.get_default_settings(app._oArgs)
 
         if not os.path.exists(path):
-            merge_oArgs_into_settings(app._oArgs, info)
+            merge_args_into_settings(app._oArgs, info)
         else:
             aC = self._changed(app._oArgs, info)
             if aC:
@@ -175,7 +175,7 @@ class Settings(dict):
                 text += repr(aC)
                 reply = util_ui.question(text, title)
                 if reply:
-                    merge_oArgs_into_settings(app._oArgs, info)
+                    merge_args_into_settings(app._oArgs, info)
         info['audio'] = getattr(app._oArgs, 'audio')
         info['video'] = getattr(app._oArgs, 'video')
         super().__init__(info)

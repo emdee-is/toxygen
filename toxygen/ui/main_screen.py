@@ -362,7 +362,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionLog_console.setText(util_ui.tr("Console Log"))
         self.actionPython_console.setText(util_ui.tr("Python Console"))
         self.actionTest_tox.setText(util_ui.tr("Bootstrap"))
-        self.actionTest_nmap.setText(util_ui.tr("Test Nmap"))
+        self.actionTest_nmap.setText(util_ui.tr("Test Nodes"))
         self.actionTest_main.setText(util_ui.tr("Test Program"))
         self.actionQuit_program.setText(util_ui.tr("Quit program"))
         self.actionSettings.setText(util_ui.tr("Settings"))

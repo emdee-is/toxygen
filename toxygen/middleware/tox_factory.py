@@ -101,8 +101,9 @@ def tox_factory(data=None, settings=None, args=None, app=None):
 
         LOG.debug("wrapper.tox.Tox settings: " +repr(settings))
 
-        if 'trace_enabled' in settings and settings['trace_enabled'] and \
-          tox_options._options_pointer:
+        if 'trace_enabled' in settings and settings['trace_enabled']:
+            LOG_INFO("settings['trace_enabled' disabled" )
+        elif tox_options._options_pointer:
             c_callback = CFUNCTYPE(None, c_void_p, c_int, c_char_p, c_int, c_char_p, c_char_p, c_void_p)
             tox_options.self_logger_cb = c_callback(tox_log_cb)
             wrapper.tox.Tox.libtoxcore.tox_options_set_log_callback(

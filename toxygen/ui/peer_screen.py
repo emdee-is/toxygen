@@ -29,9 +29,11 @@ class PeerScreen(CenteredWidget):
         self.statusCircle = StatusCircle(self)
         self.statusCircle.setGeometry(50, 15, 30, 30)
 
-        self.statusCircle.update(self._peer.status)
-        self.peerNameLabel.setText(self._peer.name)
-        self.ignorePeerCheckBox.setChecked(self._peer.is_muted)
+        if self._peer:
+            self.statusCircle.update(self._peer.status)
+            self.peerNameLabel.setText(self._peer.name)
+            self.ignorePeerCheckBox.setChecked(self._peer.is_muted)
+            
         self.ignorePeerCheckBox.clicked.connect(self._toggle_ignore)
         self.sendPrivateMessagePushButton.clicked.connect(self._send_private_message)
         self.copyPublicKeyPushButton.clicked.connect(self._copy_public_key)

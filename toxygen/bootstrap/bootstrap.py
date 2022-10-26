@@ -13,6 +13,7 @@ except ImportError:
 from user_data.settings import get_user_config_path
 from wrapper_tests.support_testing import _get_nodes_path
 from wrapper_tests.support_http import download_url
+import wrapper_tests.support_testing as ts
 
 global LOG
 import logging

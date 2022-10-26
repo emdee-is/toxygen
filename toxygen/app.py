@@ -886,13 +886,25 @@ class App:
             else:
                 LOG.debug("Have default route for network " +self._oArgs.network)
 
-        LOG.debug(f"test_net {self._oArgs.network} iMax= {iMax}")
+        lUdpElts = self._settings['current_nodes_udp']
+        if self._oArgs.proxy_type <= 0 and not lUdpElts:
+            title = 'test_net Error'
+            text = 'Error: ' + str('No UDP nodes')
+            util_ui.message_box(text, title)
+            return
+        lTcpElts = self._settings['current_nodes_tcp']
+        if self._oArgs.proxy_type > 0 and not lTcpElts:
+            title = 'test_net Error'
+            text = 'Error: ' + str('No TCP nodes')
+            util_ui.message_box(text, title)
+            return
+        LOG.debug(f"test_net {self._oArgs.network} lenU={len(lUdpElts)} lenT={len(lTcpElts)} iMax= {iMax}")
         i = 0
         while i < iMax:
             # if oThread and oThread._stop_thread: return
             i = i + 1
             LOG.debug(f"bootstrapping status # {i}")
-            self._test_bootstrap(self._settings['current_nodes_udp'])
+            self._test_bootstrap(lUdpElts)
             if hasattr(self._oArgs, 'proxy_type') and self._oArgs.proxy_type > 0:
                 LOG.debug(f"relaying status # {i}")
                 self._test_relays(self._settings['current_nodes_tcp'])
@@ -930,9 +942,11 @@ class App:
     def _test_bootstrap(self, lElts=None):
         if lElts is None:
             lElts = self._settings['current_nodes_udp']
-        shuffle(lElts)
         LOG.debug(f"_test_bootstrap #Elts={len(lElts)}")
-        ts.bootstrap_good(lElts[:iNODES], [self._tox])
+        if not lElts:
+            return
+        shuffle(lElts)
+        ts.bootstrap_udp(lElts[:iNODES], [self._tox])
         LOG.info("Connected status: " +repr(self._tox.self_get_connection_status()))
 
     def _test_relays(self, lElts=None):

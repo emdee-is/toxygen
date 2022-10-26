@@ -95,7 +95,7 @@ class InitThread(BaseThread):
         try:
             if self._is_first_start and ts.bAreWeConnected() and \
               self._settings['download_nodes_list']:
-                LOG_INFO('downloading list of nodes')
+                LOG_INFO(f"downloading list of nodes {self._settings['download_nodes_list']}")
                 download_nodes_list(self._settings, oArgs=self._app._args)
 
             if ts.bAreWeConnected():

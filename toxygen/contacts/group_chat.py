@@ -110,7 +110,6 @@ class GroupChat(contact.Contact, ToxSave):
     def get_peer_by_id(self, peer_id):
         peers = list(filter(lambda p: p.id == peer_id, self._peers))
         if peers:
-            #? broken
             return peers[0]
         else:
             LOG_WARN(f"get_peer_by_id empty peers for {peer_id}")
