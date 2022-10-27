@@ -76,7 +76,7 @@ class Messenger(tox_save.ToxSave):
             if self._contacts_manager.is_active_a_friend():
                 self.send_message_to_friend(text, message_type)
             elif self._contacts_manager.is_active_a_group():
-                self.send_message_to_group('~'+text, message_type)
+                self.send_message_to_group(text, message_type)
             elif self._contacts_manager.is_active_a_group_chat_peer():
                 self.send_message_to_group_peer(text, message_type)
             else:
