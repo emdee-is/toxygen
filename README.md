@@ -49,7 +49,7 @@ Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pu
 This hard-forked from https://github.com/toxygen-project/toxygen
 ```next_gen``` branch.
 
-https://git.macaw.me/emdee/toxygen_wrapper needs packaging
+https://git.plastiras.org/emdee/toxygen_wrapper needs packaging
 is making a dependency. Just download it and copy the two directories
 ```wrapper``` and ```wrapper_tests``` into ```toxygen/toxygen```.
 

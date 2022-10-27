@@ -45,8 +45,8 @@ line.
 ## check toxygen_wrapper
 
 1. I've broken out toxygen_wrapper to be standalone,
-   https://git.macaw.me/emdee/toxygen_wrapper but the tox.py
+   https://git.plastiras.org/emdee/toxygen_wrapper but the tox.py
    needs each call double checking.
 
-2. https://git.macaw.me/emdee/toxygen_wrapper needs packaging
+2. https://git.plastiras.org/emdee/toxygen_wrapper needs packaging
    and making a dependency.
