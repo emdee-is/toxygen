@@ -141,11 +141,14 @@ class Contact(basecontact.BaseContact):
         return list(messages)
 
     def mark_as_sent(self, tox_message_id):
+        message = list(filter(lambda m: m.author is not None
+                              and m.author.type == MESSAGE_AUTHOR['NOT_SENT']
+                              and m.tox_message_id == tox_message_id,
+                              self._corr))[0]
         try:
-            message = list(filter(lambda m: m.author is not None and m.author.type == MESSAGE_AUTHOR['NOT_SENT']
-                                            and m.tox_message_id == tox_message_id, self._corr))[0]
             message.mark_as_sent()
         except Exception as ex:
+            #   wrapped C/C++ object of type QLabel has been deleted
             LOG.error(f"Mark as sent:  {ex!s}")
 
     # -----------------------------------------------------------------------------------------------------------------

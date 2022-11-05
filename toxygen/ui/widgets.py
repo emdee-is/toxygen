@@ -3,6 +3,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import utils.ui as util_ui
 import logging
 
+global LOG
+LOG = logging.getLogger('app')
+
 class DataLabel(QtWidgets.QLabel):
     """
     Label with elided text
@@ -11,13 +14,17 @@ class DataLabel(QtWidgets.QLabel):
         try:
             text = ''.join('\u25AF' if len(bytes(str(c), 'utf-8')) >= 4 else c for c in str(text))
         except Exception as e:
-            logging.error(f"DataLabel::setText:  {e}")
+            LOG.error(f"DataLabel::setText:  {e}")
             return
 
-        metrics = QtGui.QFontMetrics(self.font())
-        text = metrics.elidedText(str(text), QtCore.Qt.ElideRight, self.width())
-        super().setText(text)
+        try:
+            metrics = QtGui.QFontMetrics(self.font())
+            text = metrics.elidedText(str(text), QtCore.Qt.ElideRight, self.width())
+        except Exception as e:
+            # RuntimeError: wrapped C/C++ object of type DataLabel has been deleted
+            text = str(text)
 
+        super().setText(text)
 
 class ComboBox(QtWidgets.QComboBox):
 

@@ -76,7 +76,7 @@ class Messenger(tox_save.ToxSave):
             if self._contacts_manager.is_active_a_friend():
                 self.send_message_to_friend(text, message_type)
             elif self._contacts_manager.is_active_a_group():
-                self.send_message_to_group(text, message_type)
+                self.send_message_to_group('~'+text, message_type)
             elif self._contacts_manager.is_active_a_group_chat_peer():
                 self.send_message_to_group_peer(text, message_type)
             else:
@@ -353,11 +353,12 @@ class Messenger(tox_save.ToxSave):
             LOG.warn("_add_message null contact")
             return
         if self._contacts_manager.is_contact_active(contact):  # add message to list
+#            LOG.debug("_add_message is_contact_active(contact)")
             self._create_message_item(text_message)
             self._screen.messages.scrollToBottom()
             self._contacts_manager.get_curr_contact().append_message(text_message)
         else:
-            LOG.debug("_add_message not is_contact_active(contact)")
+#            LOG.debug("_add_message not is_contact_active(contact)")
             contact.inc_messages()
             contact.append_message(text_message)
             if not contact.visibility:

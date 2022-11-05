@@ -6,6 +6,18 @@ global LOG
 import logging
 LOG = logging.getLogger(__name__)
 
+# callbacks can be called in any thread so were being careful
+def LOG_ERROR(l): print('EROR< '+l)
+def LOG_WARN(l):  print('WARN< '+l)
+def LOG_INFO(l):
+    bIsVerbose = hasattr(__builtins__, 'app') and app.oArgs.loglevel <= 20-1
+    if bIsVerbose: print('INFO< '+l)
+def LOG_DEBUG(l):
+    bIsVerbose = hasattr(__builtins__, 'app') and app.oArgs.loglevel <= 10-1
+    if bIsVerbose: print('DBUG< '+l)
+def LOG_TRACE(l):
+    bIsVerbose = hasattr(__builtins__, 'app') and app.oArgs.loglevel < 10-1
+    pass # print('TRACE+ '+l)
 
 class ContactProvider(tox_save.ToxSave):
 
@@ -24,6 +36,7 @@ class ContactProvider(tox_save.ToxSave):
         try:
             public_key = self._tox.friend_get_public_key(friend_number)
         except Exception as e:
+            LOG_WARN(f"get_friend_by_number NO {friend_number} {e} ")
             return None
         return self.get_friend_by_public_key(public_key)
 
@@ -33,6 +46,7 @@ class ContactProvider(tox_save.ToxSave):
             return friend
         friend = self._friend_factory.create_friend_by_public_key(public_key)
         self._add_to_cache(public_key, friend)
+        LOG_INFO(f"get_friend_by_public_key ADDED {friend} ")
 
         return friend
 
@@ -40,6 +54,7 @@ class ContactProvider(tox_save.ToxSave):
         try:
             friend_numbers = self._tox.self_get_friend_list()
         except Exception as e:
+            LOG_WARN(f"get_all_friends NO {friend_numbers} {e} ")
             return None
         friends = map(lambda n: self.get_friend_by_number(n), friend_numbers)
 
@@ -50,38 +65,70 @@ class ContactProvider(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_all_groups(self):
+        """from callbacks"""
         try:
-            group_numbers = range(self._tox.group_get_number_groups())
+            len_groups = self._tox.group_get_number_groups()
+            group_numbers = range(len_groups)
         except Exception as e:
             return None
-        groups = map(lambda n: self.get_group_by_number(n), group_numbers)
-
-        return list(groups)
+        groups = list(map(lambda n: self.get_group_by_number(n), group_numbers))
+        # failsafe in case there are bogus None groups?
+        fgroups = list(filter(lambda x: x, groups))
+        if len(fgroups) != len_groups:
+            LOG_WARN(f"are there are bogus None groups in libtoxcore? {len(fgroups)} != {len_groups}")
+            for group_num in group_numbers:
+                group = self.get_group_by_number(group_num)
+                if group is None:
+                    LOG_ERROR(f"there are bogus None groups in libtoxcore {group_num}!")
+                    # fixme: do something
+            groups = fgroups
+        return groups
 
     def get_group_by_number(self, group_number):
+        group = None
         try:
-            if True:
-                # original code
-                public_key = self._tox.group_get_chat_id(group_number)
-#                LOG.info(f"group_get_chat_id {group_number} {public_key}")
-                return self.get_group_by_public_key(public_key)
+            LOG_INFO(f"group_get_number {group_number} ")
+            # original code
+            chat_id = self._tox.group_get_chat_id(group_number)
+            if not chat_id:
+                LOG_ERROR(f"get_group_by_number NULL number ({group_number})")
             else:
-                # guessing
-                chat_id = self._tox.group_get_chat_id(group_number)
-#                LOG.info(f"group_get_chat_id {group_number} {chat_id}")
-                group = self.get_contact_by_tox_id(chat_id)
-                return group
+                LOG_INFO(f"group_get_number {group_number} {chat_id}")
+                group = self.get_group_by_chat_id(chat_id)
+                if not group:
+                    LOG_ERROR(f"get_group_by_number NULL group ({chat_id})")
+            if group is None:
+
+                LOG_WARN(f"get_group_by_number leaving ({group_number})")
+                #? iRet = self._tox.group_leave(group_number)
+                # invoke in main thread?
+                # self._contacts_manager.delete_group(group_number)
+            return group
         except Exception as e:
-            LOG.warn(f"group_get_chat_id {group_number} {e}")
+            LOG_WARN(f"group_get_number {group_number} {e}")
             return None
 
+    def get_group_by_chat_id(self, chat_id):
+        group = self._get_contact_from_cache(chat_id)
+        if group is not None:
+            return group
+        group = self._group_factory.create_group_by_chat_id(chat_id)
+        if group is None:
+            LOG_ERROR(f"get_group_by_chat_id NULL chat_id={chat_id}")
+        else:
+            self._add_to_cache(chat_id, group)
+
+        return group
 
     def get_group_by_public_key(self, public_key):
         group = self._get_contact_from_cache(public_key)
         if group is not None:
             return group
         group = self._group_factory.create_group_by_public_key(public_key)
-        self._add_to_cache(public_key, group)
+        if group is None:
+            LOG_ERROR(f"get_group_by_public_key NULL group public_key={get_group_by_chat_id}")
+        else:
+            self._add_to_cache(public_key, group)
 
         return group
 

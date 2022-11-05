@@ -138,6 +138,7 @@ class Settings(dict):
         self._profile_path = path.replace('.json', '.tox')
         self._toxes = toxes
         self._app = app
+        self._args = app._oArgs
         self._oArgs = app._oArgs
         self._log = lambda l: LOG.log(self._oArgs.loglevel, l)
 

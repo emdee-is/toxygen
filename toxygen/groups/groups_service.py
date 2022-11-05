@@ -281,14 +281,16 @@ class GroupsService(tox_save.ToxSave):
         if invite in self._group_invites:
             self._group_invites.remove(invite)
 
-    def _join_gc_via_invite(self, invite_data, friend_number, nick, status, password):
+    # status should be dropped
+    def _join_gc_via_invite(self, invite_data, friend_number, nick, status='', password=''):
         LOG.debug(f"_join_gc_via_invite friend_number={friend_number} nick={nick} datalen={len(invite_data)}")
         if nick is None:
             nick = ''
         if invite_data is None:
             invite_data = b''
         try:
-            group_number = self._tox.group_invite_accept(invite_data, friend_number, nick, status, password)
+            # status should be dropped
+            group_number = self._tox.group_invite_accept(invite_data, friend_number, nick, password=password)
         except Exception as e:
             LOG.error(f"_join_gc_via_invite ERROR {e}")
             return

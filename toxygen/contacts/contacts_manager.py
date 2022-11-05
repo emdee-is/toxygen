@@ -54,7 +54,8 @@ class ContactsManager(ToxSave):
         self._tox_dns = tox_dns
         self._messages_items_factory = messages_items_factory
         self._messages = screen.messages
-        self._contacts, self._active_contact = [], -1
+        self._contacts = []
+        self._active_contact = -1
         self._active_contact_changed = Event()
         self._sorting = settings['sorting']
         self._filter_string = ''
@@ -92,17 +93,16 @@ class ContactsManager(ToxSave):
         return self.get_curr_contact().number == group_number
 
     def is_contact_active(self, contact):
-        if not self._active_contact:
+        if self._active_contact == -1:
 #            LOG.debug("No self._active_contact")
             return False
-        if self._active_contact not in self._contacts:
-            LOG.warn(f"_active_contact={self._active_contact} not in contacts len={len(self._contacts)}")
+        if self._active_contact >= len(self._contacts):
+            LOG.warn(f"ERROR _active_contact={self._active_contact} >= contacts len={len(self._contacts)}")
             return False
         if not self._contacts[self._active_contact]:
-            LOG.debug(f"{self._contacts[self._active_contact]}  {contact.tox_id}")
+            LOG.warn(f"ERROR NULL {self._contacts[self._active_contact]}  {contact.tox_id}")
             return False
 
-        LOG.debug(f"{self._contacts[self._active_contact].tox_id} == {contact.tox_id}")
         return self._contacts[self._active_contact].tox_id == contact.tox_id
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ class ContactsManager(ToxSave):
                 current_contact.remove_messages_widgets()  # TODO: if required
                 self._unsubscribe_from_events(current_contact)
 
-            if self._active_contact + 1 and self._active_contact != value:
+            if self._active_contact >= 0 and self._active_contact != value:
                 try:
                     current_contact.curr_text = self._screen.messageEdit.toPlainText()
                 except:
@@ -180,7 +180,7 @@ class ContactsManager(ToxSave):
             self._set_current_contact_data(contact)
             self._active_contact_changed(contact)
         except Exception as ex:  # no friend found. ignore
-            LOG.warn(f"no friend found. Friend value:  {value!s}")
+            LOG.warn(f"no friend found. Friend value: {value!s}")
             LOG.error('in set active: ' + str(ex))
             # gulp raise
 
@@ -368,7 +368,10 @@ class ContactsManager(ToxSave):
         """
         friend = self._contacts[num]
         self._cleanup_contact_data(friend)
-        self._tox.friend_delete(friend.number)
+        try:
+            self._tox.friend_delete(friend.number)
+        except Exception as e:
+            LOG.warn(f"'There was no friend with the given friend number {e}")
         self._delete_contact(num)
 
     def add_friend(self, tox_id):
@@ -418,7 +421,8 @@ class ContactsManager(ToxSave):
     def add_group(self, group_number):
         index = len(self._contacts)
         group = self._contact_provider.get_group_by_number(group_number)
-        if not group:
+        # group num >= 0?
+        if group is None:
             LOG.warn(f"CM.add_group: NO group {group_number}")
         else:
             LOG.info(f"CM.add_group: Adding group {group._name}")
@@ -517,7 +521,8 @@ class ContactsManager(ToxSave):
             title = 'Friend add exception'
             text = 'Friend request exception with ' + str(ex)
             self._log(text)
-            LOG.error(traceback.format_exc())
+            LOG.exception(text)
+            LOG.warn(f"DELETE {sToxPkOrId} ?")
             retval = str(ex)
         title = util_ui.tr(title)
         text = util_ui.tr(text)
@@ -586,9 +591,11 @@ class ContactsManager(ToxSave):
             self.set_active(0)
         # filter(lambda c: not c.has_avatar(), self._contacts)
         for (i, contact) in enumerate(self._contacts):
-            if not contact:
-                LOG.warn("_load_contacts NULL contact {i}")
+            if contact is None:
+                LOG.warn(f"_load_contacts NULL contact {i}")
+                LOG.info(f"_load_contacts deleting NULL {self._contacts[i]}")
                 del self._contacts[i]
+                #? self.save_profile()
                 continue
             if contact.has_avatar(): continue
             contact.reset_avatar(self._settings['identicons'])

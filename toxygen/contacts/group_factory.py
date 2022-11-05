@@ -17,9 +17,11 @@ class GroupFactory(ToxSave):
         self._db = db
         self._items_factory = items_factory
 
+    def create_group_by_chat_id(self, chat_id):
+        return self.create_group_by_public_key(chat_id)
+    
     def create_group_by_public_key(self, public_key):
         group_number = self._get_group_number_by_chat_id(public_key)
-
         return self.create_group_by_number(group_number)
 
     def create_group_by_number(self, group_number):

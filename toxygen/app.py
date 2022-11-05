@@ -903,13 +903,14 @@ class App:
         while i < iMax:
             # if oThread and oThread._stop_thread: return
             i = i + 1
-            LOG.debug(f"bootstrapping status # {i}")
-            self._test_bootstrap(lUdpElts)
-            if hasattr(self._oArgs, 'proxy_type') and self._oArgs.proxy_type > 0:
+            LOG.debug(f"bootstrapping status proxy={self._oArgs.proxy_type} # {i}")
+            if self._oArgs.proxy_type == 0:
+                self._test_bootstrap(lUdpElts)
+            else:
+                self._test_bootstrap([lUdpElts[0]])
                 LOG.debug(f"relaying status # {i}")
                 self._test_relays(self._settings['current_nodes_tcp'])
             status = self._tox.self_get_connection_status()
-            LOG.debug(f"connecting status # {i}" +' : ' +repr(status))
             if status > 0:
                 LOG.info(f"Connected # {i}" +' : ' +repr(status))
                 break
@@ -956,8 +957,8 @@ class App:
         LOG.debug(f"_test_relays {len(lElts)}")
         ts.bootstrap_tcp(lElts[:iNODES], [self._tox])
 
-    def _test_socks(self, lElts=None):
-        LOG.debug("_test_socks")
+    def _test_nmap(self, lElts=None):
+        LOG.debug("_test_nmap")
         if not self._tox: return
         title = 'Extended Test Suite'
         text = 'Run the Extended Test Suite?\nThe program may freeze for 1-10 minutes.'
@@ -968,14 +969,19 @@ class App:
         if not reply: return
 
         if lElts is None:
-            lElts = self._settings['current_nodes_tcp']
+            if self._oArgs.proxy_type == 0:
+                sProt = "udp4"
+                lElts = self._settings['current_nodes_tcp']
+            else:
+                sProt = "tcp4"
+                lElts = self._settings['current_nodes_tcp']
         shuffle(lElts)
         try:
-            bootstrap_iNodeInfo(lElts)
+            ts.bootstrap_iNmapInfo(lElts, self._oArgs, sProt)
+            self._ms.log_console()
         except Exception as e:
-            # json.decoder.JSONDecodeError
-            LOG.error(f"test_tox ' +' :  {e}")
-            LOG.error('_test_tox(): ' \
+            LOG.error(f"test_nmap ' +' :  {e}")
+            LOG.error('_test_nmap(): ' \
                          +'\n' + traceback.format_exc())
             title = 'Test Suite Error'
             text = 'Error: ' + str(e)
@@ -986,7 +992,7 @@ class App:
 
     def _test_main(self):
         from tests.tests_socks import main as tests_main
-        LOG.debug("_test_socks")
+        LOG.debug("_test_main")
         if not self._tox: return
         title = 'Extended Test Suite'
         text = 'Run the Extended Test Suite?\nThe program may freeze for 20-60 minutes.'

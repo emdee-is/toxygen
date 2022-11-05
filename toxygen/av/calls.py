@@ -299,6 +299,7 @@ class AV(common.tox_save.ToxAvSave):
         self._video_width = s['video']['width']
         self._video_height = s['video']['height']
 
+        # dunno
         if True or s['video']['device'] == -1:
             self._video = screen_sharing.DesktopGrabber(s['video']['x'],
                                                         s['video']['y'],
@@ -404,6 +405,7 @@ class AV(common.tox_save.ToxAvSave):
             if self._calls[friend_num].out_audio:
                 try:
                     # app.av.calls ERROR Error send_audio:   One of the frame parameters was invalid. E.g. the resolution may be too small or too large, or the audio sampling rate may be unsupported
+                    # app.av.calls ERROR Error send_audio audio_send_frame: This client is currently not in a call with the friend.                        
                     self._toxav.audio_send_frame(friend_num,
                                                  pcm,
                                                  count,
@@ -412,9 +414,9 @@ class AV(common.tox_save.ToxAvSave):
                 except Exception as e:
                    LOG.error(f"Error send_audio audio_send_frame: {e}")
                    LOG.debug(f"send_audio self._audio_rate_tox={self._audio_rate_tox} self._audio_channels={self._audio_channels}")
-                   invoke_in_main_thread(util_ui.message_box,
-                                    str(e),
-                                    util_ui.tr("Error send_audio audio_send_frame"))
+#                   invoke_in_main_thread(util_ui.message_box,
+#                                    str(e),
+#                                    util_ui.tr("Error send_audio audio_send_frame"))
                    pass
 
     def send_audio(self):
@@ -432,9 +434,10 @@ class AV(common.tox_save.ToxAvSave):
                 else:
                     self.send_audio_data(pcm, count)
             except:
-                pass
+                LOG_DEBUG(f"error send_audio {i}")
+            else:
+                LOG_TRACE(f"send_audio {i}")
             i += 1
-            LOG.debug(f"send_audio {i}")
             sleep(0.01)
 
     def send_video(self):
@@ -454,7 +457,7 @@ class AV(common.tox_save.ToxAvSave):
                     LOG.warn(f"send_video video_send_frame _video.read result={result} frame={frame}")
                     continue
                 else:
-                    LOG.debug(f"send_video video_send_frame _video.read result={result}")
+                    LOG_TRACE(f"send_video video_send_frame _video.read result={result}")
                     height, width, channels = frame.shape
                     friends = []
                     for friend_num in self._calls:
@@ -463,7 +466,7 @@ class AV(common.tox_save.ToxAvSave):
                     if len(friends) == 0:
                         LOG.warn(f"send_video video_send_frame no friends")
                     else:
-                        LOG.debug(f"send_video video_send_frame {friends}")
+                        LOG_TRACE(f"send_video video_send_frame {friends}")
                         friend_num = friends[0]
                         try:
                             y, u, v = self.convert_bgr_to_yuv(frame)

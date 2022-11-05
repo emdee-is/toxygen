@@ -529,16 +529,21 @@ def group_invite(window, settings, tray, profile, groups_service, contacts_provi
 def group_self_join(contacts_provider, contacts_manager, groups_service):
     sSlot = 'group_self_join'
     def wrapped(tox, group_number, user_data):
+        if group_number is None:
+            LOG_ERROR(f"group_self_join NULL group_number #{group_number}")
+            return
+        LOG_DEBUG(f"group_self_join #{group_number}")
         key = f"group_number {group_number}"
         if bTooSoon(key, sSlot, 10): return
-        LOG_DEBUG(f"group_self_join #{group_number}")
         group = contacts_provider.get_group_by_number(group_number)
+        if group is None:
+            LOG_ERROR(f"group_self_join NULL group #{group}")
+            return
         invoke_in_main_thread(group.set_status, TOX_USER_STATUS['NONE'])
         invoke_in_main_thread(groups_service.update_group_info, group)
         invoke_in_main_thread(contacts_manager.update_filtration)
 
     return wrapped
-
 
 def group_peer_join(contacts_provider, groups_service):
     sSlot = "group_peer_join"
@@ -546,10 +551,13 @@ def group_peer_join(contacts_provider, groups_service):
         key = f"group_peer_join #{group_number} peer_id={peer_id}"
         if bTooSoon(key, sSlot, 20): return
         group = contacts_provider.get_group_by_number(group_number)
+        if group is None:
+            LOG_ERROR(f"group_peer_join NULL group #{group} group_number={group_number}")
+            return
         if peer_id > group._peers_limit:
             LOG_ERROR(key +f" {peer_id} > {group._peers_limit}")
             return
-        LOG_DEBUG(key)
+        LOG_DEBUG(f"group_peer_join group={group}")
         group.add_peer(peer_id)
         invoke_in_main_thread(groups_service.generate_peers_list)
         invoke_in_main_thread(groups_service.update_group_info, group)

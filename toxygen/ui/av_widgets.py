@@ -63,7 +63,7 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.accept_video.clicked.connect(self.accept_call_with_video)
         self.decline.clicked.connect(self.decline_call)
 
-        output_device_index = self._settings._args.audio['output']
+        output_device_index = self._settings._oArgs.audio['output']
 
         if False and self._settings['calls_sound']:
             class SoundPlay(QtCore.QThread):
