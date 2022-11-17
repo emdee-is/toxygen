@@ -1,13 +1,14 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+from wrapper_tests.support_testing import assert_main_thread
+
 import common.tox_save as tox_save
 import utils.ui as util_ui
-
 from messenger.messages import *
-from wrapper_tests.support_testing import assert_main_thread
 from wrapper.toxcore_enums_and_consts import TOX_MAX_MESSAGE_LENGTH
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+__name__)
 log = lambda x: LOG.info(x)
 

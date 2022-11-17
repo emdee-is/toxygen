@@ -1,10 +1,13 @@
-import utils.util
-import wave
-import pyaudio
 import os.path
+import wave
+
+import pyaudio
+
+import utils.util
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+__name__)
 
 SOUND_NOTIFICATION = {

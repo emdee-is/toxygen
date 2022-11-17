@@ -1,5 +1,5 @@
-from messenger.messages import *
 import utils.util as util
+from messenger.messages import *
 
 
 class HistoryLogsGenerator:

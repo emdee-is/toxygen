@@ -1,8 +1,9 @@
 import os
-from PyQt5 import QtCore, QtWidgets
-import utils.ui as util_ui
-import common.tox_save as tox_save
 
+from PyQt5 import QtCore, QtWidgets
+
+import common.tox_save as tox_save
+import utils.ui as util_ui
 
 MAX_SHORT_NAME_LENGTH = 5
 

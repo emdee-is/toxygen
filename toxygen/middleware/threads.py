@@ -1,21 +1,23 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+import queue
 import sys
 import threading
-import queue
+import time
+
+import wrapper_tests.support_testing as ts
 from PyQt5 import QtCore
 
 from bootstrap.bootstrap import *
 from bootstrap.bootstrap import download_nodes_list
-from wrapper.toxcore_enums_and_consts import TOX_USER_STATUS, TOX_CONNECTION
-import wrapper_tests.support_testing as ts
 from utils import util
+from wrapper.toxcore_enums_and_consts import TOX_CONNECTION, TOX_USER_STATUS
 
-import time
 sleep = time.sleep
 
 # LOG=util.log
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+'threads')
 # log = lambda x: LOG.info(x)
 

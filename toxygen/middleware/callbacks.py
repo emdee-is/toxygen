@@ -1,17 +1,19 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import sys
 import os
+import sys
 import threading
+from datetime import datetime
+
 from PyQt5 import QtGui
-from wrapper.toxcore_enums_and_consts import *
-from wrapper.toxav_enums import *
-from wrapper.tox import bin_to_string
+
 import utils.ui as util_ui
 import utils.util as util
-from middleware.threads import invoke_in_main_thread, execute
-from notifications.tray import tray_notification
+from middleware.threads import execute, invoke_in_main_thread
 from notifications.sound import *
-from datetime import datetime
+from notifications.tray import tray_notification
+from wrapper.tox import bin_to_string
+from wrapper.toxav_enums import *
+from wrapper.toxcore_enums_and_consts import *
 
 iMAX_INT32 = 4294967295
 # callbacks can be called in any thread so were being careful

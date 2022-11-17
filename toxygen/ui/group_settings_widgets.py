@@ -1,7 +1,9 @@
-from ui.widgets import CenteredWidget
 from PyQt5 import uic
-import utils.util as util
+
 import utils.ui as util_ui
+import utils.util as util
+from ui.widgets import CenteredWidget
+
 
 class GroupManagementScreen(CenteredWidget):
 

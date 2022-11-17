@@ -1,9 +1,10 @@
-from ui.widgets import CenteredWidget
 from PyQt5 import uic
-import utils.util as util
+
 import utils.ui as util_ui
-from ui.contact_items import *
+import utils.util as util
 import wrapper.toxcore_enums_and_consts as consts
+from ui.contact_items import *
+from ui.widgets import CenteredWidget
 
 
 class PeerScreen(CenteredWidget):

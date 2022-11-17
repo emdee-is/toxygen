@@ -1,18 +1,22 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+import ctypes
+import os
+import traceback
+
 import user_data.settings
 import wrapper.tox
 import wrapper.toxcore_enums_and_consts as enums
-import ctypes
-import traceback
-import os
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+'tox_factory')
 
 from ctypes import *
-from utils import util
+
 from utils import ui as util_ui
+from utils import util
+
 
 # callbacks can be called in any thread so were being careful
 # tox.py can be called by callbacks

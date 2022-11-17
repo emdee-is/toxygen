@@ -1,21 +1,24 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import sys
-import os
-import app
 import argparse
-import logging
-import signal
-
 import faulthandler
+import logging
+import os
+import signal
+import sys
+
+import app
+
 faulthandler.enable()
 
 import warnings
+
 warnings.filterwarnings('ignore')
 
 import wrapper_tests.support_testing as ts
+
 try:
-    from trepan.interfaces import server as Mserver
     from trepan.api import debug
+    from trepan.interfaces import server as Mserver
 except:
     print('trepan3 TCP server NOT enabled.')
 else:
@@ -25,10 +28,11 @@ else:
         print('trepan3 TCP server enabled on port 6666.')
     except: pass
 
+import utils.util as util
+from user_data import settings
 from user_data.settings import *
 from user_data.settings import Settings
-from user_data import settings
-import utils.util as util
+
 with ts.ignoreStderr():
     import pyaudio
 
@@ -36,6 +40,7 @@ __maintainer__ = 'Ingvar'
 __version__ = '0.5.0+'
 
 import time
+
 sleep = time.sleep
 
 def reset():

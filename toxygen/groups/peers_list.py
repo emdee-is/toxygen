@@ -1,7 +1,6 @@
 from ui.group_peers_list import PeerItem, PeerTypeItem
-from wrapper.toxcore_enums_and_consts import *
 from ui.widgets import *
-
+from wrapper.toxcore_enums_and_consts import *
 
 # -----------------------------------------------------------------------------------------------------------------
 # Builder

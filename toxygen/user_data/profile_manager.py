@@ -1,13 +1,13 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import utils.util as util
 import os
 
-from user_data.settings import Settings
+import utils.util as util
 from common.event import Event
-from user_data.settings import get_user_config_path
+from user_data.settings import Settings, get_user_config_path
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+__name__)
 
 

@@ -1,6 +1,7 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 
-from ctypes import c_size_t, create_string_buffer, byref, c_int, ArgumentError, c_char_p, c_bool
+from ctypes import (ArgumentError, byref, c_bool, c_char_p, c_int, c_size_t,
+                    create_string_buffer)
 
 try:
     from wrapper import libtox

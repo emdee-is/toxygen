@@ -1,14 +1,17 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-from messenger.messages import *
-from ui.contact_items import *
+from copy import deepcopy
+
+from wrapper_tests.support_testing import assert_main_thread
+
 import utils.util as util
 from common.tox_save import ToxSave
-from wrapper_tests.support_testing import assert_main_thread
-from copy import deepcopy
+from messenger.messages import *
+from ui.contact_items import *
 
 # LOG=util.log
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+__name__)
 log = lambda x: LOG.info(x)
 

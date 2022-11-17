@@ -1,14 +1,17 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import utils.util as util
-import utils.ui as util_ui
 import os
 import platform
-import urllib
-from PyQt5 import QtNetwork, QtCore
 import subprocess
+import urllib
+
+from PyQt5 import QtCore, QtNetwork
+
+import utils.ui as util_ui
+import utils.util as util
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+__name__)
 log = lambda x: LOG.info(x)
 

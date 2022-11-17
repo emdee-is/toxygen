@@ -1,8 +1,9 @@
-from ui.widgets import CenteredWidget
+from PyQt5 import QtCore, QtGui, uic
+
 import utils.ui as util_ui
-from utils.util import join_path, get_images_directory, get_views_path
+from ui.widgets import CenteredWidget
 from user_data.settings import Settings
-from PyQt5 import QtGui, QtCore, uic
+from utils.util import get_images_directory, get_views_path, join_path
 
 
 class ProfileSettings(CenteredWidget):

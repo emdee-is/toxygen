@@ -1,14 +1,15 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 
-import urllib
 import re
+import urllib
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from ui.widgets import RubberBandWindow, create_menu, QRightClickButton, CenteredWidget, LineEdit
-import utils.util as util
 import utils.ui as util_ui
+import utils.util as util
 from stickers.stickers import load_stickers
+from ui.widgets import (CenteredWidget, LineEdit, QRightClickButton,
+                        RubberBandWindow, create_menu)
 
 
 class MessageArea(QtWidgets.QPlainTextEdit):

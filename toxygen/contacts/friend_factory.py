@@ -1,5 +1,5 @@
-from contacts.friend import Friend
 from common.tox_save import ToxSave
+from contacts.friend import Friend
 
 
 class FriendFactory(ToxSave):

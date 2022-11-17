@@ -1,11 +1,12 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 
-from contacts.group_chat import GroupChat
-from common.tox_save import ToxSave
 import wrapper.toxcore_enums_and_consts as constants
+from common.tox_save import ToxSave
+from contacts.group_chat import GroupChat
 
 global LOG
 import logging
+
 LOG = logging.getLogger(__name__)
 
 class GroupFactory(ToxSave):

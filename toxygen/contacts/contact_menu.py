@@ -6,6 +6,7 @@ from wrapper.toxcore_enums_and_consts import *
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app')
 
 # -----------------------------------------------------------------------------------------------------------------

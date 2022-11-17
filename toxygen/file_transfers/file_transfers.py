@@ -1,11 +1,11 @@
-from wrapper.toxcore_enums_and_consts import TOX_FILE_KIND, TOX_FILE_CONTROL
-from os.path import basename, getsize, exists, dirname
-from os import remove, rename, chdir
+from os import chdir, remove, rename
+from os.path import basename, dirname, exists, getsize
 from time import time
-from wrapper.tox import Tox
+
 from common.event import Event
 from middleware.threads import invoke_in_main_thread
-
+from wrapper.tox import Tox
+from wrapper.toxcore_enums_and_consts import TOX_FILE_CONTROL, TOX_FILE_KIND
 
 FILE_TRANSFER_STATE = {
     'RUNNING': 0,

@@ -1,22 +1,22 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import pyaudio
-import time
-import threading
 import itertools
+import threading
+import time
 
-from wrapper.toxav_enums import *
+import pyaudio
+import wrapper_tests.support_testing as ts
+
+import common.tox_save
 from av import screen_sharing
 from av.call import Call
-import common.tox_save
-
-from utils import ui as util_ui
-import wrapper_tests.support_testing as ts
-from middleware.threads import invoke_in_main_thread
 from main import sleep
-from middleware.threads import BaseThread
+from middleware.threads import BaseThread, invoke_in_main_thread
+from utils import ui as util_ui
+from wrapper.toxav_enums import *
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+__name__)
 # callbacks can be called in any thread so were being careful
 def LOG_ERROR(l): print('EROR< '+l)

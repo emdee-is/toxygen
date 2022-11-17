@@ -1,15 +1,16 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 
+import utils.util as util
+from common.tox_save import ToxSave
 from contacts import contact
 from contacts.contact_menu import GroupMenuGenerator
-import utils.util as util
+from groups.group_ban import GroupBan
 from groups.group_peer import GroupChatPeer
 from wrapper import toxcore_enums_and_consts as constants
-from common.tox_save import ToxSave
-from groups.group_ban import GroupBan
 
 global LOG
 import logging
+
 LOG = logging.getLogger(__name__)
 def LOG_ERROR(l): print('ERROR_: '+l)
 def LOG_WARN(l): print('WARN_: '+l)

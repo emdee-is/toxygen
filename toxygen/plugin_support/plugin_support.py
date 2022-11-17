@@ -1,14 +1,16 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import utils.util as util
-import os
 import importlib
 import inspect
-import plugins.plugin_super_class as pl
+import os
 import sys
+
+import plugins.plugin_super_class as pl
+import utils.util as util
 
 # LOG=util.log
 global LOG
 import logging
+
 LOG = logging.getLogger('plugin_support')
 def trace(msg, *args, **kwargs): LOG._log(0, msg, [])
 LOG.trace = trace

@@ -1,10 +1,12 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-from sqlite3 import connect
 import os.path
+from sqlite3 import connect
+
 import utils.util as util
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app.db')
 
 TIMEOUT = 11

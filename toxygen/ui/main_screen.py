@@ -1,16 +1,15 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import os
 import logging
+import os
 
-from PyQt5 import uic
-from PyQt5 import QtWidgets, QtGui
-from qtpy.QtGui import (QColor, QTextCharFormat, QFont, QSyntaxHighlighter)
+from PyQt5 import QtGui, QtWidgets, uic
+from qtpy.QtGui import QColor, QFont, QSyntaxHighlighter, QTextCharFormat
 
-from ui.contact_items import *
-from ui.widgets import MultilineEdit
-from ui.main_screen_widgets import *
-import utils.util as util
 import utils.ui as util_ui
+import utils.util as util
+from ui.contact_items import *
+from ui.main_screen_widgets import *
+from ui.widgets import MultilineEdit
 from user_data.settings import Settings
 
 global LOG
@@ -20,8 +19,8 @@ iMAX = 70
 
 try:
     # https://github.com/pyqtconsole/pyqtconsole
-    from pyqtconsole.console import PythonConsole
     import pyqtconsole.highlighter as hl
+    from pyqtconsole.console import PythonConsole
 except Exception as e:
     LOG.warn(e)
     PythonConsole = None

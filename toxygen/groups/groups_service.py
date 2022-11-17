@@ -2,14 +2,15 @@
 
 import common.tox_save as tox_save
 import utils.ui as util_ui
-from groups.peers_list import PeersListGenerator
-from groups.group_invite import GroupInvite
 import wrapper.toxcore_enums_and_consts as constants
-from wrapper.toxcore_enums_and_consts import *
+from groups.group_invite import GroupInvite
+from groups.peers_list import PeersListGenerator
 from wrapper.tox import UINT32_MAX
+from wrapper.toxcore_enums_and_consts import *
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+'gs')
 
 class GroupsService(tox_save.ToxSave):

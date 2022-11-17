@@ -1,6 +1,6 @@
-from pydenticon import Generator
 import hashlib
 
+from pydenticon import Generator
 
 # -----------------------------------------------------------------------------------------------------------------
 # Typing notifications

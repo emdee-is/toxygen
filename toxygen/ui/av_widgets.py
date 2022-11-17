@@ -1,15 +1,16 @@
 import threading
-
-from PyQt5 import QtCore, QtGui, QtWidgets
-import pyaudio
 import wave
 
-from ui import widgets
-import utils.util as util
+import pyaudio
 import wrapper_tests.support_testing as ts
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+import utils.util as util
+from ui import widgets
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+__name__)
 
 class IncomingCallWidget(widgets.CenteredWidget):

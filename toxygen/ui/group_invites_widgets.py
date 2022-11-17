@@ -1,9 +1,11 @@
-from PyQt5 import uic, QtWidgets
+from PyQt5 import QtWidgets, uic
+
 import utils.util as util
 from ui.widgets import *
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app')
 
 class GroupInviteItem(QtWidgets.QWidget):

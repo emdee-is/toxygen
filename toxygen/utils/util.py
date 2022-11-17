@@ -1,11 +1,11 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+import datetime
 import os
-import time
+import platform
+import re
 import shutil
 import sys
-import re
-import platform
-import datetime
+import time
 
 
 def cached(func):

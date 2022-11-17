@@ -4,6 +4,7 @@ import common.tox_save as tox_save
 
 global LOG
 import logging
+
 LOG = logging.getLogger(__name__)
 
 # callbacks can be called in any thread so were being careful

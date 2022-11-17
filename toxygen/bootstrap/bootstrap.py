@@ -1,22 +1,27 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import random
 import urllib.request
+
+from PyQt5 import QtCore, QtNetwork
+
 from utils.util import *
-from PyQt5 import QtNetwork
-from PyQt5 import QtCore
+
 try:
-    import certifi
     from io import BytesIO
+
+    import certifi
 except ImportError:
     certifi = None
 
-from user_data.settings import get_user_config_path
-from wrapper_tests.support_testing import _get_nodes_path
-from wrapper_tests.support_http import download_url
 import wrapper_tests.support_testing as ts
+from wrapper_tests.support_http import download_url
+from wrapper_tests.support_testing import _get_nodes_path
+
+from user_data.settings import get_user_config_path
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+'bootstrap')
 
 def download_nodes_list(settings, oArgs):

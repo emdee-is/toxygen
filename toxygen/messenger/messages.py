@@ -1,7 +1,7 @@
-from history.database import MESSAGE_AUTHOR
 import os.path
-from ui.messages_widgets import *
 
+from history.database import MESSAGE_AUTHOR
+from ui.messages_widgets import *
 
 MESSAGE_TYPE = {
     'TEXT': 0,

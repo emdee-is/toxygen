@@ -1,20 +1,22 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 
+import json
 import os
 from platform import system
-import json
 from pprint import pprint
 
-from utils.util import *
-from utils.util import log, join_path
-from common.event import Event
+import wrapper_tests.support_testing as ts
+
+import user_data
 import utils.ui as util_ui
 import utils.util as util_utils
-import user_data
-import wrapper_tests.support_testing as ts
+from common.event import Event
+from utils.util import *
+from utils.util import join_path, log
 
 global LOG
 import logging
+
 LOG = logging.getLogger('settings')
 
 def merge_args_into_settings(args, settings):

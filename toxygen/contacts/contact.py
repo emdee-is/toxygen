@@ -1,16 +1,16 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-from history.database import TIMEOUT, \
-    SAVE_MESSAGES, MESSAGE_AUTHOR
+import re
 
 from contacts import basecontact, common
-from messenger.messages import *
 from contacts.contact_menu import *
 from file_transfers import file_transfers as ft
-import re
+from history.database import MESSAGE_AUTHOR, SAVE_MESSAGES, TIMEOUT
+from messenger.messages import *
 
 # LOG=util.log
 global LOG
 import logging
+
 LOG = logging.getLogger('app.'+__name__)
 
 class Contact(basecontact.BaseContact):

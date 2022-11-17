@@ -3,6 +3,7 @@ from history.history_logs_generators import *
 
 global LOG
 import logging
+
 LOG = logging.getLogger('app.db')
 
 class History:
