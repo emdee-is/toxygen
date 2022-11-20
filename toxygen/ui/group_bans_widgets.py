@@ -1,8 +1,7 @@
-from PyQt5 import QtCore, QtWidgets, uic
-
-import utils.ui as util_ui
-import utils.util as util
 from ui.widgets import CenteredWidget
+from PyQt5 import uic, QtWidgets, QtCore
+import utils.util as util
+import utils.ui as util_ui
 
 
 class GroupBanItem(QtWidgets.QWidget):

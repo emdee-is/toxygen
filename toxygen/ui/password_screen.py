@@ -1,11 +1,9 @@
+from ui.widgets import CenteredWidget, LineEdit, DialogWithResult
 from PyQt5 import QtCore, QtWidgets
-
 import utils.ui as util_ui
-from ui.widgets import CenteredWidget, DialogWithResult, LineEdit
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+__name__)
 
 class PasswordArea(LineEdit):

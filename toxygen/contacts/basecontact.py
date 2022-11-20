@@ -1,11 +1,10 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+from user_data.settings import *
 from PyQt5 import QtCore, QtGui
-
+from wrapper.toxcore_enums_and_consts import TOX_PUBLIC_KEY_SIZE
+import utils.util as util
 import common.event as event
 import contacts.common as common
-import utils.util as util
-from user_data.settings import *
-from wrapper.toxcore_enums_and_consts import TOX_PUBLIC_KEY_SIZE
 
 
 class BaseContact:

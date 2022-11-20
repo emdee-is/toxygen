@@ -1,18 +1,17 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import os
 import sys
-import threading
 import traceback
 from random import shuffle
+import threading
 from time import sleep
 
+from gevent import monkey; monkey.patch_all(); del monkey   # noqa
 import gevent
-from PyQt5 import QtCore, QtGui, QtWidgets
+
+from PyQt5 import QtWidgets, QtGui, QtCore
 from qtpy.QtCore import QTimer
 from qtpy.QtWidgets import QApplication
-
-from gevent import monkey; monkey.patch_all(); del monkey   # noqa
-
 
 try:
     import coloredlogs
@@ -22,27 +21,29 @@ try:
 except ImportError as e:
     coloredlogs = False
 
-try:
-    # https://github.com/pyqtconsole/pyqtconsole
-    from pyqtconsole.console import PythonConsole
-except Exception as e:
-    PythonConsole = None
+# install https://github.com/weechat/qweechat
+# if you want IRC and jabber
 
-try:
-    import qdarkstylexxx
-except ImportError:
-    qdarkstyle = None
-
-import wrapper_tests.support_testing as ts
-
+from middleware import threads
 import middleware.callbacks as callbacks
-import styles.style  # TODO: dynamic loading
-import ui.password_screen as password_screen
 import updater.updater as updater
+from middleware.tox_factory import tox_factory
+import wrapper.toxencryptsave as tox_encrypt_save
 import user_data.toxes
+from user_data import settings
+from user_data.settings import get_user_config_path, merge_args_into_settings
+from user_data.settings import Settings
+from user_data.profile_manager import ProfileManager
+
+from plugin_support.plugin_support import PluginLoader
+
+import ui.password_screen as password_screen
+from ui.login_screen import LoginScreen
+from ui.main_screen import MainWindow
+from ui import tray
+
 import utils.ui as util_ui
 import utils.util as util
-import wrapper.toxencryptsave as tox_encrypt_save
 from av.calls_manager import CallsManager
 from common.provider import Provider
 from contacts.contact_provider import ContactProvider
@@ -52,32 +53,23 @@ from contacts.group_factory import GroupFactory
 from contacts.group_peer_factory import GroupPeerFactory
 from contacts.profile import Profile
 from file_transfers.file_transfers_handler import FileTransfersHandler
-from file_transfers.file_transfers_messages_service import \
-    FileTransfersMessagesService
+from file_transfers.file_transfers_messages_service import FileTransfersMessagesService
 from groups.groups_service import GroupsService
 from history.database import Database
 from history.history import History
 from messenger.messenger import Messenger
-from middleware import threads
-from middleware.tox_factory import tox_factory
 from network.tox_dns import ToxDns
-from plugin_support.plugin_support import PluginLoader
 from smileys.smileys import SmileyLoader
-from ui import tray
 from ui.create_profile_screen import CreateProfileScreen
-from ui.items_factories import ContactItemsFactory, MessagesItemsFactory
-from ui.login_screen import LoginScreen
-from ui.main_screen import MainWindow
+from ui.items_factories import MessagesItemsFactory, ContactItemsFactory
 from ui.widgets_factory import WidgetsFactory
-from user_data import settings
 from user_data.backup_service import BackupService
-from user_data.profile_manager import ProfileManager
-from user_data.settings import (Settings, get_user_config_path,
-                                merge_args_into_settings)
+import styles.style  # TODO: dynamic loading
+
+import wrapper_tests.support_testing as ts
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app')
 
 IDLE_PERIOD = 0.10
@@ -148,8 +140,6 @@ sSTYLE = """
 .QToolBar { font-weight: bold; }
 """
 from copy import deepcopy
-
-
 class App:
 
     def __init__(self, version, oArgs):
@@ -287,7 +277,7 @@ class App:
             self._app.quit()
             del self._app.quit
             del self._app
-            
+
         sys.stderr.write('quit raising SystemExit' +'\n')
         # hanging on gevents
         # Thread 1 "python3.9" received signal SIGSEGV, Segmentation fault.
@@ -311,7 +301,7 @@ class App:
         if hasattr(self, '_tray') and self._tray:
             self._tray.hide()
         self._settings.close()
-        
+
         LOG.debug(f"stop_app: Killing {self._tox}")
         self._kill_toxav()
         self._kill_tox()

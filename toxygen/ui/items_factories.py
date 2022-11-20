@@ -44,7 +44,7 @@ class MessagesItemsFactory:
         self._messages.setItemWidget(elem, item)
 
         return item
-    
+
 #   File "/var/local/src/toxygen/toxygen/file_transfers/file_transfers_handler.py", line 216, in transfer_finished
 #     self._file_transfers_message_service.add_inline_message(transfer, index)
 #   File "/var/local/src/toxygen/toxygen/file_transfers/file_transfers_messages_service.py", line 47, in add_inline_message

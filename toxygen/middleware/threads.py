@@ -1,23 +1,21 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import queue
 import sys
 import threading
-import time
-
-import wrapper_tests.support_testing as ts
+import queue
 from PyQt5 import QtCore
 
 from bootstrap.bootstrap import *
 from bootstrap.bootstrap import download_nodes_list
+from wrapper.toxcore_enums_and_consts import TOX_USER_STATUS, TOX_CONNECTION
+import wrapper_tests.support_testing as ts
 from utils import util
-from wrapper.toxcore_enums_and_consts import TOX_CONNECTION, TOX_USER_STATUS
 
+import time
 sleep = time.sleep
 
 # LOG=util.log
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+'threads')
 # log = lambda x: LOG.info(x)
 
@@ -124,7 +122,7 @@ class ToxIterateThread(BaseQThread):
         super().__init__()
         self._tox = tox
         self._app = app
-        
+
     def run(self):
         LOG_DEBUG('ToxIterateThread run: ')
         while not self._stop_thread:
@@ -136,15 +134,14 @@ class ToxIterateThread(BaseQThread):
                 LOG_ERROR(f"ToxIterateThread run: {e}")
             else:
                 sleep(iMsec / 1000.0)
-                
+
             global iLAST_CONN
             if not iLAST_CONN:
                 iLAST_CONN = time.time()
             # TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
 
             # and segv
-            if \
-                time.time() - iLAST_CONN > iLAST_DELTA and \
+            if time.time() - iLAST_CONN > iLAST_DELTA and \
                 ts.bAreWeConnected() and \
                 self._tox.self_get_status() == TOX_USER_STATUS['NONE'] and \
                 self._tox.self_get_connection_status() == TOX_CONNECTION['NONE']:
@@ -152,7 +149,7 @@ class ToxIterateThread(BaseQThread):
                     LOG_INFO(f"ToxIterateThread calling test_net")
                     invoke_in_main_thread(
                         self._app.test_net, oThread=self, iMax=2)
-                
+
 
 class ToxAVIterateThread(BaseQThread):
     def __init__(self, toxav):

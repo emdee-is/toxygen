@@ -1,22 +1,18 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import ctypes
-import os
-import traceback
-
 import user_data.settings
 import wrapper.tox
 import wrapper.toxcore_enums_and_consts as enums
+import ctypes
+import traceback
+import os
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+'tox_factory')
 
 from ctypes import *
-
-from utils import ui as util_ui
 from utils import util
-
+from utils import ui as util_ui
 
 # callbacks can be called in any thread so were being careful
 # tox.py can be called by callbacks
@@ -53,12 +49,12 @@ def tox_log_cb(iTox, level, file, line, func, message, *args):
     except Exception as e:
         LOG_ERROR(f"tox_log_cb {e}")
 
-#tox_log_handler (context=0x24763d0, 
-#    level=LOGGER_LEVEL_TRACE, file=0x7fffe599fb99 "TCP_common.c", line=203, 
-#    func=0x7fffe599fc50 <__func__.2> "read_TCP_packet", 
-#    message=0x7fffba7fabd0 "recv buffer has 0 bytes, but requested 10 bytes", 
+#tox_log_handler (context=0x24763d0,
+#    level=LOGGER_LEVEL_TRACE, file=0x7fffe599fb99 "TCP_common.c", line=203,
+#    func=0x7fffe599fc50 <__func__.2> "read_TCP_packet",
+#    message=0x7fffba7fabd0 "recv buffer has 0 bytes, but requested 10 bytes",
 #    userdata=0x0) at /var/local/src/c-toxcore/toxcore/tox.c:78
-        
+
 def tox_factory(data=None, settings=None, args=None, app=None):
     """
     :param data: user data from .tox file. None = no saved data, create new profile

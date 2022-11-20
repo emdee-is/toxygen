@@ -1,8 +1,7 @@
-import os
-
-from contacts import common, contact
-from contacts.contact_menu import *
+from contacts import contact, common
 from messenger.messages import *
+import os
+from contacts.contact_menu import *
 
 
 class Friend(contact.Contact):

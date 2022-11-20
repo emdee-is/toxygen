@@ -1,11 +1,8 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import json
 import urllib.request
-
-from PyQt5 import QtCore, QtNetwork
-
 import utils.util as util
-
+from PyQt5 import QtNetwork, QtCore
 try:
     import requests
 except ImportError:
@@ -13,7 +10,6 @@ except ImportError:
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+__name__)
 
 class ToxDns:

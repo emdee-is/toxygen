@@ -1,18 +1,17 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import pyaudio
-import wrapper_tests.support_testing as ts
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
+import pyaudio
 
-import updater.updater as updater
-import utils.ui as util_ui
-from ui.widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
-from user_data import settings
 from user_data.settings import *
 from utils.util import *
+from ui.widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
+import updater.updater as updater
+import utils.ui as util_ui
+import wrapper_tests.support_testing as ts
+from user_data import settings
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+__name__)
 
 global oPYA

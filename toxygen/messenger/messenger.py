@@ -1,14 +1,13 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-from wrapper_tests.support_testing import assert_main_thread
-
 import common.tox_save as tox_save
 import utils.ui as util_ui
+
 from messenger.messages import *
+from wrapper_tests.support_testing import assert_main_thread
 from wrapper.toxcore_enums_and_consts import TOX_MAX_MESSAGE_LENGTH
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+__name__)
 log = lambda x: LOG.info(x)
 
@@ -31,7 +30,7 @@ class Messenger(tox_save.ToxSave):
 
     def __repr__(self):
         return "<Messenger>"
-    
+
     def get_last_message(self):
         contact = self._contacts_manager.get_curr_contact()
         if contact is None:
@@ -90,7 +89,7 @@ class Messenger(tox_save.ToxSave):
             text = 'Error: ' + str(e)
             assert_main_thread()
             util_ui.message_box(text, title)
-            
+
     def send_message_to_friend(self, text, message_type, friend_number=None):
         """
         Send message
@@ -201,7 +200,7 @@ class Messenger(tox_save.ToxSave):
             return
         if peer_id and peer_id < 0:
             return
-        
+
         assert_main_thread()
         # FixMe: peer_id is None?
         group_peer_contact = self._contacts_manager.get_or_create_group_peer_contact(group_number, peer_id)

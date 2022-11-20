@@ -1,13 +1,12 @@
-import html as h
-import re
-
-import ui.menu as menu
+from wrapper.toxcore_enums_and_consts import *
 import ui.widgets as widgets
 import utils.util as util
-from file_transfers.file_transfers import *
-from messenger.messages import MESSAGE_AUTHOR
+import ui.menu as menu
+import html as h
+import re
 from ui.widgets import *
-from wrapper.toxcore_enums_and_consts import *
+from messenger.messages import MESSAGE_AUTHOR
+from file_transfers.file_transfers import *
 
 
 class MessageBrowser(QtWidgets.QTextBrowser):

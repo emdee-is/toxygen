@@ -1,14 +1,13 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-from ui.group_bans_widgets import *
-from ui.group_invites_widgets import *
-from ui.group_settings_widgets import *
-from ui.groups_widgets import *
 from ui.main_screen_widgets import *
 from ui.menu import *
+from ui.groups_widgets import *
 from ui.peer_screen import *
-from ui.profile_settings_screen import ProfileSettings
 from ui.self_peer_screen import *
-
+from ui.group_invites_widgets import *
+from ui.group_settings_widgets import *
+from ui.group_bans_widgets import *
+from ui.profile_settings_screen import ProfileSettings
 
 class WidgetsFactory:
 

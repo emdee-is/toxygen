@@ -1,8 +1,7 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-
-from ui.widgets import DataLabel
-from utils.util import *
 from wrapper.toxcore_enums_and_consts import *
+from PyQt5 import QtCore, QtGui, QtWidgets
+from utils.util import *
+from ui.widgets import DataLabel
 
 
 class ContactItem(QtWidgets.QWidget):

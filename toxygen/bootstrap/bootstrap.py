@@ -1,34 +1,29 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import random
 import urllib.request
-
-from PyQt5 import QtCore, QtNetwork
-
 from utils.util import *
-
+from PyQt5 import QtNetwork
+from PyQt5 import QtCore
 try:
-    from io import BytesIO
-
     import certifi
+    from io import BytesIO
 except ImportError:
     certifi = None
 
-import wrapper_tests.support_testing as ts
-from wrapper_tests.support_http import download_url
-from wrapper_tests.support_testing import _get_nodes_path
-
 from user_data.settings import get_user_config_path
+from wrapper_tests.support_testing import _get_nodes_path
+from wrapper_tests.support_http import download_url
+import wrapper_tests.support_testing as ts
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+'bootstrap')
 
 def download_nodes_list(settings, oArgs):
     if not settings['download_nodes_list']:
         return ''
     if not ts.bAreWeConnected():
-        return ''        
+        return ''
     url = settings['download_nodes_url']
     path = _get_nodes_path(oArgs=oArgs)
     # dont download blindly so we can edit the file and not block on startup

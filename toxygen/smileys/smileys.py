@@ -1,15 +1,12 @@
+from utils import util
 import json
 import os
 from collections import OrderedDict
-
 from PyQt5 import QtCore
-
-from utils import util
 
 # LOG=util.log
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+__name__)
 log = lambda x: LOG.info(x)
 

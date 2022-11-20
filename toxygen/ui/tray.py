@@ -1,10 +1,8 @@
-import os.path
-
-from PyQt5 import QtCore, QtGui, QtWidgets
-
-from ui.password_screen import UnlockAppScreen
+from PyQt5 import QtWidgets, QtGui, QtCore
 from utils.ui import tr
 from utils.util import *
+from ui.password_screen import UnlockAppScreen
+import os.path
 
 
 class SystemTrayIcon(QtWidgets.QSystemTrayIcon):

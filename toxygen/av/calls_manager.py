@@ -4,14 +4,13 @@ import sys
 import threading
 
 import av.calls
-import common.event as event
-import utils.ui as util_ui
 from messenger.messages import *
 from ui import av_widgets
+import common.event as event
+import utils.ui as util_ui
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+__name__)
 
 class CallsManager:

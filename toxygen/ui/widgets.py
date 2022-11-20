@@ -1,9 +1,7 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import logging
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 import utils.ui as util_ui
+import logging
 
 global LOG
 LOG = logging.getLogger('app')

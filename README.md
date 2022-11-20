@@ -55,5 +55,12 @@ is making a dependency. Just download it and copy the two directories
 
 See ToDo.md to the current ToDo list.
 
+If you install https://github.com/weechat/qweechat 
+you can have IRC and jabber in a window too. Start 
+[weechat](https://github.com/weechat/weechat) and
+```
+/relay weechat 9000 password
+```
+
 Work on this project is suspended until the
 [MultiDevice](https://git.plastiras.org/emdee/tox_profile/wiki/MultiDevice-Announcements-POC) problem is solved. Fork me!

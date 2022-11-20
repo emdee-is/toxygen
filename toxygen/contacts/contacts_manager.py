@@ -2,17 +2,16 @@
 
 import traceback
 
-from common.tox_save import ToxSave
 from contacts.friend import Friend
 from contacts.group_chat import GroupChat
+from messenger.messages import *
+from common.tox_save import ToxSave
 from contacts.group_peer_contact import GroupPeerContact
 from groups.group_peer import GroupChatPeer
-from messenger.messages import *
 
 # LOG=util.log
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+__name__)
 
 def LOG_ERROR(l): print('ERROR_: '+l)

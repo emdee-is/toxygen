@@ -1,16 +1,14 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
+from contacts import basecontact
 import random
 import threading
-
 import common.tox_save as tox_save
-from contacts import basecontact
 from middleware.threads import invoke_in_main_thread
 
 iUMAXINT = 4294967295
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+__name__)
 
 class Profile(basecontact.BaseContact, tox_save.ToxSave):

@@ -1,10 +1,9 @@
+from messenger.messenger import *
 import utils.util as util
 from file_transfers.file_transfers import *
-from messenger.messenger import *
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+__name__)
 
 def LOG_ERROR(l): print('ERROR_: '+l)

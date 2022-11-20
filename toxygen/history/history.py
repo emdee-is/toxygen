@@ -3,7 +3,6 @@ from history.history_logs_generators import *
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app.db')
 
 class History:
@@ -67,7 +66,7 @@ class History:
         with open(file_name, 'wt') as fl:
             fl.write(history)
         LOG.info(f"wrote history to {file_name}")
-        
+
     def delete_message(self, message):
         contact = self._contacts_manager.get_curr_contact()
         if message.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):

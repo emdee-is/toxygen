@@ -1,9 +1,8 @@
-from PyQt5 import uic
-
-import utils.ui as util_ui
-import utils.util as util
-from ui.contact_items import *
 from ui.widgets import CenteredWidget, LineEdit
+from PyQt5 import uic
+import utils.util as util
+import utils.ui as util_ui
+from ui.contact_items import *
 
 
 class SelfPeerScreen(CenteredWidget):

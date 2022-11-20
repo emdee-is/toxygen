@@ -1,5 +1,4 @@
 from PyQt5 import uic
-
 import utils.util as util
 from ui.widgets import *
 from wrapper.toxcore_enums_and_consts import *

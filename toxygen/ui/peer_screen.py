@@ -1,10 +1,9 @@
-from PyQt5 import uic
-
-import utils.ui as util_ui
-import utils.util as util
-import wrapper.toxcore_enums_and_consts as consts
-from ui.contact_items import *
 from ui.widgets import CenteredWidget
+from PyQt5 import uic
+import utils.util as util
+import utils.ui as util_ui
+from ui.contact_items import *
+import wrapper.toxcore_enums_and_consts as consts
 
 
 class PeerScreen(CenteredWidget):
@@ -34,7 +33,7 @@ class PeerScreen(CenteredWidget):
             self.statusCircle.update(self._peer.status)
             self.peerNameLabel.setText(self._peer.name)
             self.ignorePeerCheckBox.setChecked(self._peer.is_muted)
-            
+
         self.ignorePeerCheckBox.clicked.connect(self._toggle_ignore)
         self.sendPrivateMessagePushButton.clicked.connect(self._send_private_message)
         self.copyPublicKeyPushButton.clicked.connect(self._copy_public_key)

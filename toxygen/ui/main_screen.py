@@ -1,17 +1,18 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import logging
 import os
 
-from PyQt5 import QtGui, QtWidgets, uic
-from qtpy.QtGui import QColor, QFont, QSyntaxHighlighter, QTextCharFormat
+from PyQt5 import uic
+from PyQt5 import QtWidgets, QtGui
+from qtpy.QtGui import (QColor, QTextCharFormat, QFont, QSyntaxHighlighter)
 
-import utils.ui as util_ui
-import utils.util as util
 from ui.contact_items import *
-from ui.main_screen_widgets import *
 from ui.widgets import MultilineEdit
+from ui.main_screen_widgets import *
+import utils.util as util
+import utils.ui as util_ui
 from user_data.settings import Settings
 
+import logging
 global LOG
 LOG = logging.getLogger('app.'+'mains')
 
@@ -19,8 +20,8 @@ iMAX = 70
 
 try:
     # https://github.com/pyqtconsole/pyqtconsole
-    import pyqtconsole.highlighter as hl
     from pyqtconsole.console import PythonConsole
+    import pyqtconsole.highlighter as hl
 except Exception as e:
     LOG.warn(e)
     PythonConsole = None
@@ -62,7 +63,7 @@ else:
     else:
         bg = 'black'
         def hl_format(color, style=''):
-            
+
             """Return a QTextCharFormat with the given attributes.
             unused
             """
@@ -93,7 +94,6 @@ else:
             'inprompt':   hl_format('lightBlue', 'bold'),
             'outprompt':  hl_format('lightRed', 'bold'),
         }
-        
 
 class QTextEditLogger(logging.Handler):
     def __init__(self, parent, app):
@@ -176,6 +176,7 @@ class MainWindow(QtWidgets.QMainWindow):
             iMAX = settings['width'] * 2/3 / settings['message_font_size']
         self._me = LogDialog(self, app)
         self._pe = None
+        self._we = None
 
     def set_dependencies(self, widget_factory, tray, contacts_manager, messenger, profile, plugins_loader,
                          file_transfer_handler, history_loader, calls_manager, groups_service, toxes, app):
@@ -249,6 +250,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionLog_console.setObjectName("actionLog_console")
         self.actionPython_console = QtWidgets.QAction(window)
         self.actionPython_console.setObjectName("actionLog_console")
+        self.actionWeechat_console = QtWidgets.QAction(window)
+        self.actionWeechat_console.setObjectName("actionLog_console")
         self.updateSettings = QtWidgets.QAction(window)
         self.actionSettings = QtWidgets.QAction(window)
         self.actionSettings.setObjectName("actionSettings")
@@ -289,6 +292,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuPlugins.addAction(self.reloadToxchat)
         self.menuPlugins.addAction(self.actionLog_console)
         self.menuPlugins.addAction(self.actionPython_console)
+        self.menuPlugins.addAction(self.actionWeechat_console)
 
         self.menuAbout.addAction(self.actionAbout_program)
 
@@ -306,6 +310,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionAbout_program.triggered.connect(self.about_program)
         self.actionLog_console.triggered.connect(self.log_console)
         self.actionPython_console.triggered.connect(self.python_console)
+        self.actionWeechat_console.triggered.connect(self.weechat_console)
         self.actionNetwork.triggered.connect(self.network_settings)
         self.actionAdd_friend.triggered.connect(self.add_contact_triggered)
         self.createGC.triggered.connect(self.create_gc)
@@ -360,6 +365,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionAbout_program.setText(util_ui.tr("About program"))
         self.actionLog_console.setText(util_ui.tr("Console Log"))
         self.actionPython_console.setText(util_ui.tr("Python Console"))
+        self.actionWeechat_console.setText(util_ui.tr("Weechat Console"))
         self.actionTest_tox.setText(util_ui.tr("Bootstrap"))
         self.actionTest_nmap.setText(util_ui.tr("Test Nodes"))
         self.actionTest_main.setText(util_ui.tr("Test Program"))
@@ -654,44 +660,103 @@ class MainWindow(QtWidgets.QMainWindow):
         self._me.show()
 
     def python_console(self):
-        if PythonConsole:
-            app = self._app
-            if app and app._settings:
-                size = app._settings['message_font_size']
-                font_name = app._settings['font']
-            else:
-                size = 12
-                font_name = "Courier New"
+        if not PythonConsole: return
+        app = self._app
+        if app and app._settings:
+            size = app._settings['message_font_size']
+            font_name = app._settings['font']
+        else:
+            size = 12
+            font_name = "Courier New"
 
-            size = font_width = 10
-            font_name = "DejaVu Sans Mono"
+        size = font_width = 10
+        font_name = "DejaVu Sans Mono"
 
-            try:
-                if not self._pe:
-                    self._pe = PythonConsole(formats=aFORMATS)
-                self._pe.setWindowTitle('variable: app is the application')
+        try:
+            if not self._pe:
+                self._pe = PythonConsole(formats=aFORMATS)
+            self._pe.setWindowTitle('variable: app is the application')
 #                self._pe.edit.setStyleSheet('foreground: white; background-color: black;}')
-                # Fix the pyconsole geometry
-                
-                font = self._pe.edit.document().defaultFont()
+            # Fix the pyconsole geometry
+
+            font = self._pe.edit.document().defaultFont()
+            font.setFamily(font_name)
+            font.setBold(True)
+            if font_width is None:
+                font_width = QFontMetrics(font).width('M')
+            self._pe.setFont(font)
+            geometry = self._pe.geometry()
+            geometry.setWidth(font_width*80+20)
+            geometry.setHeight(font_width*40)
+            self._pe.setGeometry(geometry)
+            self._pe.resize(font_width*80+20, font_width*40)
+
+            self._pe.show()
+            self._pe.eval_queued()
+            # or self._pe.eval_in_thread()
+            return
+        except Exception as e:
+            LOG.debug(e)
+
+    def weechat_console(self):
+        try:
+            from qweechat.qweechat import MainWindow as MainWindow
+            LOG.info("Adding WeechatConsole")
+        except Exception as e:
+            LOG.exception(f"ERROR WeechatConsole {e} {sys.path}")
+            MainWindow = None
+            return
+        LOG.debug(f"calling {MainWindow}")
+        if not MainWindow: return
+        class WeechatConsole(MainWindow):
+            def __init__(self, *args):
+                MainWindow.__init__(self, *args)
+
+            def closeEvent(self, event):
+                """Called when QWeeChat window is closed."""
+                self.network.disconnect_weechat()
+                if self.network.debug_dialog:
+                    self.network.debug_dialog.close()
+                config.write(self.config)
+        app = self._app
+        if app and app._settings:
+            size = app._settings['message_font_size']
+            font_name = app._settings['font']
+        else:
+            size = 12
+            font_name = "Courier New"
+
+        size = font_width = 10
+        font_name = "DejaVu Sans Mono"
+
+        try:
+            if not self._we:
+                LOG.debug("creating WeechatConsole")
+                self._we = WeechatConsole()
+#                self._we.setWindowTitle('variable: app is the application')
+#                self._we.edit.setStyleSheet('foreground: white; background-color: black;}')
+            # Fix the pyconsole geometry
+            try:
+                font = self._we.buffers[0].widget.chat.defaultFont()
                 font.setFamily(font_name)
                 font.setBold(True)
                 if font_width is None:
                     font_width = QFontMetrics(font).width('M')
-                self._pe.setFont(font)
-                geometry = self._pe.geometry()
-                geometry.setWidth(font_width*80+20)
-                geometry.setHeight(font_width*40)
-                self._pe.setGeometry(geometry)
-                self._pe.resize(font_width*80+20, font_width*40)
-
-                self._pe.show()
-                self._pe.eval_queued()
-                # or self._pe.eval_in_thread()
-                return
+                self._we.setFont(font)
             except Exception as e:
                 LOG.debug(e)
-        self._me.show()
+                font_width = size
+            geometry = self._we.geometry()
+            geometry.setWidth(font_width*80+20)
+            geometry.setHeight(font_width*40)
+            self._we.setGeometry(geometry)
+            self._we.resize(font_width*80+20, font_width*40)
+
+            self._we.show()
+            # or self._we.eval_in_thread()
+            return
+        except Exception as e:
+            LOG.exception(f"Error creating WeechatConsole {e}")
 
     def about_program(self):
         # TODO: replace with window

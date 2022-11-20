@@ -1,15 +1,14 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 
-import re
 import urllib
+import re
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import utils.ui as util_ui
+from ui.widgets import RubberBandWindow, create_menu, QRightClickButton, CenteredWidget, LineEdit
 import utils.util as util
+import utils.ui as util_ui
 from stickers.stickers import load_stickers
-from ui.widgets import (CenteredWidget, LineEdit, QRightClickButton,
-                        RubberBandWindow, create_menu)
 
 
 class MessageArea(QtWidgets.QPlainTextEdit):
@@ -37,7 +36,7 @@ class MessageArea(QtWidgets.QPlainTextEdit):
                     self.pasteEvent(url.toString())
             else:
                 self.pasteEvent()
-                
+
         elif event.key() in (QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter):
             modifiers = event.modifiers()
             if modifiers & QtCore.Qt.ControlModifier or modifiers & QtCore.Qt.ShiftModifier:
@@ -52,10 +51,10 @@ class MessageArea(QtWidgets.QPlainTextEdit):
                     LOG.error(f"keyPressEvent ERROR send_message to {self._messenger}")
                     util_ui.message_box(str(e),
                                         util_ui.tr(f"keyPressEvent ERROR send_message to {self._messenger}"))
-                    
+
         elif event.key() == QtCore.Qt.Key_Up and not self.toPlainText():
             self.appendPlainText(self._messenger.get_last_message())
-            
+
         elif event.key() == QtCore.Qt.Key_Tab and self._contacts_manager.is_active_a_group():
             text = self.toPlainText()
             text_cursor = self.textCursor()

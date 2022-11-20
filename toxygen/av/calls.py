@@ -1,22 +1,22 @@
 # -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
-import itertools
-import threading
-import time
-
 import pyaudio
-import wrapper_tests.support_testing as ts
+import time
+import threading
+import itertools
 
-import common.tox_save
+from wrapper.toxav_enums import *
 from av import screen_sharing
 from av.call import Call
-from main import sleep
-from middleware.threads import BaseThread, invoke_in_main_thread
+import common.tox_save
+
 from utils import ui as util_ui
-from wrapper.toxav_enums import *
+import wrapper_tests.support_testing as ts
+from middleware.threads import invoke_in_main_thread
+from main import sleep
+from middleware.threads import BaseThread
 
 global LOG
 import logging
-
 LOG = logging.getLogger('app.'+__name__)
 # callbacks can be called in any thread so were being careful
 def LOG_ERROR(l): print('EROR< '+l)
@@ -405,7 +405,7 @@ class AV(common.tox_save.ToxAvSave):
             if self._calls[friend_num].out_audio:
                 try:
                     # app.av.calls ERROR Error send_audio:   One of the frame parameters was invalid. E.g. the resolution may be too small or too large, or the audio sampling rate may be unsupported
-                    # app.av.calls ERROR Error send_audio audio_send_frame: This client is currently not in a call with the friend.                        
+                    # app.av.calls ERROR Error send_audio audio_send_frame: This client is currently not in a call with the friend.
                     self._toxav.audio_send_frame(friend_num,
                                                  pcm,
                                                  count,
