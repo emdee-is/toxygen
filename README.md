@@ -55,12 +55,26 @@ is making a dependency. Just download it and copy the two directories
 
 See ToDo.md to the current ToDo list.
 
-If you install https://github.com/weechat/qweechat 
-you can have IRC and jabber in a window too. Start 
-[weechat](https://github.com/weechat/weechat) and
+You can have a [weechat](https://github.com/weechat/qweechat)
+console so that you can have IRC and jabber in a window as well as Tox.
+There's a copy of qweechat in ```thirdparty/qweechat``` backported to
+PyQt5 and integrated into toxygen. Follow the normal instructions for
+adding a ```relay``` to [weechat](https://github.com/weechat/weechat)
 ```
-/relay weechat 9000 password
+/relay add ipv4.ssl.weechat 9001
+/relay start ipv4.ssl.weechat
+```
+or
+```
+/relay add weechat 9000
+/relay start weechat
+```
+and use the File/Connect menu item to connect to weechat. Weechat
+has a Jabber plugin to enable XMPP:
+```
+/python load jabber.el
+/help jabber
 ```
 
-Work on this project is suspended until the
+Work on Tox on this project is suspended until the
 [MultiDevice](https://git.plastiras.org/emdee/tox_profile/wiki/MultiDevice-Announcements-POC) problem is solved. Fork me!

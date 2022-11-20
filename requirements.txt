@@ -1,2 +1,6 @@
 PyQt5
-
+PyAudio
+numpy
+opencv-python
+pydenticon
+cv2

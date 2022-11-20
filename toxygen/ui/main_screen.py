@@ -700,10 +700,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def weechat_console(self):
         try:
-            from qweechat.qweechat import MainWindow as MainWindow
+            # WeeChat backported from PySide6 to PyQt5
+            from third_party.qweechat import MainWindow as MainWindow
+            from third_party.qweechat import config
             LOG.info("Adding WeechatConsole")
         except Exception as e:
-            LOG.exception(f"ERROR WeechatConsole {e} {sys.path}")
+            LOG.exception(f"ERROR WeechatConsole {e}")
             MainWindow = None
             return
         LOG.debug(f"calling {MainWindow}")
@@ -751,6 +753,11 @@ class MainWindow(QtWidgets.QMainWindow):
             geometry.setHeight(font_width*40)
             self._we.setGeometry(geometry)
             self._we.resize(font_width*80+20, font_width*40)
+
+            self._we.list_buffers.setSizePolicy(QtWidgets.QSizePolicy.Preferred,
+                                                QtWidgets.QSizePolicy.Preferred)
+            self._we.stacked_buffers.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                                   QtWidgets.QSizePolicy.Expanding)       
 
             self._we.show()
             # or self._we.eval_in_thread()
