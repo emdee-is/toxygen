@@ -1,0 +1,27 @@
+*** connection.py.dst	2022-11-19 18:31:51.000000000 +0000
+--- connection.py	2022-11-19 18:32:41.000000000 +0000
+***************
+*** 20,30 ****
+  # along with QWeeChat.  If not, see <http://www.gnu.org/licenses/>.
+  #
+  
+  """Connection window."""
+  
+! from PySide6 import QtGui, QtWidgets
+  
+  
+  class ConnectionDialog(QtWidgets.QDialog):
+      """Connection window."""
+  
+--- 20,30 ----
+  # along with QWeeChat.  If not, see <http://www.gnu.org/licenses/>.
+  #
+  
+  """Connection window."""
+  
+! from PyQt5 import QtGui, QtWidgets
+  
+  
+  class ConnectionDialog(QtWidgets.QDialog):
+      """Connection window."""
+  

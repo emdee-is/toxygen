@@ -1,0 +1,27 @@
+*** network.py.dst	2022-11-19 18:31:51.000000000 +0000
+--- network.py	2022-11-19 18:32:41.000000000 +0000
+***************
+*** 24,34 ****
+  
+  import hashlib
+  import secrets
+  import struct
+  
+! from PySide6 import QtCore, QtNetwork
+  
+  from qweechat import config
+  from qweechat.debug import DebugDialog
+  
+  
+--- 24,34 ----
+  
+  import hashlib
+  import secrets
+  import struct
+  
+! from PyQt5 import QtCore, QtNetwork
+  
+  from qweechat import config
+  from qweechat.debug import DebugDialog
+  
+  

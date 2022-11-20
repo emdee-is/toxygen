@@ -1,0 +1,27 @@
+*** preferences.py.dst	2022-11-19 18:31:51.000000000 +0000
+--- preferences.py	2022-11-19 18:32:41.000000000 +0000
+***************
+*** 20,30 ****
+  # along with QWeeChat.  If not, see <http://www.gnu.org/licenses/>.
+  #
+  
+  """Preferences dialog box."""
+  
+! from PySide6 import QtCore, QtWidgets as QtGui
+  
+  
+  class PreferencesDialog(QtGui.QDialog):
+      """Preferences dialog."""
+  
+--- 20,30 ----
+  # along with QWeeChat.  If not, see <http://www.gnu.org/licenses/>.
+  #
+  
+  """Preferences dialog box."""
+  
+! from PyQt5 import QtCore, QtWidgets as QtGui
+  
+  
+  class PreferencesDialog(QtGui.QDialog):
+      """Preferences dialog."""
+  

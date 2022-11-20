@@ -1,0 +1,27 @@
+*** buffer.py.dst	2022-11-19 18:31:51.000000000 +0000
+--- buffer.py	2022-11-19 18:32:41.000000000 +0000
+***************
+*** 22,32 ****
+  
+  """Management of WeeChat buffers/nicklist."""
+  
+  from pkg_resources import resource_filename
+  
+! from PySide6 import QtCore, QtGui, QtWidgets
+  
+  from qweechat.chat import ChatTextEdit
+  from qweechat.input import InputLineEdit
+  from qweechat.weechat import color
+  
+--- 22,32 ----
+  
+  """Management of WeeChat buffers/nicklist."""
+  
+  from pkg_resources import resource_filename
+  
+! from PyQt5 import QtCore, QtGui, QtWidgets
+  
+  from qweechat.chat import ChatTextEdit
+  from qweechat.input import InputLineEdit
+  from qweechat.weechat import color
+  
