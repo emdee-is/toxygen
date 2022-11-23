@@ -30,8 +30,8 @@ from PyQt5 import QtCore, QtNetwork
 from PyQt5.QtCore import pyqtSignal
 Signal = pyqtSignal
 
-from qweechat import config
-from qweechat.debug import DebugDialog
+from third_party.qweechat import config
+from third_party.qweechat.debug import DebugDialog
 
 
 # list of supported hash algorithms on our side

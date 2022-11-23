@@ -24,7 +24,7 @@
 
 from PyQt5 import QtCore, QtWidgets as QtGui
 
-from qweechat.version import qweechat_version
+from third_party.qweechat.version import qweechat_version
 
 
 class AboutDialog(QtGui.QDialog):

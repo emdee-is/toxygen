@@ -46,7 +46,7 @@ Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pu
 
 ## Forked
 
-This hard-forked from https://github.com/toxygen-project/toxygen
+This hard-forked from the dead https://github.com/toxygen-project/toxygen
 ```next_gen``` branch.
  
 https://git.plastiras.org/emdee/toxygen_wrapper needs packaging
@@ -69,12 +69,15 @@ or
 /relay add weechat 9000
 /relay start weechat
 ```
-and use the File/Connect menu item to connect to weechat. Weechat
-has a Jabber plugin to enable XMPP:
+and use the Plugins/Weechat Console to start weechat under Toxygen.
+Then use th File/Connect menu item of the console to connect to weechat.
+
+Weechat has a Jabber plugin to enable XMPP:
 ```
 /python load jabber.el
 /help jabber
 ```
+so you can have Tox, IRC and XMPP in the same application!
 
 Work on Tox on this project is suspended until the
 [MultiDevice](https://git.plastiras.org/emdee/tox_profile/wiki/MultiDevice-Announcements-POC) problem is solved. Fork me!

@@ -24,8 +24,8 @@
 
 from PyQt5 import QtWidgets
 
-from qweechat.chat import ChatTextEdit
-from qweechat.input import InputLineEdit
+from third_party.qweechat.chat import ChatTextEdit
+from third_party.qweechat.input import InputLineEdit
 
 
 class DebugDialog(QtWidgets.QDialog):

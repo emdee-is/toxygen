@@ -26,8 +26,8 @@ import datetime
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-from qweechat import config
-from qweechat.weechat import color
+from third_party.qweechat import config
+from third_party.qweechat.weechat import color
 
 
 class ChatTextEdit(QtWidgets.QTextEdit):

@@ -28,9 +28,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal
 Signal = pyqtSignal
 
-from qweechat.chat import ChatTextEdit
-from qweechat.input import InputLineEdit
-from qweechat.weechat import color
+from third_party.qweechat.chat import ChatTextEdit
+from third_party.qweechat.input import InputLineEdit
+from third_party.qweechat.weechat import color
 
 
 class GenericListWidget(QtWidgets.QListWidget):

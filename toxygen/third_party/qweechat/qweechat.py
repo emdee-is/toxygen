@@ -39,13 +39,13 @@ from pkg_resources import resource_filename
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from qweechat import config
-from qweechat.about import AboutDialog
-from qweechat.buffer import BufferListWidget, Buffer
-from qweechat.connection import ConnectionDialog
-from qweechat.network import Network, STATUS_DISCONNECTED
-from qweechat.preferences import PreferencesDialog
-from qweechat.weechat import protocol
+from third_party.qweechat import config
+from third_party.qweechat.about import AboutDialog
+from third_party.qweechat.buffer import BufferListWidget, Buffer
+from third_party.qweechat.connection import ConnectionDialog
+from third_party.qweechat.network import Network, STATUS_DISCONNECTED
+from third_party.qweechat.preferences import PreferencesDialog
+from third_party.qweechat.weechat import protocol
 
 
 APP_NAME = 'QWeeChat'
@@ -163,6 +163,13 @@ class MainWindow(QtWidgets.QMainWindow):
                               self.actions['quit']])
         menu_window = self.menu.addMenu('&Window')
         menu_window.addAction(self.actions['debug'])
+        name = 'toggle'
+        menu_window.addAction(
+            QtWidgets.QAction(QtGui.QIcon(
+                resource_filename(__name__, 'data/icons/%s' % 'weechat.png')),
+            name.capitalize(), self))
+        #? .triggered.connect(self.onMyToolBarButtonClick)
+
         menu_help = self.menu.addMenu('&Help')
         menu_help.addAction(self.actions['about'])
         self.network_status = QtWidgets.QLabel()
@@ -170,23 +177,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.network_status.setFixedWidth(200)
         self.network_status.setContentsMargins(0, 0, 10, 0)
         self.network_status.setAlignment(QtCore.Qt.AlignRight)
-        if hasattr(self, 'menuBar'):
-            if hasattr(self.menu, 'setCornerWidget'):
-                self.menu.setCornerWidget(self.network_status,
-                                        QtCore.Qt.TopRightCorner)
+        if hasattr(self.menu, 'setCornerWidget'):
+            self.menu.setCornerWidget(self.network_status,
+                                    QtCore.Qt.TopRightCorner)
         self.network_status_set(STATUS_DISCONNECTED)
 
         # toolbar
-        if hasattr(self, 'addToolBar'):
-            toolbar = self.addToolBar('toolBar')
-            toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
-            toolbar.addActions([self.actions['connect'],
-                                self.actions['disconnect'],
-                                self.actions['debug'],
-                                self.actions['preferences'],
-                                self.actions['about'],
-                                self.actions['quit']])
-
+        toolbar = self.addToolBar('toolBar')
+        toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
+        toolbar.addActions([self.actions['connect'],
+                            self.actions['disconnect'],
+                            self.actions['debug'],
+                            self.actions['preferences'],
+                            self.actions['about'],
+                            self.actions['quit']])
+        self.toolbar = toolbar 
         self.buffers[0].widget.input.setFocus()
 
         # open debug dialog
@@ -198,9 +203,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.network.connect_weechat(
                 hostname=self.config.get('relay', 'hostname', fallback='127.0.0.1'),
                 port=self.config.get('relay', 'port', fallback='9000'),
-                ssl=self.config.getboolean('relay', 'ssl', fallback=''),
+                ssl=self.config.getboolean('relay', 'ssl', fallback=False),
                 password=self.config.get('relay', 'password', fallback=''),
-                totp=None,
+                totp=self.config.get('relay', 'password', fallback=''),
                 lines=self.config.get('relay', 'lines', fallback=''),
             )
 
@@ -239,7 +244,10 @@ class MainWindow(QtWidgets.QMainWindow):
         """Open a dialog with connection settings."""
         values = {}
         for option in ('hostname', 'port', 'ssl', 'password', 'lines'):
-            values[option] = self.config.get('relay', option, fallback='')
+            val = self.config.get('relay', option, fallback='')
+            if val in [None, 'None']: val = ''
+            if option == 'port' and val in [None, 'None']: val = 0
+            values[option] = val
         self.connection_dialog = ConnectionDialog(values, self)
         self.connection_dialog.dialog_buttons.accepted.connect(
             self.connect_weechat)
@@ -248,13 +256,19 @@ class MainWindow(QtWidgets.QMainWindow):
         """Connect to WeeChat."""
         self.network.connect_weechat(
             hostname=self.connection_dialog.fields['hostname'].text(),
-            self.config.set('relay', 'hostname', hostname)
             port=self.connection_dialog.fields['port'].text(),
             ssl=self.connection_dialog.fields['ssl'].isChecked(),
             password=self.connection_dialog.fields['password'].text(),
             totp=self.connection_dialog.fields['totp'].text(),
             lines=int(self.connection_dialog.fields['lines'].text()),
         )
+        hostname=self.connection_dialog.fields['hostname'].text()
+        port = self.connection_dialog.fields['port'].text()
+        ssl=self.connection_dialog.fields['ssl'].isChecked()
+        password = '' # self.connection_dialog.fields['password'].text()
+        self.config.set('relay', 'port', port)
+        self.config.set('relay', 'hostname', hostname)
+        self.config.set('relay', 'password', password)
         self.connection_dialog.close()
 
     def _network_status_changed(self, status, extra):
@@ -522,10 +536,10 @@ class MainWindow(QtWidgets.QMainWindow):
         if next_buffer == '0x0':
             index = len(self.buffers)
         else:
-            index = [i for i, b in enumerate(self.buffers)
+            elts = [i for i, b in enumerate(self.buffers)
                      if b.pointer() == next_buffer]
-            if index:
-                index = index[0]
+            if len(elts):
+                index = elts[0]
         if index < 0:
             print('Warning: unable to find position for buffer, using end of '
                   'list by default')

@@ -45,6 +45,7 @@ class ConnectionDialog(QtWidgets.QDialog):
         line_edit = QtWidgets.QLineEdit()
         line_edit.setFixedWidth(200)
         value = self.values.get('hostname', '')
+        if value in ['None', None]: value = ''
         line_edit.insert(value)
         grid.addWidget(line_edit, 0, 1)
         self.fields['hostname'] = line_edit
@@ -56,6 +57,10 @@ class ConnectionDialog(QtWidgets.QDialog):
         line_edit = QtWidgets.QLineEdit()
         line_edit.setFixedWidth(200)
         value = self.values.get('port', '')
+        if value in ['None', None]:
+            value = '0'
+        elif type(value) == int:
+            value = str(value)
         line_edit.insert(value)
         grid.addWidget(line_edit, 1, 1)
         self.fields['port'] = line_edit
@@ -73,6 +78,7 @@ class ConnectionDialog(QtWidgets.QDialog):
         line_edit.setFixedWidth(200)
         line_edit.setEchoMode(QtWidgets.QLineEdit.Password)
         value = self.values.get('password', '')
+        if value in ['None', None]: value = ''
         line_edit.insert(value)
         grid.addWidget(line_edit, 2, 1)
         self.fields['password'] = line_edit

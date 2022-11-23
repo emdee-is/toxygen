@@ -686,10 +686,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 font_width = QFontMetrics(font).width('M')
             self._pe.setFont(font)
             geometry = self._pe.geometry()
-            geometry.setWidth(font_width*80+20)
-            geometry.setHeight(font_width*40)
+            geometry.setWidth(font_width*50+20)
+            geometry.setHeight(font_width*24*13/8)
             self._pe.setGeometry(geometry)
-            self._pe.resize(font_width*80+20, font_width*40)
+            self._pe.resize(font_width*50+20, font_width*24*13/8)
 
             self._pe.show()
             self._pe.eval_queued()
@@ -699,27 +699,30 @@ class MainWindow(QtWidgets.QMainWindow):
             LOG.debug(e)
 
     def weechat_console(self):
+        if self._we:
+            self._we.show()
+            return
+        LOG.info("Loading WeechatConsole")
+
+        from third_party.qweechat import qweechat
+        from third_party.qweechat import config
         try:
             # WeeChat backported from PySide6 to PyQt5
-            from third_party.qweechat import MainWindow as MainWindow
-            from third_party.qweechat import config
             LOG.info("Adding WeechatConsole")
+            class WeechatConsole(qweechat.MainWindow):
+                def __init__(self, *args):
+                    qweechat.MainWindow.__init__(self, *args)
+
+                def closeEvent(self, event):
+                    """Called when QWeeChat window is closed."""
+                    self.network.disconnect_weechat()
+                    if self.network.debug_dialog:
+                        self.network.debug_dialog.close()
+                    qweechat.config.write(self.config)
         except Exception as e:
             LOG.exception(f"ERROR WeechatConsole {e}")
             MainWindow = None
             return
-        LOG.debug(f"calling {MainWindow}")
-        if not MainWindow: return
-        class WeechatConsole(MainWindow):
-            def __init__(self, *args):
-                MainWindow.__init__(self, *args)
-
-            def closeEvent(self, event):
-                """Called when QWeeChat window is closed."""
-                self.network.disconnect_weechat()
-                if self.network.debug_dialog:
-                    self.network.debug_dialog.close()
-                config.write(self.config)
         app = self._app
         if app and app._settings:
             size = app._settings['message_font_size']
@@ -728,15 +731,13 @@ class MainWindow(QtWidgets.QMainWindow):
             size = 12
             font_name = "Courier New"
 
-        size = font_width = 10
         font_name = "DejaVu Sans Mono"
 
         try:
-            if not self._we:
-                LOG.debug("creating WeechatConsole")
-                self._we = WeechatConsole()
-#                self._we.setWindowTitle('variable: app is the application')
-#                self._we.edit.setStyleSheet('foreground: white; background-color: black;}')
+            LOG.info("Creating WeechatConsole")
+            self._we = WeechatConsole()
+            self._we.show()
+            self._we.setWindowTitle('File/Connect to 127.0.0.1:9000')
             # Fix the pyconsole geometry
             try:
                 font = self._we.buffers[0].widget.chat.defaultFont()
@@ -746,19 +747,20 @@ class MainWindow(QtWidgets.QMainWindow):
                     font_width = QFontMetrics(font).width('M')
                 self._we.setFont(font)
             except Exception as e:
-                LOG.debug(e)
+#                LOG.debug(e)
                 font_width = size
             geometry = self._we.geometry()
             geometry.setWidth(font_width*80+20)
-            geometry.setHeight(font_width*40)
+            geometry.setHeight(font_width*(2+24)*11/8)
             self._we.setGeometry(geometry)
-            self._we.resize(font_width*80+20, font_width*40)
+            self._we.resize(font_width*80+20, font_width*(2+24)*11/8)
 
             self._we.list_buffers.setSizePolicy(QtWidgets.QSizePolicy.Preferred,
                                                 QtWidgets.QSizePolicy.Preferred)
             self._we.stacked_buffers.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
                                                    QtWidgets.QSizePolicy.Expanding)       
 
+            LOG.info("Showing WeechatConsole")
             self._we.show()
             # or self._we.eval_in_thread()
             return
