@@ -421,9 +421,10 @@ class ContactsManager(ToxSave):
     def add_group(self, group_number):
         index = len(self._contacts)
         group = self._contact_provider.get_group_by_number(group_number)
-        # group num >= 0?
         if group is None:
-            LOG.warn(f"CM.add_group: NO group {group_number}")
+            LOG.warn(f"CM.add_group: NULL group from group_number={group_number}")
+        elif group < 0:
+            LOG.warn(f"CM.add_group: NO group from group={group} group_number={group_number}")
         else:
             LOG.info(f"CM.add_group: Adding group {group._name}")
             self._contacts.append(group)

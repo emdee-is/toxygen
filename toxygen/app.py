@@ -4,7 +4,7 @@ import sys
 import traceback
 from random import shuffle
 import threading
-from time import sleep
+from time import sleep, time
 
 from gevent import monkey; monkey.patch_all(); del monkey   # noqa
 import gevent
@@ -21,8 +21,16 @@ try:
 except ImportError as e:
     coloredlogs = False
 
-# install https://github.com/weechat/qweechat
-# if you want IRC and jabber
+try:
+    # https://github.com/pyqtconsole/pyqtconsole
+    from pyqtconsole.console import PythonConsole
+except Exception as e:
+    PythonConsole = None
+
+try:
+    import qdarkstylexxx
+except ImportError:
+    qdarkstyle = None
 
 from middleware import threads
 import middleware.callbacks as callbacks
@@ -145,7 +153,7 @@ class App:
     def __init__(self, version, oArgs):
         global LOG
         self._args = oArgs
-        self._oArgs = oArgs
+        self.oArgs = oArgs
         self._path = path_to_profile = oArgs.profile
         uri = oArgs.uri
         logfile = oArgs.logfile
@@ -212,11 +220,11 @@ class App:
             # this throws everything as errors
             if not self._select_and_load_profile():
                 return 2
-            if hasattr(self._oArgs, 'update') and self._oArgs.update:
+            if hasattr(self._args, 'update') and self._args.update:
                 if self._try_to_update(): return 3
 
             self._load_app_styles()
-            if self._oArgs.language != 'English':
+            if self._args.language != 'English':
                 # > /var/local/src/toxygen/toxygen/app.py(303)_load_app_translations()->None
                 # -> self._app.translator = translator
                 # (Pdb) Fatal Python error: Segmentation fault
@@ -307,7 +315,7 @@ class App:
         self._kill_tox()
         del self._tox
 
-        oArgs = self._oArgs
+        oArgs = self._args
         if hasattr(oArgs, 'log_oFd'):
             LOG.debug(f"Closing {oArgs.log_oFd}")
             oArgs.log_oFd.close()
@@ -318,20 +326,20 @@ class App:
     # -----------------------------------------------------------------------------------------------------------------
 
     def _load_base_style(self):
-        if self._oArgs.theme in ['', 'default']: return
+        if self._args.theme in ['', 'default']: return
 
         if qdarkstyle:
-            LOG.debug("_load_base_style qdarkstyle " +self._oArgs.theme)
+            LOG.debug("_load_base_style qdarkstyle " +self._args.theme)
             # QDarkStyleSheet
-            if self._oArgs.theme == 'light':
+            if self._args.theme == 'light':
                 from qdarkstyle.light.palette import LightPalette
                 style = qdarkstyle.load_stylesheet(palette=LightPalette)
             else:
                 from qdarkstyle.dark.palette import DarkPalette
                 style = qdarkstyle.load_stylesheet(palette=DarkPalette)
         else:
-            LOG.debug("_load_base_style qss " +self._oArgs.theme)
-            name = self._oArgs.theme + '.qss'
+            LOG.debug("_load_base_style qss " +self._args.theme)
+            name = self._args.theme + '.qss'
             with open(util.join_path(util.get_styles_directory(), name)) as fl:
                 style = fl.read()
         style += '\n' +sSTYLE
@@ -345,9 +353,9 @@ class App:
             if self._settings['theme'] != theme:
                 continue
             if qdarkstyle:
-                LOG.debug("_load_base_style qdarkstyle " +self._oArgs.theme)
+                LOG.debug("_load_base_style qdarkstyle " +self._args.theme)
                 # QDarkStyleSheet
-                if self._oArgs.theme == 'light':
+                if self._args.theme == 'light':
                     from qdarkstyle.light.palette import LightPalette
                     style = qdarkstyle.load_stylesheet(palette=LightPalette)
                 else:
@@ -364,7 +372,7 @@ class App:
                 LOG.debug('_load_app_styles: loading theme file ' + file_path)
             style += '\n' +sSTYLE
             self._app.setStyleSheet(style)
-            LOG.info('_load_app_styles: loaded theme ' +self._oArgs.theme)
+            LOG.info('_load_app_styles: loaded theme ' +self._args.theme)
             break
 
     def _load_login_screen_translations(self):
@@ -479,7 +487,7 @@ class App:
         LOG.debug(f"_start_threads init: {te()!r}")
 
         # starting threads for tox iterate and toxav iterate
-        self._main_loop = threads.ToxIterateThread(self._tox)
+        self._main_loop = threads.ToxIterateThread(self._tox, app=self)
         self._main_loop.start()
 
         self._av_loop = threads.ToxAVIterateThread(self._tox.AV)
@@ -511,7 +519,7 @@ class App:
 
     def _select_profile(self):
         LOG.debug("_select_profile")
-        if self._oArgs.language != 'English':
+        if self._args.language != 'English':
             self._load_login_screen_translations()
         ls = LoginScreen()
         profiles = ProfileManager.find_profiles()
@@ -550,7 +558,7 @@ class App:
                                 util_ui.tr('Error'))
             return False
         name = profile_name or 'toxygen_user'
-        assert self._oArgs
+        assert self._args
         self._path = profile_path
         if result.password:
             self._toxes.set_password(result.password)
@@ -652,7 +660,7 @@ class App:
 
     def _create_dependencies(self):
         LOG.info(f"_create_dependencies toxygen version {self._version}")
-        if hasattr(self._oArgs, 'update') and self._oArgs.update:
+        if hasattr(self._args, 'update') and self._args.update:
             self._backup_service = BackupService(self._settings,
                                                  self._profile_manager)
         self._smiley_loader = SmileyLoader(self._settings)
@@ -764,13 +772,13 @@ class App:
         self._ms.show()
 
         # FixMe:
-        self._log = lambda line: LOG.log(self._oArgs.loglevel,
+        self._log = lambda line: LOG.log(self._args.loglevel,
                                          self._ms.status(line))
         # self._ms._log = self._log # was used in callbacks.py
 
         if False:
             self.status_handler = logging.Handler()
-            self.status_handler.setLevel(logging.INFO) # self._oArgs.loglevel
+            self.status_handler.setLevel(logging.INFO) # self._args.loglevel
             self.status_handler.handle = self._ms.status
 
         self._init_callbacks()
@@ -789,9 +797,9 @@ class App:
 
     def _create_tox(self, data, settings_):
         LOG.info("_create_tox calling tox_factory")
-        assert self._oArgs
+        assert self._args
         retval = tox_factory(data=data, settings=settings_,
-                             args=self._oArgs, app=self)
+                             args=self._args, app=self)
         LOG.debug("_create_tox succeeded")
         self._tox = retval
         return retval
@@ -837,22 +845,21 @@ class App:
             sleep(interval / 1000.0)
 
     def _test_tox(self):
-        self.test_net()
+        self.test_net(iMax=8)
         self._ms.log_console()
 
     def test_net(self, lElts=None, oThread=None, iMax=4):
 
-        LOG.debug("test_net " +self._oArgs.network)
         # bootstrap
-        LOG.debug('Calling generate_nodes: udp')
-        lNodes = ts.generate_nodes(oArgs=self._oArgs,
+        LOG.debug('test_net: Calling generate_nodes: udp')
+        lNodes = ts.generate_nodes(oArgs=self._args,
                                    ipv='ipv4',
                                    udp_not_tcp=True)
         self._settings['current_nodes_udp'] = lNodes
         if not lNodes:
             LOG.warn('empty generate_nodes udp')
-        LOG.debug('Calling generate_nodes: tcp')
-        lNodes = ts.generate_nodes(oArgs=self._oArgs,
+        LOG.debug('test_net: Calling generate_nodes: tcp')
+        lNodes = ts.generate_nodes(oArgs=self._args,
                                    ipv='ipv4',
                                    udp_not_tcp=False)
         self._settings['current_nodes_tcp'] = lNodes
@@ -860,8 +867,8 @@ class App:
             LOG.warn('empty generate_nodes tcp')
 
         # if oThread and oThread._stop_thread: return
-        LOG.debug("test_net network=" +self._oArgs.network +' iMax=' +str(iMax))
-        if self._oArgs.network not in ['local', 'localnew', 'newlocal']:
+        LOG.debug("test_net network=" +self._args.network +' iMax=' +str(iMax))
+        if self._args.network not in ['local', 'localnew', 'newlocal']:
             b = ts.bAreWeConnected()
             if b is None:
                 i = os.system('ip route|grep ^def')
@@ -870,33 +877,33 @@ class App:
                 else:
                     b = True
             if not b:
-                LOG.warn("No default route for network " +self._oArgs.network)
+                LOG.warn("No default route for network " +self._args.network)
                 text = 'You have no default route - are you connected?'
                 reply = util_ui.question(text, "Are you connected?")
                 if not reply: return
                 iMax = 1
             else:
-                LOG.debug("Have default route for network " +self._oArgs.network)
+                LOG.debug("Have default route for network " +self._args.network)
 
         lUdpElts = self._settings['current_nodes_udp']
-        if self._oArgs.proxy_type <= 0 and not lUdpElts:
+        if self._args.proxy_type <= 0 and not lUdpElts:
             title = 'test_net Error'
             text = 'Error: ' + str('No UDP nodes')
             util_ui.message_box(text, title)
             return
         lTcpElts = self._settings['current_nodes_tcp']
-        if self._oArgs.proxy_type > 0 and not lTcpElts:
+        if self._args.proxy_type > 0 and not lTcpElts:
             title = 'test_net Error'
             text = 'Error: ' + str('No TCP nodes')
             util_ui.message_box(text, title)
             return
-        LOG.debug(f"test_net {self._oArgs.network} lenU={len(lUdpElts)} lenT={len(lTcpElts)} iMax= {iMax}")
+        LOG.debug(f"test_net {self._args.network} lenU={len(lUdpElts)} lenT={len(lTcpElts)} iMax={iMax}")
         i = 0
         while i < iMax:
             # if oThread and oThread._stop_thread: return
             i = i + 1
-            LOG.debug(f"bootstrapping status proxy={self._oArgs.proxy_type} # {i}")
-            if self._oArgs.proxy_type == 0:
+            LOG.debug(f"bootstrapping status proxy={self._args.proxy_type} # {i}")
+            if self._args.proxy_type == 0:
                 self._test_bootstrap(lUdpElts)
             else:
                 self._test_bootstrap([lUdpElts[0]])
@@ -961,7 +968,7 @@ class App:
         if not reply: return
 
         if lElts is None:
-            if self._oArgs.proxy_type == 0:
+            if self._args.proxy_type == 0:
                 sProt = "udp4"
                 lElts = self._settings['current_nodes_tcp']
             else:
@@ -969,7 +976,7 @@ class App:
                 lElts = self._settings['current_nodes_tcp']
         shuffle(lElts)
         try:
-            ts.bootstrap_iNmapInfo(lElts, self._oArgs, sProt)
+            ts.bootstrap_iNmapInfo(lElts, self._args, sProt)
             self._ms.log_console()
         except Exception as e:
             LOG.error(f"test_nmap ' +' :  {e}")
@@ -990,10 +997,10 @@ class App:
         text = 'Run the Extended Test Suite?\nThe program may freeze for 20-60 minutes.'
         reply = util_ui.question(text, title)
         if reply:
-            if hasattr(self._oArgs, 'proxy_type') and self._oArgs.proxy_type:
-                lArgs = ['--proxy_host', self._oArgs.proxy_host,
-                         '--proxy_port', str(self._oArgs.proxy_port),
-                         '--proxy_type', str(self._oArgs.proxy_type), ]
+            if hasattr(self._args, 'proxy_type') and self._args.proxy_type:
+                lArgs = ['--proxy_host', self._args.proxy_host,
+                         '--proxy_port', str(self._args.proxy_port),
+                         '--proxy_type', str(self._args.proxy_type), ]
             else:
                 lArgs = list()
             try:

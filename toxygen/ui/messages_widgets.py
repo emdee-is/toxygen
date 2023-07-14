@@ -7,7 +7,7 @@ import re
 from ui.widgets import *
 from messenger.messages import MESSAGE_AUTHOR
 from file_transfers.file_transfers import *
-
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 class MessageBrowser(QtWidgets.QTextBrowser):
 
@@ -39,7 +39,16 @@ class MessageBrowser(QtWidgets.QTextBrowser):
         font.setPixelSize(settings['message_font_size'])
         font.setBold(False)
         self.setFont(font)
-        self.resize(width, self.document().size().height())
+        try:
+            # was self.resize(width, self.document().size().height())
+            # guessing QSize
+            self.resize(QtCore.QSize(width, int(self.document().size().height())))
+        except TypeError as e:
+            # TypeError: arguments did not match any overloaded call:
+            # resize(self, a0: QSize): argument 1 has unexpected type 'int'
+            # resize(self, w: int, h: int): argument 2 has unexpected type 'float'
+            pass
+        
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
         self.anchorClicked.connect(self.on_anchor_clicked)
 

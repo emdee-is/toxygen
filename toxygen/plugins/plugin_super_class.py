@@ -1,9 +1,9 @@
+# -*- mode: python; indent-tabs-mode: nil; py-indent-offset: 4; coding: utf-8 -*-
 import os
-
 from PyQt5 import QtCore, QtWidgets
-
-import common.tox_save as tox_save
 import utils.ui as util_ui
+import common.tox_save as tox_save
+
 
 MAX_SHORT_NAME_LENGTH = 5
 
@@ -20,7 +20,7 @@ def path_to_data(name):
     return os.path.dirname(os.path.realpath(__file__)) + '/' + name + '/'
 
 
-def log(name, data):
+def log(name, data=''):
     """
     :param name: plugin unique name
     :param data: data for saving in log
@@ -48,7 +48,7 @@ class PluginSuperClass(tox_save.ToxSave):
         name = name.strip()
         short_name = short_name.strip()
         if not name or not short_name:
-            raise NameError('Wrong name')
+            raise NameError('Wrong name or not name or not short_name')
         self._name = name
         self._short_name = short_name[:MAX_SHORT_NAME_LENGTH]
         self._translator = None  # translator for plugin's GUI
@@ -75,7 +75,7 @@ class PluginSuperClass(tox_save.ToxSave):
         """
         return self.__doc__
 
-    def get_menu(self, row_number):
+    def get_menu(self, menu, row_number=None):
         """
         This method creates items for menu which called on right click in list of friends
         :param row_number: number of selected row in list of contacts

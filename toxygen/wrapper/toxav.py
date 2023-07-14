@@ -264,7 +264,7 @@ class ToxAV:
         24000, or 48000.
         """
         toxav_err_send_frame = c_int()
-        LOG_DEBUG(f"toxav_audio_send_frame")
+        LOG_TRACE(f"toxav_audio_send_frame")
         assert sampling_rate in [8000, 12000, 16000, 24000, 48000]
         result = self.libtoxav.toxav_audio_send_frame(self._toxav_pointer,
                                                        c_uint32(friend_number),
@@ -307,7 +307,7 @@ class ToxAV:
         :param v: V (Chroma) plane data.
         """
         toxav_err_send_frame = c_int()
-        LOG_DEBUG(f"toxav_video_send_frame")
+        LOG_TRACE(f"toxav_video_send_frame")
         result = self.libtoxav.toxav_video_send_frame(self._toxav_pointer, c_uint32(friend_number), c_uint16(width),
                                                        c_uint16(height), c_char_p(y), c_char_p(u), c_char_p(v),
                                                        byref(toxav_err_send_frame))
@@ -393,7 +393,7 @@ class ToxAV:
             self.libtoxav.toxav_callback_video_receive_frame(self._toxav_pointer, POINTER(None)(), user_data)
             self.video_receive_frame_cb = None
             return
-        
+
         LOG_DEBUG(f"toxav_callback_video_receive_frame")
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint16, c_uint16,
                                POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8),

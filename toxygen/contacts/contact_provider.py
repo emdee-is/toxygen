@@ -87,22 +87,21 @@ class ContactProvider(tox_save.ToxSave):
     def get_group_by_number(self, group_number):
         group = None
         try:
-            LOG_INFO(f"group_get_number {group_number} ")
+            LOG_INFO(f"CP.group_get_number {group_number} ")
             # original code
             chat_id = self._tox.group_get_chat_id(group_number)
-            if not chat_id:
-                LOG_ERROR(f"get_group_by_number NULL number ({group_number})")
+            if chat_id is None:
+                LOG_ERROR(f"get_group_by_number NULL chat_id ({group_number})")
+            elif chat_id == '-1':
+                LOG_ERROR(f"get_group_by_number <0 chat_id ({group_number})")
             else:
                 LOG_INFO(f"group_get_number {group_number} {chat_id}")
                 group = self.get_group_by_chat_id(chat_id)
-                if not group:
-                    LOG_ERROR(f"get_group_by_number NULL group ({chat_id})")
-            if group is None:
-
-                LOG_WARN(f"get_group_by_number leaving ({group_number})")
-                #? iRet = self._tox.group_leave(group_number)
-                # invoke in main thread?
-                # self._contacts_manager.delete_group(group_number)
+                if group is None or group  == '-1':
+                    LOG_WARN(f"get_group_by_number leaving {group} ({group_number})")
+                    #? iRet = self._tox.group_leave(group_number)
+                    # invoke in main thread?
+                    # self._contacts_manager.delete_group(group_number)
             return group
         except Exception as e:
             LOG_WARN(f"group_get_number {group_number} {e}")

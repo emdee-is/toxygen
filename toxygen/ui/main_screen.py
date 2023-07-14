@@ -2,7 +2,7 @@
 import os
 
 from PyQt5 import uic
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from qtpy.QtGui import (QColor, QTextCharFormat, QFont, QSyntaxHighlighter)
 
 from ui.contact_items import *
@@ -751,9 +751,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 font_width = size
             geometry = self._we.geometry()
             geometry.setWidth(font_width*80+20)
-            geometry.setHeight(font_width*(2+24)*11/8)
+            geometry.setHeight(int(font_width*(2+24)*11/8))
             self._we.setGeometry(geometry)
-            self._we.resize(font_width*80+20, font_width*(2+24)*11/8)
+            #? QtCore.QSize()
+            self._we.resize(font_width*80+20, int(font_width*(2+24)*11/8))
 
             self._we.list_buffers.setSizePolicy(QtWidgets.QSizePolicy.Preferred,
                                                 QtWidgets.QSizePolicy.Preferred)

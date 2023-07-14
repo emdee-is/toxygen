@@ -171,7 +171,7 @@ def setup_default_video():
     video['output_devices'] = default_video
     return video
 
-def main_parser():
+def main_parser(_=None, iMode=2):
     import cv2
     if not os.path.exists('/proc/sys/net/ipv6'):
         bIpV6 = 'False'
@@ -182,32 +182,17 @@ def main_parser():
     audio = setup_default_audio()
     default_video = setup_default_video()
 
-    logfile = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'toxygen.log')
-    parser = argparse.ArgumentParser()
+#    parser = argparse.ArgumentParser()
+    parser = ts.oMainArgparser()
     parser.add_argument('--version', action='store_true', help='Prints Toxygen version')
     parser.add_argument('--clean', action='store_true', help='Delete toxcore libs from libs folder')
     parser.add_argument('--reset', action='store_true', help='Reset default profile')
     parser.add_argument('--uri', type=str, default='',
                         help='Add specified Tox ID to friends')
-    parser.add_argument('--logfile', default=logfile,
-                        help='Filename for logging')
-    parser.add_argument('--loglevel', type=int, default=logging.INFO,
-                        help='Threshold for logging (lower is more) default: 20')
-    parser.add_argument('--proxy_host', '--proxy-host', type=str,
-                        # oddball - we want to use '' as a setting
-                        default='0.0.0.0',
-                        help='proxy host')
-    parser.add_argument('--proxy_port', '--proxy-port', default=0, type=int,
-                        help='proxy port')
-    parser.add_argument('--proxy_type', '--proxy-type', default=0, type=int,
-                        choices=[0,1,2],
-                        help='proxy type 1=https, 2=socks')
-    parser.add_argument('--tcp_port', '--tcp-port', default=0, type=int,
-                        help='tcp port')
     parser.add_argument('--auto_accept_path', '--auto-accept-path', type=str,
                         default=os.path.join(os.environ['HOME'], 'Downloads'),
                         help="auto_accept_path")
-    parser.add_argument('--mode', type=int, default=2,
+    parser.add_argument('--mode', type=int, default=iMode,
                         help='Mode: 0=chat 1=chat+audio 2=chat+audio+video default: 0')
     parser.add_argument('--font', type=str, default="Courier",
                         help='Message font')
@@ -216,15 +201,6 @@ def main_parser():
     parser.add_argument('--local_discovery_enabled',type=str,
                         default='False', choices=['True','False'],
                         help='Look on the local lan')
-    parser.add_argument('--udp_enabled',type=str,
-                        default='True', choices=['True','False'],
-                        help='En/Disable udp')
-    parser.add_argument('--trace_enabled',type=str,
-                        default='False', choices=['True','False'],
-                        help='Debugging from toxcore logger_trace')
-    parser.add_argument('--ipv6_enabled',type=str,
-                        default=bIpV6, choices=lIpV6Choices,
-                        help='En/Disable ipv6')
     parser.add_argument('--compact_mode',type=str,
                         default='True', choices=['True','False'],
                         help='Compact mode')
@@ -243,28 +219,12 @@ def main_parser():
     parser.add_argument('--core_logging',type=str,
                         default='False', choices=['True','False'],
                         help='Dis/Enable Toxcore notifications')
-    parser.add_argument('--hole_punching_enabled',type=str,
-                        default='False', choices=['True','False'],
-                        help='En/Enable hole punching')
-    parser.add_argument('--dht_announcements_enabled',type=str,
-                        default='True', choices=['True','False'],
-                        help='En/Disable DHT announcements')
     parser.add_argument('--save_history',type=str,
                         default='True', choices=['True','False'],
                         help='En/Disable save history')
     parser.add_argument('--update', type=int, default=0,
                         choices=[0,0],
                         help='Update program (broken)')
-    parser.add_argument('--download_nodes_list',type=str,
-                        default='False', choices=['True','False'],
-                        help='Download nodes list')
-    parser.add_argument('--nodes_json', type=str,
-                        default='')
-    parser.add_argument('--download_nodes_url', type=str,
-                        default='https://nodes.tox.chat/json')
-    parser.add_argument('--network', type=str,
-                        choices=['old', 'main', 'new', 'local', 'newlocal'],
-                        default='old')
     parser.add_argument('--video_input', type=str,
                         default=-1,
                         choices=default_video['output_devices'],

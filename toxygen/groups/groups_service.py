@@ -255,7 +255,7 @@ class GroupsService(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def _add_new_group_by_number(self, group_number):
-        LOG.debug(f"_add_new_group_by_number {group_number}")
+        LOG.debug(f"_add_new_group_by_number group_number={group_number}")
         self._contacts_manager.add_group(group_number)
 
     def _get_group_by_number(self, group_number):

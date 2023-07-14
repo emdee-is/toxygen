@@ -27,6 +27,7 @@ class AddContact(CenteredWidget):
         uic.loadUi(get_views_path('add_contact_screen'), self)
         self._update_ui(tox_id)
         self._adding = False
+        self._bootstrap = False
 
     def _update_ui(self, tox_id):
         self.toxIdLineEdit = LineEdit(self)
@@ -80,6 +81,7 @@ class AddBootstrap(CenteredWidget):
         uic.loadUi(get_views_path('add_bootstrap_screen'), self)
         self._update_ui(tox_id)
         self._adding = False
+        self._bootstrap = False
 
     def _update_ui(self, tox_id):
         self.toxIdLineEdit = LineEdit(self)

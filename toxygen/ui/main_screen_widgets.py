@@ -10,6 +10,8 @@ import utils.util as util
 import utils.ui as util_ui
 from stickers.stickers import load_stickers
 
+import logging
+LOG = logging.getLogger('app.'+'msw')
 
 class MessageArea(QtWidgets.QPlainTextEdit):
     """User types messages here"""

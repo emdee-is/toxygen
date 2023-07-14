@@ -88,9 +88,9 @@ class PluginLoader:
                     if is_active:
                         try:
                             instance.start()
-                            self._app.LOG('INFO: Started Plugin ' +short_name)
+                            self._app._log('INFO: Started Plugin ' +short_name)
                         except Exception as e:
-                            self._app.LOG.error(f"Starting Plugin ' +short_name +'  {e}")
+                            self._app._log.error(f"Starting Plugin ' +short_name +'  {e}")
                     # else: LOG.info('Defined Plugin ' +short_name)
                 except Exception as ex:
                     LOG.error('in module ' + short_name + ' Exception: ' + str(ex))
@@ -150,7 +150,7 @@ class PluginLoader:
             if key in self._plugins and hasattr(self._plugins[key], 'instance'):
                 return self._plugins[key].instance.get_window()
         except Exception as e:
-            self._app.LOG('WARN: ' +key +' _plugins no slot instance: ' +str(e))
+            self._app._log('WARN: ' +key +' _plugins no slot instance: ' +str(e))
 
         return None
 
@@ -202,7 +202,7 @@ class PluginLoader:
                 continue
             if not hasattr(plugin.instance, 'get_message_menu'):
                 name = plugin.instance.get_short_name()
-                self._app.LOG('WARN: get_message_menu not found: ' + name)
+                self._app._log('WARN: get_message_menu not found: ' + name)
                 continue
             try:
                 result.extend(plugin.instance.get_message_menu(menu, selected_text))
@@ -222,9 +222,9 @@ class PluginLoader:
     def reload(self):
         path = util.get_plugins_directory()
         if not os.path.exists(path):
-            self._app.LOG('WARN: Plugin directory not found: ' + path)
+            self._app._log('WARN: Plugin directory not found: ' + path)
             return
 
         self.stop()
-        self._app.LOG('INFO: Reloading plugins from ' +path)
+        self._app._log('INFO: Reloading plugins from ' +path)
         self.load()
