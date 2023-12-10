@@ -3,7 +3,7 @@ import os
 
 from PyQt5 import uic
 from PyQt5 import QtCore, QtGui, QtWidgets
-from qtpy.QtGui import (QColor, QTextCharFormat, QFont, QSyntaxHighlighter)
+from qtpy.QtGui import (QColor, QTextCharFormat, QFont, QSyntaxHighlighter, QFontMetrics)
 
 from ui.contact_items import *
 from ui.widgets import MultilineEdit

@@ -132,10 +132,11 @@ class Contact(basecontact.BaseContact):
         """
         :return list of unsent messages for saving
         """
-        message = list(filter(lambda m: m.author is not None
+#                               and m.tox_message_id == tox_message_id,
+        messages = filter(lambda m: m.author is not None
                               and m.author.type == MESSAGE_AUTHOR['NOT_SENT']
-                              and m.tox_message_id == tox_message_id,
-                              self._corr))[0]
+                              self._corr)
+        # was message = list(...)[0]
         return list(messages)
 
     def mark_as_sent(self, tox_message_id):

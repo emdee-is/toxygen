@@ -78,6 +78,9 @@ class FileTransfer:
 
     def get_file_id(self):
         return self._file_id
+    # WTF
+    def get_file_id(self):
+        return self._tox.file_get_file_id(self._friend_number, self._file_number)
 
     file_id = property(get_file_id)
 
@@ -111,9 +114,6 @@ class FileTransfer:
     def send_control(self, control):
         if self._tox.file_control(self._friend_number, self._file_number, control):
             self.set_state(control)
-
-    def get_file_id(self):
-        return self._tox.file_get_file_id(self._friend_number, self._file_number)
 
     def _signal(self):
         percentage = self._done / self._size if self._size else 0

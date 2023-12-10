@@ -34,7 +34,7 @@ class ContactProvider(tox_save.ToxSave):
         try:
             public_key = self._tox.friend_get_public_key(friend_number)
         except Exception as e:
-            LOG_WARN(f"get_friend_by_number NO {friend_number} {e} ")
+            LOG_WARN(f"CP.get_friend_by_number NO {friend_number} {e} ")
             return None
         return self.get_friend_by_public_key(public_key)
 
@@ -44,7 +44,7 @@ class ContactProvider(tox_save.ToxSave):
             return friend
         friend = self._friend_factory.create_friend_by_public_key(public_key)
         self._add_to_cache(public_key, friend)
-        LOG_INFO(f"get_friend_by_public_key ADDED {friend} ")
+        LOG_INFO(f"CP.get_friend_by_public_key ADDED {friend} ")
 
         return friend
 
@@ -52,7 +52,7 @@ class ContactProvider(tox_save.ToxSave):
         try:
             friend_numbers = self._tox.self_get_friend_list()
         except Exception as e:
-            LOG_WARN(f"get_all_friends NO {friend_numbers} {e} ")
+            LOG_WARN(f"CP.get_all_friends NO {friend_numbers} {e} ")
             return None
         friends = map(lambda n: self.get_friend_by_number(n), friend_numbers)
 
@@ -71,11 +71,11 @@ class ContactProvider(tox_save.ToxSave):
         # failsafe in case there are bogus None groups?
         fgroups = list(filter(lambda x: x, groups))
         if len(fgroups) != len_groups:
-            LOG_WARN(f"are there are bogus None groups in libtoxcore? {len(fgroups)} != {len_groups}")
+            LOG_WARN(f"CP.are there are bogus None groups in libtoxcore? {len(fgroups)} != {len_groups}")
             for group_num in group_numbers:
                 group = self.get_group_by_number(group_num)
                 if group is None:
-                    LOG_ERROR(f"there are bogus None groups in libtoxcore {group_num}!")
+                    LOG_ERROR(f"There are bogus None groups in libtoxcore {group_num}!")
                     # fixme: do something
             groups = fgroups
         return groups
@@ -83,7 +83,7 @@ class ContactProvider(tox_save.ToxSave):
     def get_group_by_number(self, group_number):
         group = None
         try:
-            LOG_INFO(f"CP.group_get_number {group_number} ")
+            LOG_INFO(f"CP.CP.group_get_number {group_number} ")
             # original code
             chat_id = self._tox.group_get_chat_id(group_number)
             if chat_id is None:
@@ -91,16 +91,16 @@ class ContactProvider(tox_save.ToxSave):
             elif chat_id == '-1':
                 LOG_ERROR(f"get_group_by_number <0 chat_id ({group_number})")
             else:
-                LOG_INFO(f"group_get_number {group_number} {chat_id}")
+                LOG_INFO(f"CP.group_get_number {group_number} {chat_id}")
                 group = self.get_group_by_chat_id(chat_id)
                 if group is None or group  == '-1':
-                    LOG_WARN(f"get_group_by_number leaving {group} ({group_number})")
+                    LOG_WARN(f"CP.get_group_by_number leaving {group} ({group_number})")
                     #? iRet = self._tox.group_leave(group_number)
                     # invoke in main thread?
                     # self._contacts_manager.delete_group(group_number)
             return group
         except Exception as e:
-            LOG_WARN(f"group_get_number {group_number} {e}")
+            LOG_WARN(f"CP.group_get_number {group_number} {e}")
             return None
 
     def get_group_by_chat_id(self, chat_id):

@@ -105,7 +105,7 @@ class AV(common.tox_save.ToxAvSave):
             self._toxav.call(friend_number,
                              self._audio_krate_tox_audio if audio else 0,
                              self._audio_krate_tox_video if video else 0)
-        except ArgumentError as e:
+        except Exception as e:
             LOG.warn(f"_toxav.call already has {friend_number}")
             return
         self._calls[friend_number] = Call(audio, video)
@@ -114,7 +114,7 @@ class AV(common.tox_save.ToxAvSave):
 
     def accept_call(self, friend_number, audio_enabled, video_enabled):
         # obsolete
-        return call_accept_call(self, friend_number, audio_enabled, video_enabled)
+        return self.call_accept_call(friend_number, audio_enabled, video_enabled)
 
     def call_accept_call(self, friend_number, audio_enabled, video_enabled):
         LOG.debug(f"call_accept_call from {friend_number} {self._running}" +

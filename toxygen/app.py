@@ -979,7 +979,7 @@ class App:
         self._ms.log_console()
 
     def _test_main(self):
-        from toxygen_wrapper.tests_wrapper import main as tests_main
+        from toxygen_wrapper.wrapper_tests.tests_wrapper import main as tests_main
         LOG.debug("_test_main")
         if not self._tox: return
         title = 'Extended Test Suite'
