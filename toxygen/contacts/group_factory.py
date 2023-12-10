@@ -43,9 +43,7 @@ class GroupFactory(ToxSave):
 
         return group
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _create_group_item(self):
         """
@@ -55,7 +53,7 @@ class GroupFactory(ToxSave):
         return self._items_factory.create_contact_item()
 
     def _get_group_number_by_chat_id(self, chat_id):
-        for i in range(self._tox.group_get_number_groups()):
+        for i in range(self._tox.group_get_number_groups()+100):
             if self._tox.group_get_chat_id(i) == chat_id:
                 return i
         return -1

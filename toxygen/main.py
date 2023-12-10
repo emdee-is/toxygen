@@ -192,8 +192,8 @@ def main_parser(_=None, iMode=2):
     parser.add_argument('--auto_accept_path', '--auto-accept-path', type=str,
                         default=os.path.join(os.environ['HOME'], 'Downloads'),
                         help="auto_accept_path")
-    parser.add_argument('--mode', type=int, default=iMode,
-                        help='Mode: 0=chat 1=chat+audio 2=chat+audio+video default: 0')
+#    parser.add_argument('--mode', type=int, default=iMode,
+#                        help='Mode: 0=chat 1=chat+audio 2=chat+audio+video default: 0')
     parser.add_argument('--font', type=str, default="Courier",
                         help='Message font')
     parser.add_argument('--message_font_size', type=int, default=15,

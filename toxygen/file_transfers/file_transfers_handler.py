@@ -33,9 +33,7 @@ class FileTransfersHandler(ToxSave):
         self._settings['paused_file_transfers'] = self._paused_file_transfers if self._settings['resend_files'] else {}
         self._settings.save()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def incoming_file_transfer(self, friend_number, file_number, size, file_name):
         """
@@ -255,9 +253,7 @@ class FileTransfersHandler(ToxSave):
                 self._paused_file_transfers[ft.file_id] = [ft.path, friend_num, True, ft.total_size()]
             self.cancel_transfer(friend_num, file_num, True)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Avatars support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def send_avatar(self, friend_number, avatar_path=None):
         """
@@ -297,9 +293,7 @@ class FileTransfersHandler(ToxSave):
         for friend in filter(self._is_friend_online, friends):
             self.send_avatar(friend.number)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _is_friend_online(self, friend_number):
         friend = self._get_friend_by_number(friend_number)

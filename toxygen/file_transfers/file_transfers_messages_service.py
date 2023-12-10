@@ -75,9 +75,7 @@ class FileTransfersMessagesService:
 
         return tm
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _is_friend_active(self, friend_number):
         if not self._contacts_manager.is_active_a_friend():

@@ -91,9 +91,7 @@ class AV(common.tox_save.ToxAvSave):
     def __contains__(self, friend_number):
         return friend_number in self._calls
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Calls
-    # -----------------------------------------------------------------------------------------------------------------
 
     def __call__(self, friend_number, audio, video):
         """Call friend with specified number"""
@@ -189,9 +187,7 @@ class AV(common.tox_save.ToxAvSave):
     def is_video_call(self, number):
         return number in self and self._calls[number].in_video
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Threads
-    # -----------------------------------------------------------------------------------------------------------------
 
     def start_audio_thread(self):
         """
@@ -350,9 +346,7 @@ class AV(common.tox_save.ToxAvSave):
         self._video_thread = None
         self._video = None
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Incoming chunks
-    # -----------------------------------------------------------------------------------------------------------------
 
     def audio_chunk(self, samples, channels_count, rate):
         """
@@ -388,9 +382,7 @@ class AV(common.tox_save.ToxAvSave):
         LOG.debug(f"audio_chunk output_device_index={iOutput} rate={rate} channels={channels_count}")
         self._out_stream.write(samples)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # AV sending
-    # -----------------------------------------------------------------------------------------------------------------
 
     def send_audio_data(self, data, count, *largs, **kwargs):
         pcm = data

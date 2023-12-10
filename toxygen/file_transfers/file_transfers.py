@@ -1,11 +1,11 @@
 from os import chdir, remove, rename
-from os.path import basename, dirname, exists, getsize
+from os.path import basename, getsize, exists, dirname
 from time import time
 
 from common.event import Event
 from middleware.threads import invoke_in_main_thread
 from wrapper.tox import Tox
-from wrapper.toxcore_enums_and_consts import TOX_FILE_CONTROL, TOX_FILE_KIND
+from wrapper.toxcore_enums_and_consts import TOX_FILE_KIND, TOX_FILE_CONTROL
 
 FILE_TRANSFER_STATE = {
     'RUNNING': 0,
@@ -126,9 +126,7 @@ class FileTransfer:
     def _finished(self):
         self._finished_event(self._friend_number, self._file_number)
 
-# -----------------------------------------------------------------------------------------------------------------
 # Send file
-# -----------------------------------------------------------------------------------------------------------------
 
 
 class SendTransfer(FileTransfer):
@@ -223,9 +221,7 @@ class SendFromFileBuffer(SendTransfer):
             chdir(dirname(self._path))
             remove(self._path)
 
-# -----------------------------------------------------------------------------------------------------------------
 # Receive file
-# -----------------------------------------------------------------------------------------------------------------
 
 
 class ReceiveTransfer(FileTransfer):

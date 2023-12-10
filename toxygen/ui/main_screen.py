@@ -652,9 +652,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             super().keyPressEvent(event)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu
-    # -----------------------------------------------------------------------------------------------------------------
 
     def log_console(self):
         self._me.show()
@@ -759,7 +757,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._we.list_buffers.setSizePolicy(QtWidgets.QSizePolicy.Preferred,
                                                 QtWidgets.QSizePolicy.Preferred)
             self._we.stacked_buffers.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                                                   QtWidgets.QSizePolicy.Expanding)       
+                                                   QtWidgets.QSizePolicy.Expanding)
 
             LOG.info("Showing WeechatConsole")
             self._we.show()
@@ -877,9 +875,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                            120))
         self.menu.show()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Messages, calls and file transfers
-    # -----------------------------------------------------------------------------------------------------------------
 
     def send_message(self):
         self._messenger.send_message()
@@ -942,9 +938,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.videocallButton.setIcon(icon)
         self.videocallButton.setIconSize(QtCore.QSize(35, 35))
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user open context menu in friends list
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _friend_right_click(self, pos):
         item = self.friends_list.itemAt(pos)
@@ -1001,9 +995,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def select_contact_row(self, row_index):
         self.friends_list.setCurrentRow(row_index)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click somewhere else
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _selected_contact_changed(self):
         num = self.friends_list.currentRow()

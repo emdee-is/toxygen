@@ -28,9 +28,7 @@ class ContactProvider(tox_save.ToxSave):
         self._group_peer_factory = group_peer_factory
         self._cache = {}  # key - contact's public key, value - contact instance
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Friends
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_friend_by_number(self, friend_number):
         try:
@@ -60,9 +58,7 @@ class ContactProvider(tox_save.ToxSave):
 
         return list(friends)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Groups
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_all_groups(self):
         """from callbacks"""
@@ -131,9 +127,7 @@ class ContactProvider(tox_save.ToxSave):
 
         return group
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Group peers
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_all_group_peers(self):
         return list()
@@ -148,16 +142,12 @@ class ContactProvider(tox_save.ToxSave):
 
         return self._get_group_peer(group, peer)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # All contacts
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_all(self):
         return self.get_all_friends() + self.get_all_groups() + self.get_all_group_peers()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Caching
-    # -----------------------------------------------------------------------------------------------------------------
 
     def clear_cache(self):
         self._cache.clear()
@@ -166,9 +156,7 @@ class ContactProvider(tox_save.ToxSave):
         if contact_public_key in self._cache:
             del self._cache[contact_public_key]
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _get_contact_from_cache(self, public_key):
         return self._cache[public_key] if public_key in self._cache else None

@@ -1,5 +1,5 @@
-from common.tox_save import ToxSave
 from contacts.friend import Friend
+from common.tox_save import ToxSave
 
 
 class FriendFactory(ToxSave):
@@ -32,9 +32,7 @@ class FriendFactory(ToxSave):
 
         return friend
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _create_friend_item(self):
         """

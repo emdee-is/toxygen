@@ -30,9 +30,7 @@ class CallsManager:
     def set_toxav(self, toxav):
         self._callav.set_toxav(toxav)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Events
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_call_started_event(self):
         return self._call_started_event
@@ -44,9 +42,7 @@ class CallsManager:
 
     call_finished_event = property(get_call_finished_event)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # AV support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def call_click(self, audio=True, video=False):
         """User clicked audio button in main window"""
@@ -159,9 +155,7 @@ class CallsManager:
         if friend_number in self._callav:
             self._callav.finish_call(friend_number, True)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _get_incoming_call_widget(self, friend_number, text, friend_name):
         return av_widgets.IncomingCallWidget(self._settings, self, friend_number, text, friend_name)

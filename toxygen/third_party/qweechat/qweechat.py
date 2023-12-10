@@ -90,7 +90,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.list_buffers.setSizePolicy(QtWidgets.QSizePolicy.Preferred,
                                         QtWidgets.QSizePolicy.Preferred)
         self.stacked_buffers.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                           QtWidgets.QSizePolicy.Expanding)       
+                           QtWidgets.QSizePolicy.Expanding)
         # MainWindow
         self.setCentralWidget(splitter)
 
@@ -191,7 +191,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             self.actions['preferences'],
                             self.actions['about'],
                             self.actions['quit']])
-        self.toolbar = toolbar 
+        self.toolbar = toolbar
         self.buffers[0].widget.input.setFocus()
 
         # open debug dialog

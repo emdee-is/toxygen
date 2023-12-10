@@ -48,7 +48,7 @@ class MessageBrowser(QtWidgets.QTextBrowser):
             # resize(self, a0: QSize): argument 1 has unexpected type 'int'
             # resize(self, w: int, h: int): argument 2 has unexpected type 'float'
             pass
-        
+
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
         self.anchorClicked.connect(self.on_anchor_clicked)
 

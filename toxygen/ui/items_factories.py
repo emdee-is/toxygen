@@ -98,9 +98,7 @@ class MessagesItemsFactory:
 
         return item
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _create_message_browser(self, text, width, message_type, parent=None):
         return MessageBrowser(self._settings, self._message_edit, self._smiley_loader, self._plugin_loader,

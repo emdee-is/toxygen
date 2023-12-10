@@ -43,6 +43,6 @@ def download_nodes_list(settings, oArgs):
 def _save_nodes(nodes, app):
     if not nodes:
         return
-    with open(_get_nodes_path(oArgs=app._args), 'wb') as fl:
-        LOG.info("Saving nodes to " +_get_nodes_path())
+    with open(_get_nodes_path(app._args), 'wb') as fl:
+        LOG.info("Saving nodes to " +_get_nodes_path(app._args))
         fl.write(nodes)

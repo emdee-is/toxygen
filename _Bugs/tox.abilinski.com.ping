@@ -1,0 +1,11 @@
+ ping tox.abilinski.com
+ping: socket: Address family not supported by protocol
+PING tox.abilinski.com (172.103.226.229) 56(84) bytes of data.
+64 bytes from 172.103.226.229.cable.tpia.cipherkey.com (172.103.226.229): icmp_seq=1 ttl=48 time=86.6 ms
+64 bytes from 172.103.226.229.cable.tpia.cipherkey.com (172.103.226.229): icmp_seq=2 ttl=48 time=83.1 ms
+64 bytes from 172.103.226.229.cable.tpia.cipherkey.com (172.103.226.229): icmp_seq=3 ttl=48 time=82.9 ms
+64 bytes from 172.103.226.229.cable.tpia.cipherkey.com (172.103.226.229): icmp_seq=4 ttl=48 time=83.4 ms
+64 bytes from 172.103.226.229.cable.tpia.cipherkey.com (172.103.226.229): icmp_seq=5 ttl=48 time=102 ms
+64 bytes from 172.103.226.229.cable.tpia.cipherkey.com (172.103.226.229): icmp_seq=6 ttl=48 time=87.4 ms
+64 bytes from 172.103.226.229.cable.tpia.cipherkey.com (172.103.226.229): icmp_seq=7 ttl=48 time=84.9 ms
+^C

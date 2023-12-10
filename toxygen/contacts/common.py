@@ -1,10 +1,8 @@
+from pydenticon import Generator
 import hashlib
 
-from pydenticon import Generator
 
-# -----------------------------------------------------------------------------------------------------------------
 # Typing notifications
-# -----------------------------------------------------------------------------------------------------------------
 
 class BaseTypingNotificationHandler:
 
@@ -30,9 +28,7 @@ class FriendTypingNotificationHandler(BaseTypingNotificationHandler):
 BaseTypingNotificationHandler.DEFAULT_HANDLER = BaseTypingNotificationHandler()
 
 
-# -----------------------------------------------------------------------------------------------------------------
 # Identicons support
-# -----------------------------------------------------------------------------------------------------------------
 
 
 def generate_avatar(public_key):

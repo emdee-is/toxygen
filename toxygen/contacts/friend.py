@@ -14,9 +14,7 @@ class Friend(contact.Contact):
         self._receipts = 0
         self._typing_notification_handler = common.FriendTypingNotificationHandler(number)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def insert_inline(self, before_message_id, inline):
         """
@@ -52,23 +50,17 @@ class Friend(contact.Contact):
         self._corr = list(filter(lambda m: not (type(m) is UnsentFileMessage and m.message_id == message_id),
                                  self._corr))
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Full status
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_full_status(self):
         return self._status_message
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_typing_notification_handler(self):
         return self._typing_notification_handler
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Context menu support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_context_menu_generator(self):
         return FriendMenuGenerator(self)

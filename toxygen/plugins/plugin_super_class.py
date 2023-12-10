@@ -53,9 +53,7 @@ class PluginSuperClass(tox_save.ToxSave):
         self._short_name = short_name[:MAX_SHORT_NAME_LENGTH]
         self._translator = None  # translator for plugin's GUI
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Get methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_name(self):
         """
@@ -98,9 +96,7 @@ class PluginSuperClass(tox_save.ToxSave):
         """
         return None
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Plugin was stopped, started or new command received
-    # -----------------------------------------------------------------------------------------------------------------
 
     def start(self):
         """
@@ -130,9 +126,7 @@ class PluginSuperClass(tox_save.ToxSave):
             title = util_ui.tr('List of commands for plugin {}').format(self._name)
             util_ui.message_box(text, title)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Translations support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def load_translator(self):
         """
@@ -149,9 +143,7 @@ class PluginSuperClass(tox_save.ToxSave):
             self._translator.load(path_to_data(self._short_name) + lang_path)
             app.installTranslator(self._translator)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Settings loading and saving
-    # -----------------------------------------------------------------------------------------------------------------
 
     def load_settings(self):
         """
@@ -170,9 +162,7 @@ class PluginSuperClass(tox_save.ToxSave):
         with open(path_to_data(self._short_name) + 'settings.json', 'wb') as fl:
             fl.write(bytes(data, 'utf-8'))
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Callbacks
-    # -----------------------------------------------------------------------------------------------------------------
 
     def lossless_packet(self, data, friend_number):
         """
@@ -196,9 +186,7 @@ class PluginSuperClass(tox_save.ToxSave):
         """
         pass
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Custom packets sending
-    # -----------------------------------------------------------------------------------------------------------------
 
     def send_lossless(self, data, friend_number):
         """

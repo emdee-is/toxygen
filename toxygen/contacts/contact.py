@@ -42,9 +42,7 @@ class Contact(basecontact.BaseContact):
         if hasattr(self, '_message_getter'):
             del self._message_getter
 
-    # -----------------------------------------------------------------------------------------------------------------
     # History support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def load_corr(self, first_time=True):
         """
@@ -121,9 +119,7 @@ class Contact(basecontact.BaseContact):
 
         return TextMessage(message, author, unix_time, message_type, unique_id)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Unsent messages
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_unsent_messages(self):
         """
@@ -151,9 +147,7 @@ class Contact(basecontact.BaseContact):
             #   wrapped C/C++ object of type QLabel has been deleted
             LOG.error(f"Mark as sent:  {ex!s}")
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Message deletion
-    # -----------------------------------------------------------------------------------------------------------------
 
     def delete_message(self, message_id):
         elem = list(filter(lambda m: m.message_id == message_id, self._corr))[0]
@@ -199,9 +193,7 @@ class Contact(basecontact.BaseContact):
                                      self._corr))
             self._unsaved_messages = len(self.get_unsent_messages())
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Chat history search
-    # -----------------------------------------------------------------------------------------------------------------
 
     def search_string(self, search_string):
         self._search_string, self._search_index = search_string, 0
@@ -234,9 +226,7 @@ class Contact(basecontact.BaseContact):
                 return i
         return None  # not found
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Current text - text from message area
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_curr_text(self):
         return self._curr_text
@@ -246,9 +236,7 @@ class Contact(basecontact.BaseContact):
 
     curr_text = property(get_curr_text, set_curr_text)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Alias support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def set_name(self, value):
         """
@@ -264,9 +252,7 @@ class Contact(basecontact.BaseContact):
     def has_alias(self):
         return self._alias
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Visibility in friends' list
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_visibility(self):
         return self._visible
@@ -276,9 +262,7 @@ class Contact(basecontact.BaseContact):
 
     visibility = property(get_visibility, set_visibility)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Unread messages and other actions from friend
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_actions(self):
         return self._new_actions
@@ -306,9 +290,7 @@ class Contact(basecontact.BaseContact):
 
     messages = property(get_messages)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Friend's or group's number (can be used in toxcore)
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_number(self):
         return self._number
@@ -318,25 +300,19 @@ class Contact(basecontact.BaseContact):
 
     number = property(get_number, set_number)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_typing_notification_handler(self):
         return common.BaseTypingNotificationHandler.DEFAULT_HANDLER
 
     typing_notification_handler = property(get_typing_notification_handler)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Context menu support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_context_menu_generator(self):
         return BaseContactMenuGenerator(self)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Filtration support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def set_widget(self, widget):
         self._widget = widget

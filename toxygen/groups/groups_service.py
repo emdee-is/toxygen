@@ -31,9 +31,7 @@ class GroupsService(tox_save.ToxSave):
         for group in self._get_all_groups():
             group.set_tox(tox)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Groups creation
-    # -----------------------------------------------------------------------------------------------------------------
 
     def create_new_gc(self, name, privacy_state, nick, status):
         try:
@@ -74,9 +72,7 @@ class GroupsService(tox_save.ToxSave):
         group.status = constants.TOX_USER_STATUS['NONE']
         self._contacts_manager.update_filtration()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Groups reconnect and leaving
-    # -----------------------------------------------------------------------------------------------------------------
 
     def leave_group(self, group_number):
         if type(group_number) == int:
@@ -95,9 +91,7 @@ class GroupsService(tox_save.ToxSave):
         group.status = constants.TOX_USER_STATUS['NONE']
         self._clear_peers_list(group)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Group invites
-    # -----------------------------------------------------------------------------------------------------------------
 
     def invite_friend(self, friend_number, group_number):
         if self._tox.friend_get_connection_status(friend_number) == TOX_CONNECTION['NONE']:
@@ -142,9 +136,7 @@ class GroupsService(tox_save.ToxSave):
 
     group_invites_count = property(get_group_invites_count)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Group info methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def update_group_info(self, group):
         group.name = self._tox.group_get_name(group.number)
@@ -190,9 +182,7 @@ class GroupsService(tox_save.ToxSave):
         self._tox.group_founder_set_privacy_state(group.number, privacy_state)
         group.is_private = is_private
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Peers list
-    # -----------------------------------------------------------------------------------------------------------------
 
     def generate_peers_list(self):
         if not self._contacts_manager.is_active_a_group():
@@ -210,9 +200,7 @@ class GroupsService(tox_save.ToxSave):
             self._screen = widgets_factory.create_self_peer_screen_window(group)
         self._screen.show()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Peers actions
-    # -----------------------------------------------------------------------------------------------------------------
 
     def set_new_peer_role(self, group, peer, role):
         self._tox.group_mod_set_role(group.number, peer.id, role)
@@ -231,9 +219,7 @@ class GroupsService(tox_save.ToxSave):
         self_peer.status = status
         self.generate_peers_list()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Bans support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def show_bans_list(self, group):
         return
@@ -250,9 +236,7 @@ class GroupsService(tox_save.ToxSave):
     def cancel_ban(self, group_number, ban_id):
         self._tox.group_mod_remove_ban(group_number, ban_id)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _add_new_group_by_number(self, group_number):
         LOG.debug(f"_add_new_group_by_number group_number={group_number}")

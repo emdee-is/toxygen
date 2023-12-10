@@ -22,9 +22,7 @@ class History:
     def set_contacts_manager(self, contacts_manager):
         self._contacts_manager = contacts_manager
 
-    # -----------------------------------------------------------------------------------------------------------------
     # History support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def save_history(self):
         """
@@ -128,9 +126,7 @@ class History:
 
         return generator.generate()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Items creation
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _create_message_item(self, message):
         return self._messages_items_factory.create_message_item(message, False)

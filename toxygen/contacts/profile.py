@@ -35,9 +35,7 @@ class Profile(basecontact.BaseContact, tox_save.ToxSave):
         self._waiting_for_reconnection = False
         self._timer = None
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
-    # -----------------------------------------------------------------------------------------------------------------
 
     def change_status(self):
         """
@@ -72,9 +70,7 @@ class Profile(basecontact.BaseContact, tox_save.ToxSave):
         self._sToxId = self._tox.self_get_address()
         return self._sToxId
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Reset
-    # -----------------------------------------------------------------------------------------------------------------
 
     def restart(self):
         """

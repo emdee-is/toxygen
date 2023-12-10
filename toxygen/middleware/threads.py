@@ -28,9 +28,7 @@ def LOG_TRACE(l): pass # print('TRACE+ '+l)
 iLAST_CONN = 0
 iLAST_DELTA = 60
 
-# -----------------------------------------------------------------------------------------------------------------
 # Base threads
-# -----------------------------------------------------------------------------------------------------------------
 
 class BaseThread(threading.Thread):
 
@@ -74,9 +72,7 @@ class BaseQThread(QtCore.QThread):
         else:
             LOG_WARN(f"BaseQThread {self.name} BLOCKED")
 
-# -----------------------------------------------------------------------------------------------------------------
 # Toxcore threads
-# -----------------------------------------------------------------------------------------------------------------
 
 class InitThread(BaseThread):
 
@@ -163,9 +159,7 @@ class ToxAVIterateThread(BaseQThread):
             sleep(self._toxav.iteration_interval() / 1000)
 
 
-# -----------------------------------------------------------------------------------------------------------------
 # File transfers thread
-# -----------------------------------------------------------------------------------------------------------------
 
 class FileTransfersThread(BaseQThread):
 
@@ -203,9 +197,7 @@ def execute(func, *args, **kwargs):
     _thread.execute(func, *args, **kwargs)
 
 
-# -----------------------------------------------------------------------------------------------------------------
 # Invoking in main thread
-# -----------------------------------------------------------------------------------------------------------------
 
 class InvokeEvent(QtCore.QEvent):
     EVENT_TYPE = QtCore.QEvent.Type(QtCore.QEvent.registerEventType())

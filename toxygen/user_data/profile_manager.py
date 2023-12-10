@@ -33,18 +33,14 @@ class ProfileManager:
         if not os.path.exists(avatars_directory):
             os.makedirs(avatars_directory)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Properties
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_profile_saved_event(self):
         return self._profile_saved_event
 
     profile_saved_event = property(get_profile_saved_event)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Public methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def open_profile(self):
         with open(self._path, 'rb') as fl:

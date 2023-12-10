@@ -35,9 +35,7 @@ class BaseContact:
         self._avatar_changed_event = event.Event()
         self.init_widget()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Name - current name or alias of user
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_name(self):
         return self._name
@@ -57,9 +55,7 @@ class BaseContact:
 
     name_changed_event = property(get_name_changed_event)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Status message
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_status_message(self):
         return self._status_message
@@ -79,9 +75,7 @@ class BaseContact:
 
     status_message_changed_event = property(get_status_message_changed_event)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Status
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_status(self):
         return self._status
@@ -100,31 +94,30 @@ class BaseContact:
 
     status_changed_event = property(get_status_changed_event)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # TOX ID. WARNING: for friend it will return public key, for profile - full address
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_tox_id(self):
         return self._tox_id
 
     tox_id = property(get_tox_id)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Avatars
-    # -----------------------------------------------------------------------------------------------------------------
 
     def load_avatar(self):
         """
         Tries to load avatar of contact or uses default avatar
         """
-        avatar_path = self.get_avatar_path()
-        width = self._widget.avatar_label.width()
-        pixmap = QtGui.QPixmap(avatar_path)
-        self._widget.avatar_label.setPixmap(pixmap.scaled(width, width, QtCore.Qt.KeepAspectRatio,
-                                                          QtCore.Qt.SmoothTransformation))
-        self._widget.avatar_label.repaint()
-        self._avatar_changed_event(avatar_path)
-
+        try:
+            avatar_path = self.get_avatar_path()
+            width = self._widget.avatar_label.width()
+            pixmap = QtGui.QPixmap(avatar_path)
+            self._widget.avatar_label.setPixmap(pixmap.scaled(width, width, QtCore.Qt.KeepAspectRatio,
+                                                              QtCore.Qt.SmoothTransformation))
+            self._widget.avatar_label.repaint()
+            self._avatar_changed_event(avatar_path)
+        except Exception as e:
+            pass
+        
     def reset_avatar(self, generate_new):
         avatar_path = self.get_avatar_path()
         if os.path.isfile(avatar_path) and not avatar_path == self._get_default_avatar_path():
@@ -165,9 +158,7 @@ class BaseContact:
 
     avatar_changed_event = property(get_avatar_changed_event)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Widgets
-    # -----------------------------------------------------------------------------------------------------------------
 
     def init_widget(self):
         self._widget.name.setText(self._name)
@@ -177,9 +168,7 @@ class BaseContact:
         self._widget.connection_status.update(self._status)
         self.load_avatar()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     @staticmethod
     def _get_default_avatar_path():

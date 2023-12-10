@@ -105,17 +105,13 @@ class ContactsManager(ToxSave):
 
         return self._contacts[self._active_contact].tox_id == contact.tox_id
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Reconnection support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def reset_contacts_statuses(self):
         for contact in self._contacts:
             contact.status = None
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Work with active friend
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_active(self):
         return self._active_contact
@@ -204,9 +200,7 @@ class ContactsManager(ToxSave):
     def is_active_a_group_chat_peer(self):
         return type(self.get_curr_contact()) is GroupPeerContact
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Filtration
-    # -----------------------------------------------------------------------------------------------------------------
 
     def filtration_and_sorting(self, sorting=0, filter_str=''):
         """
@@ -286,9 +280,7 @@ class ContactsManager(ToxSave):
         """
         self.filtration_and_sorting(self._sorting, self._filter_string)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Contact getters
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_friend_by_number(self, number):
         return list(filter(lambda c: c.number == number and type(c) is Friend, self._contacts))[0]
@@ -324,9 +316,7 @@ class ContactsManager(ToxSave):
     def is_active_online(self):
         return self._active_contact + 1 and self.get_curr_contact().status is not None
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Work with friends (remove, block, set alias, get public key)
-    # -----------------------------------------------------------------------------------------------------------------
 
     def set_alias(self, num):
         """
@@ -411,9 +401,7 @@ class ContactsManager(ToxSave):
             self.add_friend(tox_id)
             self.save_profile()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Groups support
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_group_chats(self):
         return list(filter(lambda c: type(c) is GroupChat, self._contacts))
@@ -423,7 +411,7 @@ class ContactsManager(ToxSave):
         group = self._contact_provider.get_group_by_number(group_number)
         if group is None:
             LOG.warn(f"CM.add_group: NULL group from group_number={group_number}")
-        elif group < 0:
+        elif type(group) == int and group < 0:
             LOG.warn(f"CM.add_group: NO group from group={group} group_number={group_number}")
         else:
             LOG.info(f"CM.add_group: Adding group {group._name}")
@@ -441,9 +429,7 @@ class ContactsManager(ToxSave):
         num = self._contacts.index(group)
         self._delete_contact(num)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Groups private messaging
-    # -----------------------------------------------------------------------------------------------------------------
 
     def add_group_peer(self, group, peer):
         contact = self._contact_provider.get_group_peer_by_id(group, peer.id)
@@ -485,9 +471,7 @@ class ContactsManager(ToxSave):
 
         return suggested_names[0]
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Friend requests
-    # -----------------------------------------------------------------------------------------------------------------
 
     def send_friend_request(self, sToxPkOrId, message):
         """
@@ -551,9 +535,7 @@ class ContactsManager(ToxSave):
     def can_send_typing_notification(self):
         return self._settings['typing_notifications'] and not self.is_active_a_group_chat_peer()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Contacts numbers update
-    # -----------------------------------------------------------------------------------------------------------------
 
     def update_friends_numbers(self):
         for friend in self._contact_provider.get_all_friends():
@@ -581,9 +563,7 @@ class ContactsManager(ToxSave):
         for group in groups:
             group.remove_all_peers_except_self()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _load_contacts(self):
         self._load_friends()
@@ -608,9 +588,7 @@ class ContactsManager(ToxSave):
     def _load_groups(self):
         self._contacts.extend(self._contact_provider.get_all_groups())
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Current contact subscriptions
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _subscribe_to_events(self, contact):
         contact.name_changed_event.add_callback(self._current_contact_name_changed)

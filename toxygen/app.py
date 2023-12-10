@@ -179,9 +179,7 @@ class App:
             self._uri = uri[4:]
         self._history = None
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Public methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def set_trace(self):
         """unused"""
@@ -255,9 +253,7 @@ class App:
 
         return retval
 
-    # -----------------------------------------------------------------------------------------------------------------
     # App executing
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _execute_app(self):
         LOG.debug("_execute_app")
@@ -321,9 +317,7 @@ class App:
             oArgs.log_oFd.close()
             delattr(oArgs, 'log_oFd')
 
-    # -----------------------------------------------------------------------------------------------------------------
     # App loading
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _load_base_style(self):
         if self._args.theme in ['', 'default']: return
@@ -470,9 +464,7 @@ class App:
 
         return True
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Threads
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _start_threads(self, initial_start=True):
         LOG.debug(f"_start_threads before: {threading.enumerate()!r}")
@@ -513,9 +505,7 @@ class App:
             self._tox.iterate()
             gevent.sleep(interval / 1000.0)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Profiles
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _select_profile(self):
         LOG.debug("_select_profile")
@@ -600,9 +590,7 @@ class App:
         data = data or self._tox.get_savedata()
         self._profile_manager.save_profile(data)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Other private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _enter_password(self, data):
         """
@@ -967,17 +955,18 @@ class App:
         reply = util_ui.question(text, title)
         if not reply: return
 
+        if self._args.proxy_type == 0:
+            sProt = "udp4"
+        else:
+            sProt = "tcp4"
         if lElts is None:
             if self._args.proxy_type == 0:
-                sProt = "udp4"
-                lElts = self._settings['current_nodes_tcp']
+                lElts = self._settings['current_nodes_udp']
             else:
-                sProt = "tcp4"
                 lElts = self._settings['current_nodes_tcp']
         shuffle(lElts)
         try:
             ts.bootstrap_iNmapInfo(lElts, self._args, sProt)
-            self._ms.log_console()
         except Exception as e:
             LOG.error(f"test_nmap ' +' :  {e}")
             LOG.error('_test_nmap(): ' \
@@ -990,7 +979,7 @@ class App:
         self._ms.log_console()
 
     def _test_main(self):
-        from tests.tests_socks import main as tests_main
+        from toxygen_wrapper.tests_wrapper import main as tests_main
         LOG.debug("_test_main")
         if not self._tox: return
         title = 'Extended Test Suite'

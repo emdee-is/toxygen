@@ -35,9 +35,7 @@ class GroupChat(contact.Contact, ToxSave):
     def get_context_menu_generator(self):
         return GroupMenuGenerator(self)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Properties
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_is_private(self):
         return self._is_private
@@ -63,9 +61,7 @@ class GroupChat(contact.Contact, ToxSave):
 
     peers_limit = property(get_peers_limit, set_peers_limit)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Peers methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def get_self_peer(self):
         return self._peers[0]
@@ -156,9 +152,7 @@ class GroupChat(contact.Contact, ToxSave):
 #
     bans = property(get_bans)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     @staticmethod
     def _get_default_avatar_path():

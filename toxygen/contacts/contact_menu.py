@@ -8,9 +8,7 @@ global LOG
 import logging
 LOG = logging.getLogger('app')
 
-# -----------------------------------------------------------------------------------------------------------------
 # Builder
-# -----------------------------------------------------------------------------------------------------------------
 
 def _create_menu(menu_name, parent):
     menu_name = menu_name or ''
@@ -83,9 +81,7 @@ class ContactMenuBuilder:
         self._actions[self._index] = (text, handler)
         self._index += 1
 
-# -----------------------------------------------------------------------------------------------------------------
 # Generators
-# -----------------------------------------------------------------------------------------------------------------
 
 
 class BaseContactMenuGenerator:
@@ -96,9 +92,7 @@ class BaseContactMenuGenerator:
     def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service, history_loader):
         return ContactMenuBuilder().build()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     def _generate_copy_menu_builder(self, main_screen):
         copy_menu_builder = ContactMenuBuilder()
@@ -150,9 +144,7 @@ class FriendMenuGenerator(BaseContactMenuGenerator):
 
         return menu
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     @staticmethod
     def _generate_plugins_menu_builder(plugin_loader, number):

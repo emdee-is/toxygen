@@ -38,9 +38,7 @@ class Messenger(tox_save.ToxSave):
 
         return contact.get_last_message_text()
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Messaging - friends
-    # -----------------------------------------------------------------------------------------------------------------
 
     def new_message(self, friend_number, message_type, message):
         """
@@ -140,9 +138,7 @@ class Messenger(tox_save.ToxSave):
         except Exception as ex:
             LOG.warn('Sending pending messages failed with ' + str(ex))
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Messaging - groups
-    # -----------------------------------------------------------------------------------------------------------------
 
     def send_message_to_group(self, text, message_type, group_number=None):
         if group_number is None:
@@ -183,9 +179,7 @@ class Messenger(tox_save.ToxSave):
         text_message = TextMessage(message, MessageAuthor(peer.name, MESSAGE_AUTHOR['GC_PEER']), t, message_type)
         self._add_message(text_message, group)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Messaging - group peers
-    # -----------------------------------------------------------------------------------------------------------------
 
     def send_message_to_group_peer(self, text, message_type, group_number=None, peer_id=None):
         if group_number is None or peer_id is None:
@@ -238,17 +232,13 @@ class Messenger(tox_save.ToxSave):
             return
         self._add_message(text_message, group_peer_contact)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Message receipts
-    # -----------------------------------------------------------------------------------------------------------------
 
     def receipt(self, friend_number, message_id):
         friend = self._get_friend_by_number(friend_number)
         friend.mark_as_sent(message_id)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
-    # -----------------------------------------------------------------------------------------------------------------
 
     def send_typing(self, typing):
         """
@@ -266,9 +256,7 @@ class Messenger(tox_save.ToxSave):
         if self._contacts_manager.is_friend_active(friend_number):
             self._screen.typing.setVisible(typing)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Contact info updated
-    # -----------------------------------------------------------------------------------------------------------------
 
     def new_friend_name(self, friend, old_name, new_name):
         if old_name == new_name or friend.has_alias():
@@ -279,9 +267,7 @@ class Messenger(tox_save.ToxSave):
             friend.actions = True
         self._add_info_message(friend.number, message)
 
-    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
 
     @staticmethod
     def _split_message(message):

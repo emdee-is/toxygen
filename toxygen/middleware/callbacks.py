@@ -46,9 +46,7 @@ def bTooSoon(key, sSlot, fSec=10.0):
 
 # TODO: refactoring. Use contact provider instead of manager
 
-# -----------------------------------------------------------------------------------------------------------------
 # Callbacks - current user
-# -----------------------------------------------------------------------------------------------------------------
 
 global iBYTES
 iBYTES=0
@@ -95,9 +93,7 @@ def self_connection_status(tox, profile):
     return wrapped
 
 
-# -----------------------------------------------------------------------------------------------------------------
 # Callbacks - friends
-# -----------------------------------------------------------------------------------------------------------------
 
 
 def friend_status(contacts_manager, file_transfer_handler, profile, settings):
@@ -235,9 +231,7 @@ def friend_read_receipt(messenger):
     return wrapped
 
 
-# -----------------------------------------------------------------------------------------------------------------
 # Callbacks - file transfers
-# -----------------------------------------------------------------------------------------------------------------
 
 
 def tox_file_recv(window, tray, profile, file_transfer_handler, contacts_manager, settings):
@@ -312,9 +306,7 @@ def file_recv_control(file_transfer_handler):
 
     return wrapped
 
-# -----------------------------------------------------------------------------------------------------------------
 # Callbacks - custom packets
-# -----------------------------------------------------------------------------------------------------------------
 
 
 def lossless_packet(plugin_loader):
@@ -339,9 +331,7 @@ def lossy_packet(plugin_loader):
     return wrapped
 
 
-# -----------------------------------------------------------------------------------------------------------------
 # Callbacks - audio
-# -----------------------------------------------------------------------------------------------------------------
 
 def call_state(calls_manager):
     def wrapped(iToxav, friend_number, mask, user_data):
@@ -384,9 +374,7 @@ def callback_audio(calls_manager):
 
     return wrapped
 
-# -----------------------------------------------------------------------------------------------------------------
 # Callbacks - video
-# -----------------------------------------------------------------------------------------------------------------
 
 
 def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, ustride, vstride, user_data):
@@ -444,9 +432,7 @@ def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, u
         LOG_ERROR(f"video_receive_frame  {ex} #{friend_number}")
         pass
 
-# -----------------------------------------------------------------------------------------------------------------
 # Callbacks - groups
-# -----------------------------------------------------------------------------------------------------------------
 
 
 def group_message(window, tray, tox, messenger, settings, profile):
@@ -714,9 +700,7 @@ def group_privacy_state(contacts_provider):
 
     return wrapped
 
-# -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
-# -----------------------------------------------------------------------------------------------------------------
 
 
 def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,

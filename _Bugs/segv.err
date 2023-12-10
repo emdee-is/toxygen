@@ -1,0 +1,130 @@
+0
+TRAC> network.c#1748:net_connect connecting socket 58 to 127.0.0.1:9050
+TRAC> Messenger.c#2709:do_messenger Friend num in DHT 2 != friend num in msger 14
+TRAC> Messenger.c#2723:do_messenger F[--: 0] D3385007C28852C5398393E3338E6AABE5F86EF249BF724E7404233207D4D927
+TRAC> Messenger.c#2723:do_messenger F[--: 1] 98984E104B8A97CC43AF03A27BE159AC1F4CF35FADCC03D6CD5F8D67B5942A56
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 185.87.49.189:3389 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 185.87.49.189:3389 (0: OK) | 010001b95731bd0d...3d
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 37.221.66.161:443 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 37.221.66.161:443 (0: OK) | 01000125dd42a101...bb
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 172.93.52.70:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 139.162.110.188:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 37.59.63.150:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 130.133.110.14:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 37.97.185.116:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 85.143.221.42:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 104.244.74.69:38445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 49.12.229.145:3389 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 168.119.209.10:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 81.169.136.229:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 91.219.59.156:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 46.101.197.175:3389 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 198.199.98.108:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 130.133.110.14:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 49.12.229.145:3389 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 188.225.9.167:33445 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 5.19.249.240:38296 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>   3= 94.156.35.247:3389 (0: OK) | 0000000000000000...00
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 2 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 172.93.52.70:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 172.93.52.70:33445 (0: OK) | 010001ac5d344682...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 139.162.110.188:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 139.162.110.188:33445 (0: OK) | 0100018ba26ebc82...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 37.59.63.150:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 37.59.63.150:33445 (0: OK) | 010001253b3f9682...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 130.133.110.14:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 130.133.110.14:33445 (0: OK) | 01000182856e0e82...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 37.97.185.116:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 37.97.185.116:33445 (0: OK) | 0100012561b97482...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 85.143.221.42:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 85.143.221.42:33445 (0: OK) | 010001558fdd2a82...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 104.244.74.69:38445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 104.244.74.69:38445 (0: OK) | 01000168f44a4596...2d
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 49.12.229.145:3389 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 49.12.229.145:3389 (0: OK) | 010001310ce5910d...3d
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 168.119.209.10:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 168.119.209.10:33445 (0: OK) | 010001a877d10a82...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 81.169.136.229:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 81.169.136.229:33445 (0: OK) | 01000151a988e582...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 91.219.59.156:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 91.219.59.156:33445 (0: OK) | 0100015bdb3b9c82...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 46.101.197.175:3389 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 46.101.197.175:3389 (0: OK) | 0100012e65c5af0d...3d
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 198.199.98.108:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 198.199.98.108:33445 (0: OK) | 010001c6c7626c82...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 130.133.110.14:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 130.133.110.14:33445 (0: OK) | 01000182856e0e82...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 49.12.229.145:3389 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 49.12.229.145:3389 (0: OK) | 010001310ce5910d...3d
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 188.225.9.167:33445 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 188.225.9.167:33445 (0: OK) | 010001bce109a782...a5
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 5.19.249.240:38296 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 5.19.249.240:38296 (0: OK) | 0100010513f9f095...98
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] =>T   2= 94.156.35.247:3389 (0: OK) | 0000000000000000...00
+TRAC> network.c#789:loglogdata [05 = <unknown>           ] T=>  10= 94.156.35.247:3389 (0: OK) | 0100015e9c23f70d...3d
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+TRAC> TCP_common.c#203:read_TCP_packet recv buffer has 0 bytes, but requested 10 bytes
+app.contacts.contacts_manager INFO update_groups_numbers len(groups)={len(groups)}
+
+Thread 76 "ToxIterateThrea" received signal SIGSEGV, Segmentation fault.
+[Switching to Thread 0x7ffedcb6b640 (LWP 2950427)]
