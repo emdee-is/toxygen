@@ -134,7 +134,7 @@ class Contact(basecontact.BaseContact):
         """
 #                               and m.tox_message_id == tox_message_id,
         messages = filter(lambda m: m.author is not None
-                              and m.author.type == MESSAGE_AUTHOR['NOT_SENT']
+                              and m.author.type == MESSAGE_AUTHOR['NOT_SENT'],
                               self._corr)
         # was message = list(...)[0]
         return list(messages)

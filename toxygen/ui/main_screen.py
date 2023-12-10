@@ -684,17 +684,17 @@ class MainWindow(QtWidgets.QMainWindow):
                 font_width = QFontMetrics(font).width('M')
             self._pe.setFont(font)
             geometry = self._pe.geometry()
-            geometry.setWidth(font_width*50+20)
-            geometry.setHeight(font_width*24*13/8)
+            geometry.setWidth(int(font_width*50+20))
+            geometry.setHeight(int(font_width*24*13/8))
             self._pe.setGeometry(geometry)
-            self._pe.resize(font_width*50+20, font_width*24*13/8)
+            self._pe.resize(int(font_width*50+20), int(font_width*24*13/8))
 
             self._pe.show()
             self._pe.eval_queued()
             # or self._pe.eval_in_thread()
             return
         except Exception as e:
-            LOG.debug(e)
+            LOG.warn(f"python_console EXCEPTION {e}")
 
     def weechat_console(self):
         if self._we:
@@ -748,11 +748,11 @@ class MainWindow(QtWidgets.QMainWindow):
 #                LOG.debug(e)
                 font_width = size
             geometry = self._we.geometry()
-            geometry.setWidth(font_width*80+20)
+            geometry.setWidth(int(font_width*80+20))
             geometry.setHeight(int(font_width*(2+24)*11/8))
             self._we.setGeometry(geometry)
             #? QtCore.QSize()
-            self._we.resize(font_width*80+20, int(font_width*(2+24)*11/8))
+            self._we.resize(int(font_width*80+20), int(font_width*(2+24)*11/8))
 
             self._we.list_buffers.setSizePolicy(QtWidgets.QSizePolicy.Preferred,
                                                 QtWidgets.QSizePolicy.Preferred)
