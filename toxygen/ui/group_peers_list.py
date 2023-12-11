@@ -15,7 +15,7 @@ class PeerItem(QtWidgets.QWidget):
         self.nameLabel.setText(name)
         if peer.status == TOX_USER_STATUS['NONE']:
             if peer.is_current_user:
-                style = 'QLabel {color: green;}'
+                style = 'QLabel {color: magenta}'
             else:
                 style = 'QLabel {color: green}'
         elif peer.status == TOX_USER_STATUS['AWAY']:

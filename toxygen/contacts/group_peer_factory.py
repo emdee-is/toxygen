@@ -14,7 +14,10 @@ class GroupPeerFactory(ToxSave):
         item = self._create_group_peer_item()
         message_getter = self._db.messages_getter(peer.public_key)
         group_peer_contact = GroupPeerContact(self._profile_manager, message_getter, peer.id, peer.name,
-                                              item, peer.public_key, group.tox_id)
+                                              item,
+                                              peer.public_key,
+                                              group.tox_id,
+                                              status_message=peer.status_message)
         group_peer_contact.status = peer.status
 
         return group_peer_contact

@@ -4,8 +4,9 @@ from contacts.contact_menu import GroupPeerMenuGenerator
 
 class GroupPeerContact(contacts.contact.Contact):
 
-    def __init__(self, profile_manager, message_getter, peer_number, name, widget, tox_id, group_pk):
-        super().__init__(profile_manager, message_getter, peer_number, name, str(), widget, tox_id)
+    def __init__(self, profile_manager, message_getter, peer_number, name, widget, tox_id, group_pk, status_message=None):
+        if status_message is None: status_message=str()
+        super().__init__(profile_manager, message_getter, peer_number, name, status_message, widget, tox_id)
         self._group_pk = group_pk
 
     def get_group_pk(self):

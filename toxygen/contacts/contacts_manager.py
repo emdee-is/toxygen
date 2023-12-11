@@ -291,7 +291,7 @@ class ContactsManager(ToxSave):
     def get_or_create_group_peer_contact(self, group_number, peer_id):
         group = self.get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
-        if peer: # broken?
+        if peer is None: # broken? is 0 allowed?
             if not hasattr(peer, 'public_key') or not peer.public_key:
                 LOG.error(f'no peer public_key ' + repr(dir(peer)))
             else:
@@ -300,6 +300,7 @@ class ContactsManager(ToxSave):
                 return self.get_contact_by_tox_id(peer.public_key)
         else:
             LOG.warn(f'no peer group_number={group_number} peer_id={peer_id}')
+        return peer
 
     def check_if_contact_exists(self, tox_id):
         return any(filter(lambda c: c.tox_id == tox_id, self._contacts))
