@@ -70,7 +70,7 @@ or
 /relay start weechat
 ```
 and use the Plugins/Weechat Console to start weechat under Toxygen.
-Then use th File/Connect menu item of the console to connect to weechat.
+Then use the File/Connect menu item of the Console to connect to weechat.
 
 Weechat has a Jabber plugin to enable XMPP:
 ```
@@ -81,3 +81,6 @@ so you can have Tox, IRC and XMPP in the same application!
 
 Work on Tox on this project is suspended until the
 [MultiDevice](https://git.plastiras.org/emdee/tox_profile/wiki/MultiDevice-Announcements-POC) problem is solved. Fork me!
+
+Work on Tox on this project is stopped because Qt5 is EOL.
+https://linuxreviews.org/KDE_Is_Now_Offering_A_Qt_5.15_LTS_Branch_Patch-set_For_The_Free_Software_Community
