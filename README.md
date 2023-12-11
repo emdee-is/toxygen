@@ -82,5 +82,6 @@ so you can have Tox, IRC and XMPP in the same application!
 Work on Tox on this project is suspended until the
 [MultiDevice](https://git.plastiras.org/emdee/tox_profile/wiki/MultiDevice-Announcements-POC) problem is solved. Fork me!
 
-Work on Tox on this project is stopped because Qt5 is EOL.
-https://linuxreviews.org/KDE_Is_Now_Offering_A_Qt_5.15_LTS_Branch_Patch-set_For_The_Free_Software_Community
+This will probably be ported to Qt6 using qtpy
+https://github.com/spyder-ide/qtpy .
+

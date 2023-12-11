@@ -5,16 +5,17 @@ class GroupChatPeer:
     Represents peer in group chat.
     """
 
-    def __init__(self, peer_id, name, status, role, public_key, is_current_user=False, is_muted=False):
+    def __init__(self, peer_id, name, status, role, public_key, is_current_user=False, is_muted=False, status_message=None):
         self._peer_id = peer_id
         self._name = name
         self._status = status
+        self._status_message = status_message
         self._role = role
         self._public_key = public_key
         self._is_current_user = is_current_user
         self._is_muted = is_muted
-        # unused?
         self._kind = 'grouppeer'
+
     # Readonly properties
 
     def get_id(self):
@@ -31,6 +32,11 @@ class GroupChatPeer:
         return self._is_current_user
 
     is_current_user = property(get_is_current_user)
+
+    def get_status_message(self):
+        return self._peer_status_message
+
+    status_message = property(get_status_message)
 
     # Read-write properties
 

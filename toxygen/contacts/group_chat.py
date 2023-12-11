@@ -84,13 +84,15 @@ class GroupChat(contact.Contact, ToxSave):
             LOG_WARN(f"add_peer id={peer_id} > {self._peers_limit}")
             return
 
-        LOG_TRACE(f"add_peer id={peer_id}")
+        status_message = f"From {self.name}"
+        LOG_TRACE(f"GC.add_peer id={peer_id} status_message={status_message}")
         peer = GroupChatPeer(peer_id,
                              self._tox.group_peer_get_name(self._number, peer_id),
                              self._tox.group_peer_get_status(self._number, peer_id),
                              self._tox.group_peer_get_role(self._number, peer_id),
                              self._tox.group_peer_get_public_key(self._number, peer_id),
-                             is_current_user)
+                             is_current_user,
+                             status_message=status_message)
         self._peers.append(peer)
 
     def remove_peer(self, peer_id):
